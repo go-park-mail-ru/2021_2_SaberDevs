@@ -13,3 +13,15 @@ Project: vc.ru <br/>
 ## Менторы
 :diamonds: [Антон Елагин](https://github.com/AntonElagin) <br/>
 :gem: [Екатерина Придиус](https://github.com/pringleskate)
+
+## API
+логин /api/v1/user/login
+````
+{
+    "status": 200, 400
+    "body": 
+    {
+        "email": "emal@emal.com"
+        "password": "password_name"
+    }
+}
