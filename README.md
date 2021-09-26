@@ -36,7 +36,12 @@ Project: vc.ru <br/>
 ````
 {
     "status": 200
-    "GoodbuyMsg": "goodbuy":"Goodbuy, mollen@exp.ru!"
+    "body" : 
+    {
+        "ID": 123
+        "name": "name"
+        "avatar": jpg?? пока нету
+    }
 }
 ````
 
@@ -53,12 +58,8 @@ Project: vc.ru <br/>
 ````
 {
     "status": 200
+    "GoodbuyMsg": "goodbuy":"Goodbuy, mollen@exp.ru!"
     "body":
-    {
-        "ID": 123
-        "name": "name"
-        "avatar": jpg?? пока нету
-    }
 }
 ````
 

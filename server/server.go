@@ -41,6 +41,21 @@ type (
 		GoodbuyMsg string `json:"goodbuy"`
 	}
 
+	SignUpBody struct {
+		ID   uint   `json:"id"`
+		Name string `json:"name"`
+	}
+
+	RequestSignup struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	GoodSignupResponse struct {
+		Status uint       `json:"status"`
+		SBody  SignUpBody `json:"body"`
+	}
+
 	ErrorBody struct {
 		Status   uint   `json:"status"`
 		ErrorMsg string `json:"error"`
@@ -121,8 +136,8 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 func (api *MyHandler) Register(c echo.Context) error {
 	// достаем данные из запроса
-	requestUser := new(RequestUser)
-	if err := c.Bind(requestUser); err != nil {
+	newUser := new(RequestSignup)
+	if err := c.Bind(newUser); err != nil {
 		errorJson := ErrorBody{
 			Status:   http.StatusInternalServerError,
 			ErrorMsg: "Internal server error",
@@ -130,27 +145,37 @@ func (api *MyHandler) Register(c echo.Context) error {
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
-	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
-
-	// логика логина
 	api.uMu.RLock()
-	user, ok := api.users[requestUser.Email]
+	_, exists := api.users[newUser.Email]
 	api.uMu.RUnlock()
 
-	if !ok {
+	if exists {
 		errorJson := ErrorBody{
 			Status:   http.StatusInternalServerError,
-			ErrorMsg: "User doesnt exist",
+			ErrorMsg: "User already exists",
 		}
 		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
-	if user.Password != requestUser.Password {
+
+	cc, err := c.Cookie("session")
+
+	api.sMu.RLock()
+	_, exists = api.sessions[cc.Value]
+	api.sMu.RUnlock()
+
+	if err == nil && exists {
 		errorJson := ErrorBody{
 			Status:   http.StatusInternalServerError,
-			ErrorMsg: "Wrong password",
+			ErrorMsg: "Already authorised",
 		}
 		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
+	// логика регистрации,  добавляем юзера в мапу
+	user := User{uint(len(api.users)), newUser.Email, newUser.Email}
+	api.uMu.Lock()
+	api.users[newUser.Email] = user
+	api.uMu.Unlock()
+
 	// ставим куку на сутки
 	cookie := new(http.Cookie)
 	cookie.Name = "session"
@@ -164,10 +189,10 @@ func (api *MyHandler) Register(c echo.Context) error {
 	api.sMu.Unlock()
 
 	// формируем ответ
-	b := LoginBody{user.ID, user.Email}
-	response := GoodLoginResponse{
+	s := SignUpBody{user.ID, user.Email}
+	response := GoodSignupResponse{
 		Status: http.StatusOK,
-		LBody:  b,
+		SBody:  s,
 	}
 
 	return c.JSON(http.StatusOK, response)

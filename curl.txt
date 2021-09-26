@@ -3,6 +3,11 @@ curl -i --header "Content-Type: application/json" \
   --data '{"Email":"mollen@exp.ru","Password":"123"}' \
   http://localhost:8080/api/v1/user/login
   
+  curl -i --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"Email":"mollen@exp.ru","Password":"123"}' \
+  http://localhost:8080/api/v1/user/register
+  
 curl -v -i --cookie "session=d3506a24-7791-42a2-94e8-4239af742779"  http://localhost:8080/
 
 curl -i --header "Content-Type: application/json" \
@@ -10,3 +15,6 @@ curl -i --header "Content-Type: application/json" \
   --data '{"Email":"mollen@exp.ru"}' \
   --cookie  "session=7057466f-81dc-4785-9e8c-19c0f9312144"\
   http://localhost:8080/api/v1/user/logout
+  
+
+
