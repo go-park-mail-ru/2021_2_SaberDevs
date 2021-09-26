@@ -23,10 +23,6 @@ type (
 		Password string `json:"password"`
 	}
 
-	LogoutUser struct {
-		Email string `json:"email"`
-	}
-
 	LoginBody struct {
 		ID   uint   `json:"id"`
 		Name string `json:"name"`
@@ -238,16 +234,6 @@ func (api *MyHandler) Register(c echo.Context) error {
 }
 
 func (api *MyHandler) Logout(c echo.Context) error {
-	// достаем логин из запроса
-	logoutUser := new(LogoutUser)
-	if err := c.Bind(logoutUser); err != nil {
-		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
-			ErrorMsg: "I fucked up",
-		}
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusInternalServerError, errorJson)
-	}
 	// удаляем пользователя из активных сессий
 	cookie, err := c.Cookie("session")
 	if err != nil {
@@ -263,7 +249,7 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	// формируем ответ
 	response := LogoutResponse{
 		Status:     http.StatusOK,
-		GoodbuyMsg: "Goodbuy, " + logoutUser.Email + "!",
+		GoodbuyMsg: "Goodbuy, friend!",
 	}
 	return c.JSON(http.StatusOK, response)
 }
