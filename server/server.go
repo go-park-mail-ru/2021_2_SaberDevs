@@ -16,6 +16,11 @@ type (
 		Password string `json:"password"`
 	}
 
+	RequestUser struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
 	LoginBody struct {
 		ID   uint   `json:"id"`
 		Name string `json:"name"`
@@ -24,6 +29,11 @@ type (
 	GoodLoginResponse struct {
 		Status uint     `json:"status"`
 		LBody LoginBody `json:"body"`
+	}
+
+	ErrorBody struct {
+		Status uint `json:"status"`
+		ErrorMsg string `json:"error"`
 	}
 
 	MyHandler struct {
@@ -47,10 +57,14 @@ func NewMyHandler() MyHandler {
 
 func (api *MyHandler) Login(c echo.Context) error {
 	// достаем данные из запроса
-	requestUser := new(User)
+	requestUser := new(RequestUser)
 	if err := c.Bind(requestUser); err != nil {
-		// TODO better error handling
-    	return c.String(http.StatusOK, "error reading json")
+		errorJson := ErrorBody{
+			Status: http.StatusInternalServerError,
+			ErrorMsg: "Internal server error",
+		}
+		c.Logger().Printf("Error: %s", err.Error())
+    	return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
 
@@ -60,12 +74,18 @@ func (api *MyHandler) Login(c echo.Context) error {
 	api.uMu.RUnlock()
 
 	if !ok {
-		// TODO better error handling
-		return c.String(http.StatusOK, "no user")
+		errorJson := ErrorBody{
+			Status: http.StatusInternalServerError,
+			ErrorMsg: "User doesnt exist",
+		}
+    	return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	if user.Password != requestUser.Password {
-		// TODO better error handling
-		return c.String(http.StatusOK, "wrong password")
+		errorJson := ErrorBody{
+			Status: http.StatusInternalServerError,
+			ErrorMsg: "Wrong password",
+		}
+    	return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	// ставим куку на сутки
 	cookie := new(http.Cookie)
@@ -90,10 +110,12 @@ func (api *MyHandler) Login(c echo.Context) error {
 }
 
 func (api *MyHandler) Register(c echo.Context) error {
+	// TODO
 	return c.String(http.StatusOK, "Hello, mollen!")
 }
 
 func (api *MyHandler) Logout(c echo.Context) error {
+	// TODO
 	return c.String(http.StatusOK, "Hello, mollen!")
 }
 
@@ -111,6 +133,8 @@ func Run() {
 	api := NewMyHandler()
 
 	e.POST("api/v1/user/login", api.Login)
+	e.POST("api/v1/user/register", api.Register)
+	e.POST("api/v1/user/logout", api.Logout)
 	e.GET("/", api.Root)
 
 	e.Logger.Fatal(e.Start(":8080"))

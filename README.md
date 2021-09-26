@@ -29,11 +29,8 @@ Project: vc.ru <br/>
 запрос:
 ````
 {
-    "body":
-    {
-        "email": "emal@emal.com"
-        "password": "password_name"
-    }
+    "email": "emal@emal.com"
+    "password": "password_name"
 } 
 ````
 ответ:
@@ -53,11 +50,8 @@ Project: vc.ru <br/>
 запрос:
 ````
 {
-    "body":
-    {
-        "email": "emal@emal.com"
-        "password": "password_name"
-    }
+    "email": "emal@emal.com"
+    "password": "password_name"
 } 
 ````
 ответ:
