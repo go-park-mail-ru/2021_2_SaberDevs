@@ -22,6 +22,10 @@ type (
 		Password string `json:"password"`
 	}
 
+	LogoutUser struct {
+		Email string `json:"email"`
+	}
+
 	LoginBody struct {
 		ID   uint   `json:"id"`
 		Name string `json:"name"`
@@ -30,6 +34,11 @@ type (
 	GoodLoginResponse struct {
 		Status uint      `json:"status"`
 		LBody  LoginBody `json:"body"`
+	}
+
+	LogoutResponse struct {
+		Status     uint   `json:"status"`
+		GoodbuyMsg string `json:"goodbuy"`
 	}
 
 	ErrorBody struct {
@@ -94,7 +103,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 	cookie.Value = uuid.NewV4().String()
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
-
+	//
 	// добавляем пользователя в активные сессии
 	api.sMu.Lock()
 	api.sessions[cookie.Value] = user.ID
@@ -116,8 +125,35 @@ func (api *MyHandler) Register(c echo.Context) error {
 }
 
 func (api *MyHandler) Logout(c echo.Context) error {
-	// TODO
-	return c.String(http.StatusOK, "Goodbuy, mollen!")
+	// достаем логин из запроса
+	logoutUser := new(LogoutUser)
+	if err := c.Bind(logoutUser); err != nil {
+		errorJson := ErrorBody{
+			Status:   http.StatusInternalServerError,
+			ErrorMsg: "Internal server error",
+		}
+		c.Logger().Printf("Error: %s", err.Error())
+		return c.JSON(http.StatusInternalServerError, errorJson)
+	}
+	// удаляем пользователя из активных сессий
+	cookie, err := c.Cookie("username")
+	if err != nil {
+		return err
+	}
+	api.sMu.Lock()
+	delete(api.sessions, cookie.Value)
+	api.sMu.Unlock()
+
+	// ставим протухшую куку
+	cookie.Value = ""
+	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
+	c.SetCookie(cookie)
+	// формируем ответ
+	response := LogoutResponse{
+		Status:     http.StatusOK,
+		GoodbuyMsg: "Goodbuy, " + logoutUser.Email + "!",
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 func (api *MyHandler) Root(c echo.Context) error {
