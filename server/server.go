@@ -1,10 +1,11 @@
 package server
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"sync"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,12 +28,12 @@ type (
 	}
 
 	GoodLoginResponse struct {
-		Status uint     `json:"status"`
-		LBody LoginBody `json:"body"`
+		Status uint      `json:"status"`
+		LBody  LoginBody `json:"body"`
 	}
 
 	ErrorBody struct {
-		Status uint `json:"status"`
+		Status   uint   `json:"status"`
 		ErrorMsg string `json:"error"`
 	}
 
@@ -48,9 +49,9 @@ func NewMyHandler() MyHandler {
 	return MyHandler{
 		sessions: make(map[string]uint, 10),
 		users: map[string]User{
-			"mollen@exp.ru": {1,"mollen@exp.ru", "123"},
-			"dar@exp.ru": {2,"dar@exp.ru", "123"},
-			"viphania@exp.ru": {3,"viphania@exp.ru", "123"},
+			"mollen@exp.ru":   {1, "mollen@exp.ru", "123"},
+			"dar@exp.ru":      {2, "dar@exp.ru", "123"},
+			"viphania@exp.ru": {3, "viphania@exp.ru", "123"},
 		},
 	}
 }
@@ -60,11 +61,11 @@ func (api *MyHandler) Login(c echo.Context) error {
 	requestUser := new(RequestUser)
 	if err := c.Bind(requestUser); err != nil {
 		errorJson := ErrorBody{
-			Status: http.StatusInternalServerError,
+			Status:   http.StatusInternalServerError,
 			ErrorMsg: "Internal server error",
 		}
 		c.Logger().Printf("Error: %s", err.Error())
-    	return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
 
@@ -75,17 +76,17 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 	if !ok {
 		errorJson := ErrorBody{
-			Status: http.StatusInternalServerError,
+			Status:   http.StatusInternalServerError,
 			ErrorMsg: "User doesnt exist",
 		}
-    	return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	if user.Password != requestUser.Password {
 		errorJson := ErrorBody{
-			Status: http.StatusInternalServerError,
+			Status:   http.StatusInternalServerError,
 			ErrorMsg: "Wrong password",
 		}
-    	return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	// ставим куку на сутки
 	cookie := new(http.Cookie)
@@ -103,7 +104,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 	b := LoginBody{user.ID, user.Email}
 	response := GoodLoginResponse{
 		Status: http.StatusOK,
-		LBody: b,
+		LBody:  b,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -116,14 +117,14 @@ func (api *MyHandler) Register(c echo.Context) error {
 
 func (api *MyHandler) Logout(c echo.Context) error {
 	// TODO
-	return c.String(http.StatusOK, "Hello, mollen!")
+	return c.String(http.StatusOK, "Goodbuy, mollen!")
 }
 
 func (api *MyHandler) Root(c echo.Context) error {
 	b := LoginBody{11, ""}
 	u := GoodLoginResponse{
 		Status: 54,
-		LBody: b,
+		LBody:  b,
 	}
 	return c.JSON(http.StatusOK, u)
 }
