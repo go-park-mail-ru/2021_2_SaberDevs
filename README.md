@@ -51,7 +51,6 @@ Project: vc.ru <br/>
 ````
 {
     "email": "emal@emal.com"
-    "password": "password_name"
 } 
 ````
 ответ:
@@ -84,27 +83,30 @@ Project: vc.ru <br/>
     }
 }
 ````
-**Статьи(не готовы!!):** GET /api/v1/aricles/
+**Статьи(не готовы!!):** GET /api/v1/getfeed/
 
 запрос:
 ````
 {
-    "body":
-    {
-        "email": "emal@emal.com"
-        "password": "password_name"
-    }
+   "from":0
+   
+   "to":2
 } 
 ````
 ответ:
 ````
 {
-    "status": 200
-    "body":
-    {
-        "ID": 123
-        "name": "name"
-        "avatar": jpg??
-    }
+	"status":200,
+	"body": {
+		"from":"0",
+		"to":"2",
+		"chunk":[
+		{"id":"1","previewUrl":"static/img/computer.png","title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of 			highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#",
+		"comments":97,"likes":1001,"tags":["IT-News","Study"]},
+		{"id":"2","previewUrl":"static/img/computer.png","title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of 			highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#",
+		"comments":97,"likes":1002,"tags":["IT-News","Study"]}
+		]
+		}
 }
+
 ````

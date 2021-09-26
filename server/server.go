@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -56,6 +57,38 @@ type (
 		SBody  SignUpBody `json:"body"`
 	}
 
+	//Представление записи
+	NewsRecord struct {
+		Id           string   `json:"id"`
+		PreviewUrl   string   `json:"previewUrl"`
+		Title        string   `json:"title"`
+		Text         string   `json:"text"`
+		AuthorUrl    string   `json:"authorUrl"`
+		AuthorName   string   `json:"authorName"`
+		AuthorAvatar string   `json:"authorAvatar"`
+		CommentsUrl  string   `json:"commentsUrl"`
+		Comments     uint     `json:"comments"`
+		Likes        uint     `json:"likes"`
+		Tags         []string `json:"tags"`
+	}
+
+	//Тело ответа на API-call /getfeed
+	Chunk struct {
+		From      string       `json:"from"`
+		To        string       `json:"to"`
+		ChunkData []NewsRecord `json:"chunk"`
+	}
+
+	RequestChunk struct {
+		From int `json:"from"`
+		To   int `json:"to"`
+	}
+
+	ChunkResponse struct {
+		Status          uint  `json:"status"`
+		NewsRecordChunk Chunk `json:"body"`
+	}
+
 	ErrorBody struct {
 		Status   uint   `json:"status"`
 		ErrorMsg string `json:"error"`
@@ -68,6 +101,11 @@ type (
 		uMu      sync.RWMutex
 	}
 )
+
+var endOfFeed = NewsRecord{"endOfFeedMarkerID", "static/img/endOfFeed.png",
+	"А всё, а раньше надо было", "", "#", "Tester-ender",
+	"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0, []string{"Bottom"},
+}
 
 func NewMyHandler() MyHandler {
 	return MyHandler{
@@ -239,14 +277,79 @@ func (api *MyHandler) Root(c echo.Context) error {
 	return c.JSON(http.StatusOK, u)
 }
 
+func (api *MyHandler) Getfeed(c echo.Context) error {
+	// достаем данные из запроса
+	requestChunk := new(RequestChunk)
+	if err := c.Bind(requestChunk); err != nil {
+		errorJson := ErrorBody{
+			Status:   http.StatusNotFound,
+			ErrorMsg: "Wrong request",
+		}
+		c.Logger().Printf("Error: %s", err.Error())
+		return c.JSON(http.StatusNotFound, errorJson)
+	}
+
+	f := requestChunk.From
+	t := requestChunk.To
+
+	//Возвращаем записи
+	chunk := Chunk{}
+	chunk.From = fmt.Sprint(requestChunk.From)
+	chunk.To = fmt.Sprint(requestChunk.To)
+	if f >= 0 && t >= 0 && t >= f && t < len(testData) {
+		api.sMu.RLock()
+		chunk.ChunkData = testData[f:t]
+		api.sMu.RUnlock()
+	} else {
+		api.sMu.RLock()
+		chunk.ChunkData = []NewsRecord{endOfFeed}
+		api.sMu.RUnlock()
+	}
+	// формируем ответ
+	response := ChunkResponse{
+		http.StatusOK,
+		chunk,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+var testData = [...]NewsRecord{
+	{"1", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1001, []string{"IT-News", "Study"},
+	},
+	{"2", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1002, []string{"IT-News", "Study"},
+	},
+	{"3", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1003, []string{"IT-News", "Study"},
+	},
+	{"4", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1004, []string{"IT-News", "Study"},
+	},
+	{"5", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1005, []string{"IT-News", "Study"},
+	},
+}
+
 func Run() {
 	e := echo.New()
 	api := NewMyHandler()
 
 	e.POST("api/v1/user/login", api.Login)
-	e.POST("api/v1/user/register", api.Register)
+	e.POST("api/v1/user/signup", api.Register)
 	e.POST("api/v1/user/logout", api.Logout)
+	e.POST("api/v1/user/getfeed", api.Getfeed)
 	e.GET("/", api.Root)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
+{
+	"status":200,
+	"body":
+	{"from":"0","to":"2","chunk":[{"id":"1","previewUrl":"static/img/computer.png","title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1001,"tags":["IT-News","Study"]},{"id":"2","previewUrl":"static/img/computer.png","title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1002,"tags":["IT-News","Study"]}]}
+	}

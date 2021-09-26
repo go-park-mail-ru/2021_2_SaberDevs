@@ -6,7 +6,7 @@ curl -i --header "Content-Type: application/json" \
 curl -i --header "Content-Type: application/json" \
   --request POST \
   --data '{"Email":"molland@exp.ru","Password":"123"}' \
-  http://localhost:8080/api/v1/user/register
+  http://localhost:8080/api/v1/user/signup
   
 curl -v -i --cookie "session=d3506a24-7791-42a2-94e8-4239af742779"  http://localhost:8080/
 
@@ -17,4 +17,7 @@ curl -i --header "Content-Type: application/json" \
   http://localhost:8080/api/v1/user/logout
   
 
-
+curl -i --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"from":0,"to":2}' \
+  http://localhost:8080/api/v1/user/getfeed
