@@ -30,6 +30,7 @@ Project: vc.ru <br/>
 ````
 {
     "email": "emal@emal.com"
+    "password: "123"
 } 
 ````
 ответ:
