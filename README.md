@@ -15,13 +15,84 @@ Project: vc.ru <br/>
 :gem: [Екатерина Придиус](https://github.com/pringleskate)
 
 ## API
-логин /api/v1/user/login
+**Ошибки** <br/>
+общий вид ошибки с её описание, могут приходить на любой запрос
 ````
 {
-    "status": 200, 400
-    "body": 
+    "status": не 200
+    "error": "описание ошибки"
+}
+````
+
+**Логин:** POST /api/v1/user/login
+
+запрос:
+````
+{
+    "body":
     {
         "email": "emal@emal.com"
         "password": "password_name"
     }
+} 
+````
+ответ:
+````
+{
+    "status": 200
+    "body":
+    {
+        "ID": 123
+        "name": "name"
+        "avatar": jpg?? пока нету
+    }
 }
+````
+**Регистрация:** POST /api/v1/user/register
+
+запрос:
+````
+{
+    "body":
+    {
+        "email": "emal@emal.com"
+        "password": "password_name"
+    }
+} 
+````
+ответ:
+````
+{
+    "status": 200
+    "body":
+    {
+        "ID": 123
+        "name": "name"
+        "avatar": jpg??
+    }
+}
+````
+**Статьи(не готовы!!):** GET /api/v1/aricles/
+
+запрос:
+````
+{
+    "body":
+    {
+        "email": "emal@emal.com"
+        "password": "password_name"
+    }
+} 
+````
+ответ:
+````
+{
+    "status": 200
+    "body":
+    {
+        "ID": 123
+        "name": "name"
+        "avatar": jpg??
+    }
+}
+````
