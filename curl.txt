@@ -5,10 +5,8 @@ curl -i --header "Content-Type: application/json" \
   
 curl -v -i --cookie "session=d3506a24-7791-42a2-94e8-4239af742779"  http://localhost:8080/
 
-curl -v -i --cookie  "session=d3506a24-7791-42a2-94e8-4239af742779" --request POST http://localhost:8080/api/v1/user/logout
-
 curl -i --header "Content-Type: application/json" \
   --request POST \
   --data '{"Email":"mollen@exp.ru"}' \
-  --cookie  "session=6acd8039-5127-44f5-9b76-2f56e78edaa6"\
+  --cookie  "session=7057466f-81dc-4785-9e8c-19c0f9312144"\
   http://localhost:8080/api/v1/user/logout

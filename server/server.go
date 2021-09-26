@@ -130,13 +130,13 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	if err := c.Bind(logoutUser); err != nil {
 		errorJson := ErrorBody{
 			Status:   http.StatusInternalServerError,
-			ErrorMsg: "Internal server error",
+			ErrorMsg: "I fucked up",
 		}
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	// удаляем пользователя из активных сессий
-	cookie, err := c.Cookie("username")
+	cookie, err := c.Cookie("session")
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,6 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	api.sMu.Unlock()
 
 	// ставим протухшую куку
-	cookie.Value = ""
 	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
 	c.SetCookie(cookie)
 	// формируем ответ
