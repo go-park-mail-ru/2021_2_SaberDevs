@@ -120,8 +120,57 @@ func (api *MyHandler) Login(c echo.Context) error {
 }
 
 func (api *MyHandler) Register(c echo.Context) error {
-	// TODO
-	return c.String(http.StatusOK, "Hello, mollen!")
+	// достаем данные из запроса
+	requestUser := new(RequestUser)
+	if err := c.Bind(requestUser); err != nil {
+		errorJson := ErrorBody{
+			Status:   http.StatusInternalServerError,
+			ErrorMsg: "Internal server error",
+		}
+		c.Logger().Printf("Error: %s", err.Error())
+		return c.JSON(http.StatusInternalServerError, errorJson)
+	}
+	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
+
+	// логика логина
+	api.uMu.RLock()
+	user, ok := api.users[requestUser.Email]
+	api.uMu.RUnlock()
+
+	if !ok {
+		errorJson := ErrorBody{
+			Status:   http.StatusInternalServerError,
+			ErrorMsg: "User doesnt exist",
+		}
+		return c.JSON(http.StatusInternalServerError, errorJson)
+	}
+	if user.Password != requestUser.Password {
+		errorJson := ErrorBody{
+			Status:   http.StatusInternalServerError,
+			ErrorMsg: "Wrong password",
+		}
+		return c.JSON(http.StatusInternalServerError, errorJson)
+	}
+	// ставим куку на сутки
+	cookie := new(http.Cookie)
+	cookie.Name = "session"
+	cookie.Value = uuid.NewV4().String()
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	c.SetCookie(cookie)
+	//
+	// добавляем пользователя в активные сессии
+	api.sMu.Lock()
+	api.sessions[cookie.Value] = user.ID
+	api.sMu.Unlock()
+
+	// формируем ответ
+	b := LoginBody{user.ID, user.Email}
+	response := GoodLoginResponse{
+		Status: http.StatusOK,
+		LBody:  b,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (api *MyHandler) Logout(c echo.Context) error {

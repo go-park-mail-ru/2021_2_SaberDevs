@@ -30,6 +30,22 @@ Project: vc.ru <br/>
 ````
 {
     "email": "emal@emal.com"
+} 
+````
+ответ:
+````
+{
+    "status": 200
+    "GoodbuyMsg": "goodbuy":"Goodbuy, mollen@exp.ru!"
+}
+````
+
+**Логаут:** POST /api/v1/user/logout
+
+запрос:
+````
+{
+    "email": "emal@emal.com"
     "password": "password_name"
 } 
 ````
@@ -45,6 +61,7 @@ Project: vc.ru <br/>
     }
 }
 ````
+
 **Регистрация:** POST /api/v1/user/register
 
 запрос:
