@@ -49,9 +49,7 @@ Project: vc.ru <br/>
 
 запрос:
 ````
-{
-    "email": "emal@emal.com"
-} 
+
 ````
 ответ:
 ````
