@@ -158,17 +158,18 @@ func (api *MyHandler) Register(c echo.Context) error {
 	}
 
 	cc, err := c.Cookie("session")
+	if err == nil {
+		api.sMu.RLock()
+		_, exists = api.sessions[cc.Value]
+		api.sMu.RUnlock()
 
-	api.sMu.RLock()
-	_, exists = api.sessions[cc.Value]
-	api.sMu.RUnlock()
-
-	if err == nil && exists {
-		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
-			ErrorMsg: "Already authorised",
+		if exists {
+			errorJson := ErrorBody{
+				Status:   http.StatusInternalServerError,
+				ErrorMsg: "Already authorised",
+			}
+			return c.JSON(http.StatusInternalServerError, errorJson)
 		}
-		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
 	// логика регистрации,  добавляем юзера в мапу
 	user := User{uint(len(api.users)), newUser.Email, newUser.Email}

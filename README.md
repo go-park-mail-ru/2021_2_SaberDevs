@@ -58,7 +58,7 @@ Project: vc.ru <br/>
 ````
 {
     "status": 200
-    "GoodbuyMsg": "goodbuy":"Goodbuy, mollen@exp.ru!"
+    "GoodbuyMsg": "Goodbuy, mollen@exp.ru!"
     "body":
 }
 ````
