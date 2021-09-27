@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"github.com/labstack/echo/v4/middleware"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -19,18 +21,23 @@ type (
 	}
 
 	RequestUser struct {
+		Login    string `json:"login"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	LoginBody struct {
-		ID   uint   `json:"id"`
-		Name string `json:"name"`
+		ID      uint   `json:"id"`
+		Surname string `json:"surname"`
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Score   int    `json:"score"`
 	}
 
 	GoodLoginResponse struct {
 		Status uint      `json:"status"`
-		LBody  LoginBody `json:"body"`
+		Data   LoginBody `json:"data"`
+		Msg    string    `json:"msg"`
 	}
 
 	LogoutResponse struct {
@@ -107,7 +114,7 @@ func NewMyHandler() MyHandler {
 	return MyHandler{
 		sessions: make(map[string]uint, 10),
 		users: map[string]User{
-			"mollen@exp.ru":   {1, "mollen@exp.ru", "123"},
+			"mollen@exp.ru":   {1, "mollenTEST", "mollenTEST"},
 			"dar@exp.ru":      {2, "dar@exp.ru", "123"},
 			"viphania@exp.ru": {3, "viphania@exp.ru", "123"},
 		},
@@ -125,6 +132,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusInternalServerError, errorJson)
 	}
+	c.Logger().Printf("login")
 	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
 
 	// логика логина
@@ -150,7 +158,8 @@ func (api *MyHandler) Login(c echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "session"
 	cookie.Value = uuid.NewV4().String()
-	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.HttpOnly = true
+	cookie.Expires = time.Now().Add(10 * time.Second)
 	c.SetCookie(cookie)
 	//
 	// добавляем пользователя в активные сессии
@@ -159,10 +168,17 @@ func (api *MyHandler) Login(c echo.Context) error {
 	api.sMu.Unlock()
 
 	// формируем ответ
-	b := LoginBody{user.ID, user.Email}
+	b := LoginBody{
+		ID:      user.ID,
+		Name:    user.Email,
+		Surname: user.Email,
+		Email:   user.Email,
+		Score:   rand.Int(),
+	}
 	response := GoodLoginResponse{
 		Status: http.StatusOK,
-		LBody:  b,
+		Data:   b,
+		Msg:    "OK",
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -255,10 +271,17 @@ func (api *MyHandler) Logout(c echo.Context) error {
 }
 
 func (api *MyHandler) Root(c echo.Context) error {
-	b := LoginBody{11, ""}
+	b := LoginBody{
+		ID:      1,
+		Name:    "user.Email",
+		Surname: "user.Email",
+		Email:   "user.Email",
+		Score:   rand.Int(),
+	}
 	u := GoodLoginResponse{
 		Status: 54,
-		LBody:  b,
+		Data:   b,
+		Msg:    "OK",
 	}
 	return c.JSON(http.StatusOK, u)
 }
@@ -324,13 +347,18 @@ var testData = [...]NewsRecord{
 
 func Run() {
 	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowCredentials: true,
+	}))
 	api := NewMyHandler()
 
-	e.POST("api/v1/user/login", api.Login)
+	e.POST("/login", api.Login)
 	e.POST("api/v1/user/signup", api.Register)
 	e.POST("api/v1/user/logout", api.Logout)
 	e.POST("api/v1/user/getfeed", api.Getfeed)
 	e.GET("/", api.Root)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start("192.168.0.104:8081"))
 }
