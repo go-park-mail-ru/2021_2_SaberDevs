@@ -59,10 +59,10 @@ type (
 
 	RequestSignup struct {
 		Login    string `json:"login"`
-		Surname  string `json:"surname"`
-		Name     string `json:"name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Name     string `json:"name"`
+		Surname  string `json:"surname"`
 	}
 
 	GoodSignupResponse struct {
@@ -247,7 +247,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	//
 	// добавляем пользователя в активные сессии
 	api.sMu.Lock()
-	api.sessions[cookie.Value] = user.Email
+	api.sessions[cookie.Value] = user.Login
 	api.sMu.Unlock()
 
 	// формируем ответ
