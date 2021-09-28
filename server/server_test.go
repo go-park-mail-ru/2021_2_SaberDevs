@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var userJSON = `{"login":"mollenTEST1","email":"mollenTEST1", "password":"mollenTEST1"}`
-var userJSON2 = "{\"status\":200,\"data\":{\"id\":1,\"surname\":\"mollenTEST1\",\"name\":\"mollenTEST1\",\"email\":\"mollenTEST1\",\"score\":12345678},\"msg\":\"OK\"}\n"
+var userJSON = `{"login":"mollenTEST1","email":"mollenTEST1", "password":"123"}`
+var userJSON2 = "{\"status\":200,\"data\":{\"login\":\"mollenTEST1\",\"surname\":\"mollenTEST1\",\"name\":\"mollenTEST1\",\"email\":\"mollenTEST1\",\"score\":12345678},\"msg\":\"OK\"}\n"
 
 func TestLogin(t *testing.T) {
 	// Setup
