@@ -1,9 +1,9 @@
 package server
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -75,6 +75,7 @@ type (
 	NewsRecord struct {
 		Id           string   `json:"id"`
 		PreviewUrl   string   `json:"previewUrl"`
+		Tags         []string `json:"tags"`
 		Title        string   `json:"title"`
 		Text         string   `json:"text"`
 		AuthorUrl    string   `json:"authorUrl"`
@@ -83,24 +84,18 @@ type (
 		CommentsUrl  string   `json:"commentsUrl"`
 		Comments     uint     `json:"comments"`
 		Likes        uint     `json:"likes"`
-		Tags         []string `json:"tags"`
 	}
 
 	//Тело ответа на API-call /getfeed
-	Chunk struct {
-		From      string       `json:"from"`
-		To        string       `json:"to"`
-		ChunkData []NewsRecord `json:"chunk"`
-	}
 
 	RequestChunk struct {
-		From int `json:"from"`
-		To   int `json:"to"`
+		idLastLoaded string
+		login        string
 	}
 
 	ChunkResponse struct {
-		Status          uint  `json:"status"`
-		NewsRecordChunk Chunk `json:"body"`
+		Status    uint         `json:"status"`
+		ChunkData []NewsRecord `json:"schema"`
 	}
 
 	ErrorBody struct {
@@ -116,10 +111,7 @@ type (
 	}
 )
 
-var endOfFeed = NewsRecord{"endOfFeedMarkerID", "static/img/endOfFeed.png",
-	"А всё, а раньше надо было", "", "#", "Tester-ender",
-	"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0, []string{"Bottom"},
-}
+var feedSize int = 5
 
 func NewMyHandler() MyHandler {
 	return MyHandler{
@@ -316,50 +308,63 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, errorJson)
 	}
 
-	f := requestChunk.From
-	t := requestChunk.To
-
+	from, err := strconv.Atoi(requestChunk.idLastLoaded)
+	if err != nil {
+		errorJson := ErrorBody{
+			Status:   http.StatusNotFound,
+			ErrorMsg: "wrong id",
+		}
+		c.Logger().Printf("Error: %s", err.Error())
+		return c.JSON(http.StatusNotFound, errorJson)
+	}
+	to := from + 5
+	var ChunkData []NewsRecord
 	//Возвращаем записи
-	chunk := Chunk{}
-	chunk.From = fmt.Sprint(requestChunk.From)
-	chunk.To = fmt.Sprint(requestChunk.To)
-	if f >= 0 && t >= 0 && t >= f && t < len(testData) {
+	if from >= 0 && to < len(testData) {
 		api.sMu.RLock()
-		chunk.ChunkData = testData[f:t]
+		ChunkData = testData[from:to]
 		api.sMu.RUnlock()
 	} else {
 		api.sMu.RLock()
-		chunk.ChunkData = []NewsRecord{endOfFeed}
+		start := 0
+		if len(testData) > 6 {
+			start = len(testData) - 6
+		}
+		ChunkData = testData[start : len(testData)-1]
 		api.sMu.RUnlock()
 	}
 	// формируем ответ
 	response := ChunkResponse{
 		http.StatusOK,
-		chunk,
+		ChunkData,
 	}
 	return c.JSON(http.StatusOK, response)
 }
 
 var testData = [...]NewsRecord{
-	{"1", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+	{"1", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1001, []string{"IT-News", "Study"},
+		"#", 97, 1001,
 	},
-	{"2", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+	{"2", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1002, []string{"IT-News", "Study"},
+		"#", 97, 1002,
 	},
-	{"3", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+	{"3", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1003, []string{"IT-News", "Study"},
+		"#", 97, 1003,
 	},
-	{"4", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+	{"4", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1004, []string{"IT-News", "Study"},
+		"#", 97, 1004,
 	},
-	{"5", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+	{"5", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1005, []string{"IT-News", "Study"},
+		"#", 97, 1005,
+	},
+	{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
+		"А всё, а раньше надо было", "", "#", "Tester-ender",
+		"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0,
 	},
 }
 
@@ -375,7 +380,7 @@ func Run() {
 	e.POST("/login", api.Login)
 	e.POST("/signup", api.Register)
 	e.POST("api/v1/user/logout", api.Logout)
-	e.POST("api/v1/user/getfeed", api.Getfeed)
+	e.GET("/feed", api.Getfeed)
 	e.GET("/", api.Root)
 
 	e.Logger.Fatal(e.Start("192.168.0.104:8081"))
