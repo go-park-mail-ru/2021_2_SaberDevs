@@ -2,11 +2,12 @@ package server
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4/middleware"
 	"math/rand"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/labstack/echo/v4/middleware"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -114,7 +115,7 @@ func NewMyHandler() MyHandler {
 	return MyHandler{
 		sessions: make(map[string]uint, 10),
 		users: map[string]User{
-			"mollenTEST1":   {1, "mollenTEST1", "mollenTEST1"},
+			"mollenTEST1":     {1, "mollenTEST1", "mollenTEST1"},
 			"dar@exp.ru":      {2, "dar@exp.ru", "123"},
 			"viphania@exp.ru": {3, "viphania@exp.ru", "123"},
 		},
@@ -173,7 +174,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 		Name:    user.Email,
 		Surname: user.Email,
 		Email:   user.Email,
-		Score:   rand.Int(),
+		Score:   12345678, //rand.Int(),
 	}
 	response := GoodLoginResponse{
 		Status: http.StatusOK,
