@@ -100,7 +100,7 @@ type (
 
 	ErrorBody struct {
 		Status   uint   `json:"status"`
-		ErrorMsg string `json:"error"`
+		ErrorMsg string `json:"msg"`
 	}
 
 	MyHandler struct {
@@ -117,7 +117,7 @@ func NewMyHandler() MyHandler {
 	return MyHandler{
 		sessions: make(map[string]string, 10),
 		users: map[string]User{
-			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "123", 123456},
+			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
 			"dar@exp.ru":      {"dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
 			"viphania@exp.ru": {"viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
 		},
@@ -125,6 +125,31 @@ func NewMyHandler() MyHandler {
 }
 
 func (api *MyHandler) Login(c echo.Context) error {
+	// проверяем активные сессии
+	cooke, _ := c.Cookie("session")
+	api.sMu.RLock()
+	login, ok := api.sessions[cooke.Value]
+	api.sMu.RUnlock()
+	if ok {
+		api.uMu.RLock()
+		user, _ := api.users[login]
+		api.uMu.RUnlock()
+
+		b := LoginBody{
+		Login:   user.Login,
+		Name:    user.Email,
+		Surname: user.Email,
+		Email:   user.Email,
+		Score:   12345678, //rand.Int(),
+	}
+	response := GoodLoginResponse{
+		Status: http.StatusOK,
+		Data:   b,
+		Msg:    "OK",
+	}
+
+	return c.JSON(http.StatusOK, response)
+	}
 	// достаем данные из запроса
 	requestUser := new(RequestUser)
 	if err := c.Bind(requestUser); err != nil {
@@ -162,7 +187,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 	cookie.Name = "session"
 	cookie.Value = uuid.NewV4().String()
 	cookie.HttpOnly = true
-	cookie.Expires = time.Now().Add(10 * time.Second)
+	cookie.Expires = time.Now().Add(10 * time.Hour)
 	c.SetCookie(cookie)
 	//
 	// добавляем пользователя в активные сессии
@@ -227,7 +252,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	// логика регистрации,  добавляем юзера в мапу
 	user := User{newUser.Login, newUser.Name, newUser.Surname, newUser.Email, newUser.Password, 12345}
 	api.uMu.Lock()
-	api.users[newUser.Email] = user
+	api.users[newUser.Login] = user
 	api.uMu.Unlock()
 
 	// ставим куку на сутки
