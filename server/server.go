@@ -16,9 +16,12 @@ import (
 
 type (
 	User struct {
-		ID       uint   `json:"id"`
+		Login    string `json:"login"`
+		Name     string `json:"name"`
+		Surname  string `json:"surname"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Score    uint   `json:"score"`
 	}
 
 	RequestUser struct {
@@ -28,7 +31,7 @@ type (
 	}
 
 	LoginBody struct {
-		ID      uint   `json:"id"`
+		Login   string `json:"login"`
 		Surname string `json:"surname"`
 		Name    string `json:"name"`
 		Email   string `json:"email"`
@@ -47,18 +50,25 @@ type (
 	}
 
 	SignUpBody struct {
-		ID   uint   `json:"id"`
-		Name string `json:"name"`
+		Login   string `json:"login"`
+		Surname string `json:"surname"`
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Score   int    `json:"score"`
 	}
 
 	RequestSignup struct {
+		Login    string `json:"login"`
+		Surname  string `json:"surname"`
+		Name     string `json:"name"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	GoodSignupResponse struct {
 		Status uint       `json:"status"`
-		SBody  SignUpBody `json:"body"`
+		SBody  SignUpBody `json:"data"`
+		Msg    string     `json:"msg"`
 	}
 
 	//Представление записи
@@ -99,7 +109,7 @@ type (
 	}
 
 	MyHandler struct {
-		sessions map[string]uint
+		sessions map[string]string
 		sMu      sync.RWMutex
 		users    map[string]User
 		uMu      sync.RWMutex
@@ -113,11 +123,11 @@ var endOfFeed = NewsRecord{"endOfFeedMarkerID", "static/img/endOfFeed.png",
 
 func NewMyHandler() MyHandler {
 	return MyHandler{
-		sessions: make(map[string]uint, 10),
+		sessions: make(map[string]string, 10),
 		users: map[string]User{
-			"mollenTEST1":     {1, "mollenTEST1", "mollenTEST1"},
-			"dar@exp.ru":      {2, "dar@exp.ru", "123"},
-			"viphania@exp.ru": {3, "viphania@exp.ru", "123"},
+			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "123", 123456},
+			"dar@exp.ru":      {"dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
+			"viphania@exp.ru": {"viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
 		},
 	}
 }
@@ -165,12 +175,12 @@ func (api *MyHandler) Login(c echo.Context) error {
 	//
 	// добавляем пользователя в активные сессии
 	api.sMu.Lock()
-	api.sessions[cookie.Value] = user.ID
+	api.sessions[cookie.Value] = user.Login
 	api.sMu.Unlock()
 
 	// формируем ответ
 	b := LoginBody{
-		ID:      user.ID,
+		Login:   user.Login,
 		Name:    user.Email,
 		Surname: user.Email,
 		Email:   user.Email,
@@ -223,7 +233,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 		}
 	}
 	// логика регистрации,  добавляем юзера в мапу
-	user := User{uint(len(api.users)), newUser.Email, newUser.Email}
+	user := User{newUser.Login, newUser.Name, newUser.Surname, newUser.Email, newUser.Password, 12345}
 	api.uMu.Lock()
 	api.users[newUser.Email] = user
 	api.uMu.Unlock()
@@ -237,14 +247,21 @@ func (api *MyHandler) Register(c echo.Context) error {
 	//
 	// добавляем пользователя в активные сессии
 	api.sMu.Lock()
-	api.sessions[cookie.Value] = user.ID
+	api.sessions[cookie.Value] = user.Email
 	api.sMu.Unlock()
 
 	// формируем ответ
-	s := SignUpBody{user.ID, user.Email}
+	s := SignUpBody{
+		Login:   user.Login,
+		Name:    user.Name,
+		Surname: user.Surname,
+		Email:   user.Email,
+		Score:   12345678, //rand.Int(),
+	}
 	response := GoodSignupResponse{
 		Status: http.StatusOK,
 		SBody:  s,
+		Msg:    "OK",
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -273,7 +290,7 @@ func (api *MyHandler) Logout(c echo.Context) error {
 
 func (api *MyHandler) Root(c echo.Context) error {
 	b := LoginBody{
-		ID:      1,
+		Login:   "user.Email",
 		Name:    "user.Email",
 		Surname: "user.Email",
 		Email:   "user.Email",
@@ -356,7 +373,7 @@ func Run() {
 	api := NewMyHandler()
 
 	e.POST("/login", api.Login)
-	e.POST("api/v1/user/signup", api.Register)
+	e.POST("/signup", api.Register)
 	e.POST("api/v1/user/logout", api.Logout)
 	e.POST("api/v1/user/getfeed", api.Getfeed)
 	e.GET("/", api.Root)
