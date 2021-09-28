@@ -297,22 +297,12 @@ func (api *MyHandler) Root(c echo.Context) error {
 }
 
 func (api *MyHandler) Getfeed(c echo.Context) error {
-	// достаем данные из запроса
-	// requestChunk := new(RequestChunk)
-	// if err := c.Bind(requestChunk); err != nil {
-	// 	errorJson := ErrorBody{
-	// 		Status:   http.StatusNotFound,
-	// 		ErrorMsg: "Wrong request",
-	// 	}
-	// 	c.Logger().Printf("Error: %s", err.Error())
-	// 	return c.JSON(http.StatusNotFound, errorJson)
-	// }
 	rec := c.QueryParam("idLastLoaded")
 	from, err := strconv.Atoi(rec)
 	if err != nil {
 		errorJson := ErrorBody{
 			Status:   http.StatusNotFound,
-			ErrorMsg: err.Error() + "%%" + rec,
+			ErrorMsg: "Not a feed Number",
 		}
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusNotFound, errorJson)
