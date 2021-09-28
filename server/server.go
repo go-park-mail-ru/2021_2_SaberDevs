@@ -312,7 +312,7 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 	if err != nil {
 		errorJson := ErrorBody{
 			Status:   http.StatusNotFound,
-			ErrorMsg: err.Error(),
+			ErrorMsg: err.Error() + requestChunk.idLastLoaded,
 		}
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusNotFound, errorJson)
