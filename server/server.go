@@ -114,7 +114,7 @@ func NewMyHandler() MyHandler {
 	return MyHandler{
 		sessions: make(map[string]uint, 10),
 		users: map[string]User{
-			"mollen@exp.ru":   {1, "mollenTEST", "mollenTEST"},
+			"mollenTEST1":   {1, "mollenTEST1", "mollenTEST1"},
 			"dar@exp.ru":      {2, "dar@exp.ru", "123"},
 			"viphania@exp.ru": {3, "viphania@exp.ru", "123"},
 		},
@@ -137,7 +137,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 	// логика логина
 	api.uMu.RLock()
-	user, ok := api.users[requestUser.Email]
+	user, ok := api.users[requestUser.Login]
 	api.uMu.RUnlock()
 
 	if !ok {
