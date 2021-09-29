@@ -150,7 +150,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 				Msg:    "OK",
 			}
 
-	return c.JSON(http.StatusOK, response)
+		return c.JSON(http.StatusOK, response)
 	}
 	}
 	// достаем данные из запроса
@@ -340,7 +340,7 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusNotFound, errorJson)
 	}
-	to := from + 5
+	to := from + 4
 	var ChunkData []NewsRecord
 	//Возвращаем записи
 	if from >= 0 && to < len(testData) {
@@ -384,6 +384,30 @@ var testData = [...]NewsRecord{
 	{"5", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1005,
+	},
+	{"6", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1006,
+	},
+	{"7", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1007,
+	},
+	{"8", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 14,
+	},
+	{"9", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1008,
+	},
+	{"10", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1009,
+	},
+	{"11", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+		"#", 97, 1010,
 	},
 	{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
 		"А всё, а раньше надо было", "", "#", "Tester-ender",
