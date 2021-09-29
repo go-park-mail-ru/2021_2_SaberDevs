@@ -426,7 +426,7 @@ func Run() {
 
 	e.POST("/login", api.Login)
 	e.POST("/signup", api.Register)
-	e.POST("api/v1/user/logout", api.Logout)
+	e.POST("/logout", api.Logout)
 	e.GET("/feed", api.Getfeed)
 	e.GET("/", api.Root)
 
