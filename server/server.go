@@ -95,7 +95,7 @@ type (
 
 	ChunkResponse struct {
 		Status    uint         `json:"status"`
-		ChunkData []NewsRecord `json:"schema"`
+		ChunkData []NewsRecord `json:"data"`
 	}
 
 	ErrorBody struct {
@@ -120,35 +120,38 @@ func NewMyHandler() MyHandler {
 			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
 			"dar@exp.ru":      {"dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
 			"viphania@exp.ru": {"viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
+			"DenisTest": {"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 		},
 	}
 }
 
 func (api *MyHandler) Login(c echo.Context) error {
 	// проверяем активные сессии
-	cooke, _ := c.Cookie("session")
-	api.sMu.RLock()
-	login, ok := api.sessions[cooke.Value]
-	api.sMu.RUnlock()
-	if ok {
-		api.uMu.RLock()
-		user, _ := api.users[login]
-		api.uMu.RUnlock()
+	cooke, err := c.Cookie("session")
+	if err == nil {
+		api.sMu.RLock()
+		login, ok := api.sessions[cooke.Value]
+		api.sMu.RUnlock()
+		if ok {
+			api.uMu.RLock()
+			user, _ := api.users[login]
+			api.uMu.RUnlock()
 
-		b := LoginBody{
-		Login:   user.Login,
-		Name:    user.Email,
-		Surname: user.Email,
-		Email:   user.Email,
-		Score:   12345678, //rand.Int(),
-	}
-	response := GoodLoginResponse{
-		Status: http.StatusOK,
-		Data:   b,
-		Msg:    "OK",
-	}
+			b := LoginBody{
+				Login:   user.Login,
+				Name:    user.Email,
+				Surname: user.Email,
+				Email:   user.Email,
+				Score:   12345678, //rand.Int(),
+			}
+			response := GoodLoginResponse{
+				Status: http.StatusOK,
+				Data:   b,
+				Msg:    "OK",
+			}
 
 	return c.JSON(http.StatusOK, response)
+	}
 	}
 	// достаем данные из запроса
 	requestUser := new(RequestUser)
@@ -323,6 +326,11 @@ func (api *MyHandler) Root(c echo.Context) error {
 
 func (api *MyHandler) Getfeed(c echo.Context) error {
 	rec := c.QueryParam("idLastLoaded")
+	// TODO костыль!!!!
+	if rec == "" {
+		rec = "0"
+	}
+
 	from, err := strconv.Atoi(rec)
 	if err != nil {
 		errorJson := ErrorBody{
