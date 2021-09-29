@@ -120,7 +120,7 @@ func NewMyHandler() MyHandler {
 			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
 			"dar@exp.ru":      {"dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
 			"viphania@exp.ru": {"viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
-			"DenisTest": {"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
+			"DenisTest":       {"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 		},
 	}
 }
@@ -150,18 +150,18 @@ func (api *MyHandler) Login(c echo.Context) error {
 				Msg:    "OK",
 			}
 
-		return c.JSON(http.StatusOK, response)
-	}
+			return c.JSON(http.StatusOK, response)
+		}
 	}
 	// достаем данные из запроса
 	requestUser := new(RequestUser)
 	if err := c.Bind(requestUser); err != nil {
 		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
-			ErrorMsg: "Internal server error",
+			Status:   http.StatusBadRequest,
+			ErrorMsg: "Json request in wrong format",
 		}
 		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusBadRequest, errorJson)
 	}
 	c.Logger().Printf("login")
 	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
@@ -173,17 +173,17 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 	if !ok {
 		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
+			Status:   http.StatusNoContent,
 			ErrorMsg: "User doesnt exist",
 		}
-		return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusNoContent, errorJson)
 	}
 	if user.Password != requestUser.Password {
 		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
+			Status:   http.StatusForbidden,
 			ErrorMsg: "Wrong password",
 		}
-		return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusForbidden, errorJson)
 	}
 	// ставим куку на сутки
 	cookie := new(http.Cookie)
@@ -220,11 +220,11 @@ func (api *MyHandler) Register(c echo.Context) error {
 	newUser := new(RequestSignup)
 	if err := c.Bind(newUser); err != nil {
 		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
-			ErrorMsg: "Internal server error",
+			Status:   http.StatusBadRequest,
+			ErrorMsg: "Json request in wrong format",
 		}
 		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusBadRequest, errorJson)
 	}
 	api.uMu.RLock()
 	_, exists := api.users[newUser.Email]
@@ -232,10 +232,10 @@ func (api *MyHandler) Register(c echo.Context) error {
 
 	if exists {
 		errorJson := ErrorBody{
-			Status:   http.StatusInternalServerError,
+			Status:   http.StatusFailedDependency,
 			ErrorMsg: "User already exists",
 		}
-		return c.JSON(http.StatusInternalServerError, errorJson)
+		return c.JSON(http.StatusFailedDependency, errorJson)
 	}
 
 	cc, err := c.Cookie("session")
@@ -246,10 +246,10 @@ func (api *MyHandler) Register(c echo.Context) error {
 
 		if exists {
 			errorJson := ErrorBody{
-				Status:   http.StatusInternalServerError,
+				Status:   http.StatusFailedDependency,
 				ErrorMsg: "Already authorised",
 			}
-			return c.JSON(http.StatusInternalServerError, errorJson)
+			return c.JSON(http.StatusFailedDependency, errorJson)
 		}
 	}
 	// логика регистрации,  добавляем юзера в мапу
