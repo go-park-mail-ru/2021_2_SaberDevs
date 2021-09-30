@@ -59,7 +59,3 @@ var TestUsers = []models.User{
 	{"viphania", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
 	{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 }
-
-var LoginJson = "{\"login\":\"mollenTEST1\", \"password\":\"mollenTEST1\"}"
-var AnswerLogin = "{\"status\":200,\"data\":{\"login\":\"mollenTEST1\",\"surname\":\"mollenTEST1\",\"name\":\"mollenTEST1\",\"email\":\"mollenTEST1\",\"score\":0},\"msg\":\"OK\"}\n"
-var AnswerSignup = "{\"login\":\"yura\",\"email\":\"yura@ya.ru\",\"password\":12345678\",\"name\":\"yura\",\"surname\":\"yura\"}"

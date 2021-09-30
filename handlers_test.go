@@ -17,7 +17,25 @@ import (
 func TestLogin(t *testing.T) {
 	// Setup
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(data.LoginJson))
+	loginReq := new(models.RequestUser)
+	loginReq.Login = "mollenTEST1"
+	loginReq.Password = "mollenTEST1"
+
+	loginRequest, _ := json.Marshal(loginReq)
+	loginData := new(models.LoginData)
+	loginData.Login = "mollenTEST1"
+	loginData.Surname = "mollenTEST1"
+	loginData.Name = "mollenTEST1"
+	loginData.Email = "mollenTEST1"
+	loginData.Score = 0
+
+	loginResponse := new(models.LoginResponse)
+	loginResponse.Status = 200
+	loginResponse.Data = *loginData
+	loginResponse.Msg = "OK"
+
+	loginRes, _ := json.Marshal(loginResponse)
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(loginRequest)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -28,7 +46,7 @@ func TestLogin(t *testing.T) {
 	// Assertions
 	if assert.NoError(t, h.Login(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, data.AnswerLogin, rec.Body.String())
+		assert.Equal(t, string(loginRes)+"\n", rec.Body.String())
 	}
 }
 
@@ -71,11 +89,11 @@ func TestFeed(t *testing.T) {
 	e := echo.New()
 	request := "?idLastLoaded=1&login=all"
 	testData := data.TestData
-	ChunkData := testData[0:5]
+	chunkData := testData[0:5]
 	// формируем ответ
 	response := models.ChunkResponse{
 		Status:    http.StatusOK,
-		ChunkData: ChunkData,
+		ChunkData: chunkData,
 	}
 	res, _ := json.Marshal(response)
 	req := httptest.NewRequest(http.MethodGet, "/", strings.NewReader(request))
