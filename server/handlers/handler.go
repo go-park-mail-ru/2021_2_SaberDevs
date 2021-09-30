@@ -17,11 +17,11 @@ import (
 )
 
 type MyHandler struct {
-	sessions  sync.Map
-	users     sync.Map
+	sessions sync.Map
+	users    sync.Map
 }
 
-var chunkSize = 5
+const chunkSize = 5
 
 func NewMyHandler() *MyHandler {
 	var handler MyHandler
@@ -207,7 +207,6 @@ func (api *MyHandler) Logout(c echo.Context) error {
 
 func (api *MyHandler) Getfeed(c echo.Context) error {
 	rec := c.QueryParam("idLastLoaded")
-	// TODO костыль!!!!
 	if rec == "" {
 		rec = "0"
 	}

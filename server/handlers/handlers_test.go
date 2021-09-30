@@ -1,11 +1,10 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"server/server/data"
-	"server/server/handlers"
 	"server/server/models"
 	"strings"
 	"testing"
@@ -41,7 +40,7 @@ func TestLogin(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/login")
 
-	h := handlers.NewMyHandler()
+	h := NewMyHandler()
 
 	// Assertions
 	if assert.NoError(t, h.Login(c)) {
@@ -76,7 +75,7 @@ func TestSignUp(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/signup")
-	h := handlers.NewMyHandler()
+	h := NewMyHandler()
 	// Assertions
 	if assert.NoError(t, h.Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -101,7 +100,7 @@ func TestFeed(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/feed")
-	h := handlers.NewMyHandler()
+	h := NewMyHandler()
 	// Assertions
 	if assert.NoError(t, h.Getfeed(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -121,7 +120,7 @@ func TestLogout(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/login")
-	h := handlers.NewMyHandler()
+	h := NewMyHandler()
 	// Assertions
 	if assert.NoError(t, h.Login(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
