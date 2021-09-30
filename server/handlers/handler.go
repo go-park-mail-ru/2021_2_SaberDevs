@@ -19,18 +19,22 @@ import (
 type MyHandler struct {
 	sessions  sync.Map
 	users     sync.Map
-	validator *regexp.Regexp
 }
 
 var chunkSize = 5
 
 func NewMyHandler() *MyHandler {
 	var handler MyHandler
-	handler.validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
 	for _, user := range data.TestUsers {
 		handler.users.Store(user.Login, user)
 	}
 	return &handler
+}
+
+func isValid(input string) bool {
+	var validator *regexp.Regexp
+	validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
+	return validator.MatchString(input)
 }
 
 func formCookie() *http.Cookie {
@@ -118,7 +122,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 func isValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
-	return err == nil
+	return err != nil
 }
 
 func (api *MyHandler) Register(c echo.Context) error {
@@ -147,9 +151,9 @@ func (api *MyHandler) Register(c echo.Context) error {
 	switch {
 	case isValidEmail(newUser.Email):
 		return c.JSON(http.StatusFailedDependency, models.ErrInvalidEmail)
-	case api.validator.MatchString(newUser.Password):
+	case !isValid(newUser.Password):
 		return c.JSON(http.StatusFailedDependency, models.ErrInvalidPassword)
-	case api.validator.MatchString(newUser.Login):
+	case !isValid(newUser.Login):
 		return c.JSON(http.StatusFailedDependency, models.ErrInvalidLogin)
 	}
 
