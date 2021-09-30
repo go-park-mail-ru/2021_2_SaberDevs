@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/labstack/echo/v4"
-	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 	"net/mail"
@@ -13,15 +11,18 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
 )
 
 type MyHandler struct {
-	sessions sync.Map
-	users    sync.Map
+	sessions  sync.Map
+	users     sync.Map
 	validator *regexp.Regexp
 }
 
-var feedSize = 5
+var chunkSize = 5
 
 func NewMyHandler() *MyHandler {
 	var handler MyHandler
@@ -178,7 +179,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	}
 	response := models.SignupResponse{
 		Status: http.StatusOK,
-		Data:  s,
+		Data:   s,
 		Msg:    "OK",
 	}
 
@@ -215,19 +216,15 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusNotFound, models.ErrNotFeedNumber)
 	}
-	to := from + 4
 	var ChunkData []models.NewsRecord
 	// Возвращаем записи
 	testData := data.TestData
-	if from >= 0 && to < len(testData) {
-
-		ChunkData = testData[from:to]
-
+	if from >= 0 && from+chunkSize < len(testData) {
+		ChunkData = testData[from : from+chunkSize]
 	} else {
-
 		start := 0
-		if len(testData) > 6 {
-			start = len(testData) - 6
+		if len(testData) > feedSize {
+			start = len(testData) - feedSize
 		}
 		ChunkData = testData[start : len(testData)-1]
 
