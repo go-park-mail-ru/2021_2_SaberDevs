@@ -72,30 +72,25 @@
     "msg": "OK"
 }
 ````
-**Статьи:** GET /getfeed/
+**Статьи:** GET /feed?idLastLoaded=1&login=all
 
 запрос:
 ````
-{
-   "from":0
-   
-   "to":2
-} 
+?idLastLoaded=1&login=all
 ````
 ответ:
 ````
 {
-	"status":200,
-	"body": {
-		"from":"0",
-		"to":"2",
-		"chunk":[
-		{"id":"1","previewUrl":"static/img/computer.png","title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of 			highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#",
-		"comments":97,"likes":1001,"tags":["IT-News","Study"]},
-		{"id":"2","previewUrl":"static/img/computer.png","title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of 			highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#",
-		"comments":97,"likes":1002,"tags":["IT-News","Study"]}
-		]
-		}
+    "status":200,
+	"data": [
+        {"id":"1","previewUrl":"static/img/computer.png", "tags":["IT-News","Study"],"title":"7 Skills of Highly Effective Programmers",
+        "text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1001},
+        {"id":"2","previewUrl":"static/img/computer.png","tags":["IT-News","Study"],"title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1002},
+        {"id":"3","previewUrl":"static/img/computer.png","tags":["IT-News","Study"],"title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1003},
+        {"id":"4","previewUrl":"static/img/computer.png","tags":["IT-News","Study"],"title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1004},
+        {"id":"5","previewUrl":"static/img/computer.png","tags":["IT-News","Study"],"title":"7 Skills of Highly Effective Programmers","text":"Our team was inspired by the seven skills of highly effective","authorUrl":"#","authorName":"Григорий","authorAvatar":"static/img/photo-elon-musk.jpg","commentsUrl":"#","comments":97,"likes":1005}
+        ]
 }
+	
 
 ````
