@@ -108,3 +108,39 @@ func TestFeed(t *testing.T) {
 		assert.Equal(t, string(res)+"\n", rec.Body.String())
 	}
 }
+
+func TestLogout(t *testing.T) {
+	// Setup
+	e := echo.New()
+	loginReq := new(models.RequestUser)
+	loginReq.Login = "mollenTEST1"
+	loginReq.Password = "mollenTEST1"
+	loginRequest, _ := json.Marshal(loginReq)
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(string(loginRequest)))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/login")
+	h := handlers.NewMyHandler()
+	// Assertions
+	if assert.NoError(t, h.Login(c)) {
+		assert.Equal(t, http.StatusOK, rec.Code)
+	}
+	answer := rec.Result()
+	cookies := answer.Cookies()
+	res := new(models.LogoutResponse)
+	res.Status = 200
+	res.GoodbyeMsg = "Goodbye, friend!"
+	response, _ := json.Marshal(res)
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPost, "/", strings.NewReader("{}"))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	req.AddCookie(cookies[0])
+	c = e.NewContext(req, rec)
+	c.SetPath("/logout")
+	// Assertions
+	if assert.NoError(t, h.Logout(c)) {
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, string(response)+"\n", rec.Body.String())
+	}
+}
