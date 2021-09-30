@@ -54,8 +54,13 @@ var TestData = [...]models.NewsRecord{
 }
 
 var TestUsers = []models.User{
-			{"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
-			{"dar", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
-			{"viphania", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
-			{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
-		}
+	{"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
+	{"dar", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
+	{"viphania", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
+	{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
+}
+
+var LoginJson = "{\"login\":\"mollenTEST1\", \"password\":\"mollenTEST1\"}"
+var AnswerLogin = "{\"status\":200,\"data\":{\"login\":\"mollenTEST1\",\"surname\":\"mollenTEST1\",\"name\":\"mollenTEST1\",\"email\":\"mollenTEST1\",\"score\":0},\"msg\":\"OK\"}\n"
+var SignupJson = "{\"login\":\"yura\",\"email\":\"yura@ya.ru\",\"password\":12345678\",\"name\":\"yura\",\"surname\":\"yura\"}"
+var AnswerSignup = "{\"login\":\"yura\",\"email\":\"yura@ya.ru\",\"password\":12345678\",\"name\":\"yura\",\"surname\":\"yura\"}"
