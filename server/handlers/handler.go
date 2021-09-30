@@ -29,6 +29,15 @@ func NewMyHandler() *MyHandler {
 	return &handler
 }
 
+func formCookie() *http.Cookie {
+	cookie := new(http.Cookie)
+	cookie.Name = "session"
+	cookie.Value = uuid.NewV4().String()
+	cookie.HttpOnly = true
+	cookie.Expires = time.Now().Add(10 * time.Hour)
+	return cookie
+}
+
 func (api *MyHandler) Login(c echo.Context) error {
 	// проверяем активные сессии
 	cooke, err := c.Cookie("session")
@@ -91,11 +100,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, errorJson)
 	}
 	// ставим куку на сутки
-	cookie := new(http.Cookie)
-	cookie.Name = "session"
-	cookie.Value = uuid.NewV4().String()
-	cookie.HttpOnly = true
-	cookie.Expires = time.Now().Add(10 * time.Hour)
+	cookie := formCookie()
 	c.SetCookie(cookie)
 
 	// добавляем пользователя в активные сессии
@@ -172,11 +177,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	api.users.Store(newUser.Login, user)
 
 	// ставим куку на сутки
-	cookie := new(http.Cookie)
-	cookie.Name = "session"
-	cookie.Value = uuid.NewV4().String()
-	cookie.HttpOnly = true
-	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie := formCookie()
 	c.SetCookie(cookie)
 	//
 	// добавляем пользователя в активные сессии
