@@ -62,5 +62,4 @@ var TestUsers = []models.User{
 
 var LoginJson = "{\"login\":\"mollenTEST1\", \"password\":\"mollenTEST1\"}"
 var AnswerLogin = "{\"status\":200,\"data\":{\"login\":\"mollenTEST1\",\"surname\":\"mollenTEST1\",\"name\":\"mollenTEST1\",\"email\":\"mollenTEST1\",\"score\":0},\"msg\":\"OK\"}\n"
-var SignupJson = "{\"login\":\"yura\",\"email\":\"yura@ya.ru\",\"password\":12345678\",\"name\":\"yura\",\"surname\":\"yura\"}"
 var AnswerSignup = "{\"login\":\"yura\",\"email\":\"yura@ya.ru\",\"password\":12345678\",\"name\":\"yura\",\"surname\":\"yura\"}"
