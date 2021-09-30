@@ -1,10 +1,11 @@
-package handlers
+package main
 
 import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"server/server/data"
+	"server/server/handlers"
 	"server/server/models"
 	"strings"
 	"testing"
@@ -22,7 +23,7 @@ func TestLogin(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/login")
 
-	h := NewMyHandler()
+	h := handlers.NewMyHandler()
 
 	// Assertions
 	if assert.NoError(t, h.Login(c)) {
@@ -57,7 +58,7 @@ func TestSignUp(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/signup")
-	h := NewMyHandler()
+	h := handlers.NewMyHandler()
 	// Assertions
 	if assert.NoError(t, h.Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
@@ -82,7 +83,7 @@ func TestFeed(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/feed")
-	h := NewMyHandler()
+	h := handlers.NewMyHandler()
 	// Assertions
 	if assert.NoError(t, h.Getfeed(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
