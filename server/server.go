@@ -1,14 +1,15 @@
 package server
 
 import (
-	"github.com/labstack/echo/v4/middleware"
 	"net/http"
-	"server/server/handlers"
+
+	"github.com/labstack/echo/v4/middleware"
+	"saverdevs.com/2021_2_Saberdevs/server/handlers"
 
 	"github.com/labstack/echo/v4"
 )
 
-func router (e *echo.Echo) {
+func router(e *echo.Echo) {
 	api := handlers.NewMyHandler()
 
 	e.POST("/login", api.Login)

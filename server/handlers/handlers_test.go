@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"server/server/data"
-	"server/server/models"
 	"strings"
 	"testing"
+
+	"saverdevs.com/2021_2_Saberdevs/server/data"
+	"saverdevs.com/2021_2_Saberdevs/server/models"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"

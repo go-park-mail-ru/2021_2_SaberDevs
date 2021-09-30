@@ -1,6 +1,6 @@
 package data
 
-import "server/server/models"
+import "saverdevs.com/2021_2_Saberdevs/server/models"
 
 var TestData = [...]models.NewsRecord{
 	{"1", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",

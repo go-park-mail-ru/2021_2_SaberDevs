@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"net/mail"
 	"regexp"
-	"server/server/data"
-	"server/server/models"
 	"strconv"
 	"sync"
 	"time"
+
+	"saverdevs.com/2021_2_Saberdevs/server/data"
+	"saverdevs.com/2021_2_Saberdevs/server/models"
 
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"

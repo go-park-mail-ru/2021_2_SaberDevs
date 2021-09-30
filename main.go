@@ -1,7 +1,7 @@
 package main
 
 import (
-	"server/server"
+	"saverdevs.com/2021_2_Saberdevs/server"
 )
 
 const serverAdress = "192.168.0.104:8081"
