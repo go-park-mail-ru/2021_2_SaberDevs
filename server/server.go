@@ -1,11 +1,16 @@
 package server
 
 import (
-	"math/rand"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"server/server/data"
 	"strconv"
 	"sync"
 	"time"
+
+	"server/server/models"
 
 	"github.com/labstack/echo/v4/middleware"
 
@@ -15,113 +20,20 @@ import (
 )
 
 type (
-	User struct {
-		Login    string `json:"login"`
-		Name     string `json:"name"`
-		Surname  string `json:"surname"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Score    uint   `json:"score"`
-	}
-
-	RequestUser struct {
-		Login    string `json:"login"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	LoginBody struct {
-		Login   string `json:"login"`
-		Surname string `json:"surname"`
-		Name    string `json:"name"`
-		Email   string `json:"email"`
-		Score   int    `json:"score"`
-	}
-
-	GoodLoginResponse struct {
-		Status uint      `json:"status"`
-		Data   LoginBody `json:"data"`
-		Msg    string    `json:"msg"`
-	}
-
-	LogoutResponse struct {
-		Status     uint   `json:"status"`
-		GoodbuyMsg string `json:"goodbuy"`
-	}
-
-	SignUpBody struct {
-		Login   string `json:"login"`
-		Surname string `json:"surname"`
-		Name    string `json:"name"`
-		Email   string `json:"email"`
-		Score   int    `json:"score"`
-	}
-
-	RequestSignup struct {
-		Login    string `json:"login"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
-		Surname  string `json:"surname"`
-	}
-
-	GoodSignupResponse struct {
-		Status uint       `json:"status"`
-		SBody  SignUpBody `json:"data"`
-		Msg    string     `json:"msg"`
-	}
-
-	//Представление записи
-	NewsRecord struct {
-		Id           string   `json:"id"`
-		PreviewUrl   string   `json:"previewUrl"`
-		Tags         []string `json:"tags"`
-		Title        string   `json:"title"`
-		Text         string   `json:"text"`
-		AuthorUrl    string   `json:"authorUrl"`
-		AuthorName   string   `json:"authorName"`
-		AuthorAvatar string   `json:"authorAvatar"`
-		CommentsUrl  string   `json:"commentsUrl"`
-		Comments     uint     `json:"comments"`
-		Likes        uint     `json:"likes"`
-	}
-
-	//Тело ответа на API-call /getfeed
-
-	RequestChunk struct {
-		idLastLoaded string
-		login        string
-	}
-
-	ChunkResponse struct {
-		Status    uint         `json:"status"`
-		ChunkData []NewsRecord `json:"data"`
-	}
-
-	ErrorBody struct {
-		Status   uint   `json:"status"`
-		ErrorMsg string `json:"msg"`
-	}
-
 	MyHandler struct {
 		sessions map[string]string
 		sMu      sync.RWMutex
-		users    map[string]User
+		users    map[string]models.User
 		uMu      sync.RWMutex
 	}
 )
 
-var feedSize int = 5
+var feedSize = 5
 
 func NewMyHandler() MyHandler {
 	return MyHandler{
 		sessions: make(map[string]string, 10),
-		users: map[string]User{
-			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
-			"dar@exp.ru":      {"dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
-			"viphania@exp.ru": {"viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
-			"DenisTest":       {"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
-		},
+		users:    data.TestUsers,
 	}
 }
 
@@ -137,14 +49,14 @@ func (api *MyHandler) Login(c echo.Context) error {
 			user, _ := api.users[login]
 			api.uMu.RUnlock()
 
-			b := LoginBody{
+			b := models.LoginBody{
 				Login:   user.Login,
 				Name:    user.Email,
 				Surname: user.Email,
 				Email:   user.Email,
-				Score:   12345678, //rand.Int(),
+				Score:   12345678,
 			}
-			response := GoodLoginResponse{
+			response := models.GoodLoginResponse{
 				Status: http.StatusOK,
 				Data:   b,
 				Msg:    "OK",
@@ -154,14 +66,20 @@ func (api *MyHandler) Login(c echo.Context) error {
 		}
 	}
 	// достаем данные из запроса
-	requestUser := new(RequestUser)
-	if err := c.Bind(requestUser); err != nil {
-		errorJson := ErrorBody{
-			Status:   http.StatusBadRequest,
-			ErrorMsg: "Json request in wrong format",
-		}
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, errorJson)
+	// requestUser := new(RequestUser)
+	// if err := c.Bind(requestUser); err != nil {
+	//	errorJson := ErrorBody{
+	//		Status:   http.StatusBadRequest,
+	//		ErrorMsg: "Json request in wrong format",
+	//	}
+	//	c.Logger().Printf("Error: %s", err.Error())
+	//	return c.JSON(http.StatusBadRequest, errorJson)
+	// }
+	requestUser := new(models.RequestUser)
+	byteContent, err := ioutil.ReadAll(c.Request().Body)
+	err = json.Unmarshal(byteContent, &requestUser)
+	if err != nil {
+		log.Println(err)
 	}
 	c.Logger().Printf("login")
 	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
@@ -172,14 +90,14 @@ func (api *MyHandler) Login(c echo.Context) error {
 	api.uMu.RUnlock()
 
 	if !ok {
-		errorJson := ErrorBody{
+		errorJson := models.ErrorBody{
 			Status:   http.StatusNoContent,
 			ErrorMsg: "User doesnt exist",
 		}
 		return c.JSON(http.StatusNoContent, errorJson)
 	}
 	if user.Password != requestUser.Password {
-		errorJson := ErrorBody{
+		errorJson := models.ErrorBody{
 			Status:   http.StatusForbidden,
 			ErrorMsg: "Wrong password",
 		}
@@ -199,14 +117,14 @@ func (api *MyHandler) Login(c echo.Context) error {
 	api.sMu.Unlock()
 
 	// формируем ответ
-	b := LoginBody{
+	b := models.LoginBody{
 		Login:   user.Login,
 		Name:    user.Email,
 		Surname: user.Email,
 		Email:   user.Email,
-		Score:   12345678, //rand.Int(),
+		Score:   12345678,
 	}
-	response := GoodLoginResponse{
+	response := models.GoodLoginResponse{
 		Status: http.StatusOK,
 		Data:   b,
 		Msg:    "OK",
@@ -217,21 +135,27 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 func (api *MyHandler) Register(c echo.Context) error {
 	// достаем данные из запроса
-	newUser := new(RequestSignup)
-	if err := c.Bind(newUser); err != nil {
-		errorJson := ErrorBody{
-			Status:   http.StatusBadRequest,
-			ErrorMsg: "Json request in wrong format",
-		}
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, errorJson)
+	// newUser := new(RequestSignup)
+	// if err := c.Bind(newUser); err != nil {
+	//	errorJson := ErrorBody{
+	//		Status:   http.StatusBadRequest,
+	//		ErrorMsg: "Json request in wrong format",
+	//	}
+	//	c.Logger().Printf("Error: %s", err.Error())
+	//	return c.JSON(http.StatusBadRequest, errorJson)
+	// }
+	newUser := new(models.RequestSignup)
+	byteContent, err := ioutil.ReadAll(c.Request().Body)
+	err = json.Unmarshal(byteContent, &newUser)
+	if err != nil {
+		log.Println(err)
 	}
 	api.uMu.RLock()
 	_, exists := api.users[newUser.Email]
 	api.uMu.RUnlock()
 
 	if exists {
-		errorJson := ErrorBody{
+		errorJson := models.ErrorBody{
 			Status:   http.StatusFailedDependency,
 			ErrorMsg: "User already exists",
 		}
@@ -245,15 +169,22 @@ func (api *MyHandler) Register(c echo.Context) error {
 		api.sMu.RUnlock()
 
 		if exists {
-			errorJson := ErrorBody{
+			errorJson := models.ErrorBody{
 				Status:   http.StatusFailedDependency,
 				ErrorMsg: "Already authorised",
 			}
 			return c.JSON(http.StatusFailedDependency, errorJson)
 		}
 	}
-	// логика регистрации,  добавляем юзера в мапу
-	user := User{newUser.Login, newUser.Name, newUser.Surname, newUser.Email, newUser.Password, 12345}
+	// логика регистрации, добавляем юзера в мапу
+	user := models.User{
+		Login:    newUser.Login,
+		Name:     newUser.Name,
+		Surname:  newUser.Surname,
+		Email:    newUser.Email,
+		Password: newUser.Password,
+		Score:    12345,
+	}
 	api.uMu.Lock()
 	api.users[newUser.Login] = user
 	api.uMu.Unlock()
@@ -262,6 +193,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "session"
 	cookie.Value = uuid.NewV4().String()
+	cookie.HttpOnly = true
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
 	//
@@ -271,14 +203,14 @@ func (api *MyHandler) Register(c echo.Context) error {
 	api.sMu.Unlock()
 
 	// формируем ответ
-	s := SignUpBody{
+	s := models.SignUpBody{
 		Login:   user.Login,
 		Name:    user.Name,
 		Surname: user.Surname,
 		Email:   user.Email,
-		Score:   12345678, //rand.Int(),
+		Score:   12345678, // rand.Int(),
 	}
-	response := GoodSignupResponse{
+	response := models.GoodSignupResponse{
 		Status: http.StatusOK,
 		SBody:  s,
 		Msg:    "OK",
@@ -291,7 +223,12 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	// удаляем пользователя из активных сессий
 	cookie, err := c.Cookie("session")
 	if err != nil {
-		return err
+		response := models.LogoutResponse{
+			Status:     http.StatusOK,
+			GoodbuyMsg: "Goodbuy, friend!",
+		}
+		return c.JSON(http.StatusOK, response)
+
 	}
 	api.sMu.Lock()
 	delete(api.sessions, cookie.Value)
@@ -301,27 +238,11 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
 	c.SetCookie(cookie)
 	// формируем ответ
-	response := LogoutResponse{
+	response := models.LogoutResponse{
 		Status:     http.StatusOK,
 		GoodbuyMsg: "Goodbuy, friend!",
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-func (api *MyHandler) Root(c echo.Context) error {
-	b := LoginBody{
-		Login:   "user.Email",
-		Name:    "user.Email",
-		Surname: "user.Email",
-		Email:   "user.Email",
-		Score:   rand.Int(),
-	}
-	u := GoodLoginResponse{
-		Status: 54,
-		Data:   b,
-		Msg:    "OK",
-	}
-	return c.JSON(http.StatusOK, u)
 }
 
 func (api *MyHandler) Getfeed(c echo.Context) error {
@@ -333,7 +254,7 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 
 	from, err := strconv.Atoi(rec)
 	if err != nil {
-		errorJson := ErrorBody{
+		errorJson := models.ErrorBody{
 			Status:   http.StatusNotFound,
 			ErrorMsg: "Not a feed Number",
 		}
@@ -341,8 +262,9 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, errorJson)
 	}
 	to := from + 4
-	var ChunkData []NewsRecord
-	//Возвращаем записи
+	var ChunkData []models.NewsRecord
+	// Возвращаем записи
+	testData := data.TestData
 	if from >= 0 && to < len(testData) {
 		api.sMu.RLock()
 		ChunkData = testData[from:to]
@@ -357,69 +279,18 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 		api.sMu.RUnlock()
 	}
 	// формируем ответ
-	response := ChunkResponse{
-		http.StatusOK,
-		ChunkData,
+	response := models.ChunkResponse{
+		Status: http.StatusOK,
+		ChunkData: ChunkData,
 	}
 	return c.JSON(http.StatusOK, response)
 }
 
-var testData = [...]NewsRecord{
-	{"1", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1001,
-	},
-	{"2", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1002,
-	},
-	{"3", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1003,
-	},
-	{"4", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1004,
-	},
-	{"5", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1005,
-	},
-	{"6", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1006,
-	},
-	{"7", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1007,
-	},
-	{"8", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 14,
-	},
-	{"9", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1008,
-	},
-	{"10", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1009,
-	},
-	{"11", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
-		"#", 97, 1010,
-	},
-	{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
-		"А всё, а раньше надо было", "", "#", "Tester-ender",
-		"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0,
-	},
-}
-
-func Run() {
+func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowOrigins:     []string{"http://87.228.2.178:8080"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
 	api := NewMyHandler()
@@ -428,7 +299,6 @@ func Run() {
 	e.POST("/signup", api.Register)
 	e.POST("/logout", api.Logout)
 	e.GET("/feed", api.Getfeed)
-	e.GET("/", api.Root)
 
-	e.Logger.Fatal(e.Start("192.168.0.104:8081"))
+	e.Logger.Fatal(e.Start(address))
 }
