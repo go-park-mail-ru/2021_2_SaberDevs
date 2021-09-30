@@ -1,4 +1,4 @@
-module saverdevs.com/2021_2_Saberdevs
+module github.com/go-park-mail-ru/2021_2_SaberDevs
 
 go 1.13
 

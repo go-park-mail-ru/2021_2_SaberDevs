@@ -3,8 +3,8 @@ package server
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/handlers"
 	"github.com/labstack/echo/v4/middleware"
-	"saverdevs.com/2021_2_Saberdevs/server/handlers"
 
 	"github.com/labstack/echo/v4"
 )

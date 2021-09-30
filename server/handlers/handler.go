@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"saverdevs.com/2021_2_Saberdevs/server/data"
-	"saverdevs.com/2021_2_Saberdevs/server/models"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/data"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/models"
 
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
