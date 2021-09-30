@@ -118,10 +118,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 func isValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func (api *MyHandler) Register(c echo.Context) error {
