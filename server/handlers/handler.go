@@ -223,8 +223,8 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 		ChunkData = testData[from : from+chunkSize]
 	} else {
 		start := 0
-		if len(testData) > feedSize {
-			start = len(testData) - feedSize
+		if len(testData) > chunkSize {
+			start = len(testData) - chunkSize
 		}
 		ChunkData = testData[start : len(testData)-1]
 
