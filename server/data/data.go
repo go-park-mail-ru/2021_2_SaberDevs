@@ -53,9 +53,9 @@ var TestData = [...]models.NewsRecord{
 	},
 }
 
-var TestUsers = map[string]models.User{
-			"mollenTEST1":     {"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
-			"dar@exp.ru":      {"dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
-			"viphania@exp.ru": {"viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
-			"DenisTest":       {"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
+var TestUsers = []models.User{
+			{"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
+			{"dar", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
+			{"viphania", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
+			{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 		}

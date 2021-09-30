@@ -11,7 +11,7 @@ type User struct {
 
 type RequestUser struct {
 	Login    string `json:"login"`
-	Email    string `json:"email"`
+	// Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -23,7 +23,7 @@ type LoginBody struct {
 	Score   int    `json:"score"`
 }
 
-type GoodLoginResponse struct {
+type LoginResponse struct {
 	Status uint      `json:"status"`
 	Data   LoginBody `json:"data"`
 	Msg    string    `json:"msg"`
@@ -31,7 +31,7 @@ type GoodLoginResponse struct {
 
 type LogoutResponse struct {
 	Status     uint   `json:"status"`
-	GoodbuyMsg string `json:"goodbuy"`
+	GoodbyeMsg string `json:"goodbye"`
 }
 
 type SignUpBody struct {
@@ -50,7 +50,7 @@ type RequestSignup struct {
 	Surname  string `json:"surname"`
 }
 
-type GoodSignupResponse struct {
+type SignupResponse struct {
 	Status uint       `json:"status"`
 	SBody  SignUpBody `json:"data"`
 	Msg    string     `json:"msg"`

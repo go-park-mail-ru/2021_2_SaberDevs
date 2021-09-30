@@ -19,44 +19,37 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type (
-	MyHandler struct {
-		sessions map[string]string
-		sMu      sync.RWMutex
-		users    map[string]models.User
-		uMu      sync.RWMutex
-	}
-)
+type MyHandler struct {
+	sessions sync.Map
+	users    sync.Map
+}
 
 var feedSize = 5
 
-func NewMyHandler() MyHandler {
-	return MyHandler{
-		sessions: make(map[string]string, 10),
-		users:    data.TestUsers,
+func NewMyHandler() *MyHandler {
+	var handler MyHandler
+	for _, user := range data.TestUsers {
+		handler.users.Store(user.Login, user)
 	}
+	return &handler
 }
 
 func (api *MyHandler) Login(c echo.Context) error {
 	// проверяем активные сессии
 	cooke, err := c.Cookie("session")
 	if err == nil {
-		api.sMu.RLock()
-		login, ok := api.sessions[cooke.Value]
-		api.sMu.RUnlock()
+		login, ok := api.sessions.Load(cooke.Value)
 		if ok {
-			api.uMu.RLock()
-			user, _ := api.users[login]
-			api.uMu.RUnlock()
+			u, _ := api.users.Load(login)
+			user := u.(models.User)
 
 			b := models.LoginBody{
 				Login:   user.Login,
-				Name:    user.Email,
-				Surname: user.Email,
+				Name:    user.Name,
+				Surname: user.Surname,
 				Email:   user.Email,
-				Score:   12345678,
 			}
-			response := models.GoodLoginResponse{
+			response := models.LoginResponse{
 				Status: http.StatusOK,
 				Data:   b,
 				Msg:    "OK",
@@ -85,9 +78,8 @@ func (api *MyHandler) Login(c echo.Context) error {
 	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
 
 	// логика логина
-	api.uMu.RLock()
-	user, ok := api.users[requestUser.Login]
-	api.uMu.RUnlock()
+	u, ok := api.users.Load(requestUser.Login)
+	user := u.(models.User)
 
 	if !ok {
 		errorJson := models.ErrorBody{
@@ -110,11 +102,10 @@ func (api *MyHandler) Login(c echo.Context) error {
 	cookie.HttpOnly = true
 	cookie.Expires = time.Now().Add(10 * time.Hour)
 	c.SetCookie(cookie)
-	//
+
 	// добавляем пользователя в активные сессии
-	api.sMu.Lock()
-	api.sessions[cookie.Value] = user.Login
-	api.sMu.Unlock()
+	// api.sessions[cookie.Value] = user.(models.User).Login
+	api.sessions.Store(cookie.Value, user.Login)
 
 	// формируем ответ
 	b := models.LoginBody{
@@ -124,7 +115,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 		Email:   user.Email,
 		Score:   12345678,
 	}
-	response := models.GoodLoginResponse{
+	response := models.LoginResponse{
 		Status: http.StatusOK,
 		Data:   b,
 		Msg:    "OK",
@@ -150,9 +141,8 @@ func (api *MyHandler) Register(c echo.Context) error {
 	if err != nil {
 		log.Println(err)
 	}
-	api.uMu.RLock()
-	_, exists := api.users[newUser.Email]
-	api.uMu.RUnlock()
+
+	_, exists := api.users.Load(newUser.Email)
 
 	if exists {
 		errorJson := models.ErrorBody{
@@ -164,9 +154,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 
 	cc, err := c.Cookie("session")
 	if err == nil {
-		api.sMu.RLock()
-		_, exists = api.sessions[cc.Value]
-		api.sMu.RUnlock()
+		_, exists = api.sessions.Load(cc.Value)
 
 		if exists {
 			errorJson := models.ErrorBody{
@@ -185,9 +173,9 @@ func (api *MyHandler) Register(c echo.Context) error {
 		Password: newUser.Password,
 		Score:    12345,
 	}
-	api.uMu.Lock()
-	api.users[newUser.Login] = user
-	api.uMu.Unlock()
+
+	// api.users[newUser.Login] = user
+	api.users.Store(newUser.Login, user)
 
 	// ставим куку на сутки
 	cookie := new(http.Cookie)
@@ -198,9 +186,8 @@ func (api *MyHandler) Register(c echo.Context) error {
 	c.SetCookie(cookie)
 	//
 	// добавляем пользователя в активные сессии
-	api.sMu.Lock()
-	api.sessions[cookie.Value] = user.Login
-	api.sMu.Unlock()
+	// api.sessions[cookie.Value] = user.Login
+	api.sessions.Store(cookie.Value, user.Login)
 
 	// формируем ответ
 	s := models.SignUpBody{
@@ -210,7 +197,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 		Email:   user.Email,
 		Score:   12345678, // rand.Int(),
 	}
-	response := models.GoodSignupResponse{
+	response := models.SignupResponse{
 		Status: http.StatusOK,
 		SBody:  s,
 		Msg:    "OK",
@@ -225,14 +212,14 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	if err != nil {
 		response := models.LogoutResponse{
 			Status:     http.StatusOK,
-			GoodbuyMsg: "Goodbuy, friend!",
+			GoodbyeMsg: "Goodbuy, friend!",
 		}
 		return c.JSON(http.StatusOK, response)
 
 	}
-	api.sMu.Lock()
-	delete(api.sessions, cookie.Value)
-	api.sMu.Unlock()
+
+	// delete(api.sessions, cookie.Value)
+	api.sessions.Delete(cookie.Value)
 
 	// ставим протухшую куку
 	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
@@ -240,7 +227,7 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	// формируем ответ
 	response := models.LogoutResponse{
 		Status:     http.StatusOK,
-		GoodbuyMsg: "Goodbuy, friend!",
+		GoodbyeMsg: "Goodbuy, friend!",
 	}
 	return c.JSON(http.StatusOK, response)
 }
@@ -266,21 +253,21 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 	// Возвращаем записи
 	testData := data.TestData
 	if from >= 0 && to < len(testData) {
-		api.sMu.RLock()
+
 		ChunkData = testData[from:to]
-		api.sMu.RUnlock()
+
 	} else {
-		api.sMu.RLock()
+
 		start := 0
 		if len(testData) > 6 {
 			start = len(testData) - 6
 		}
 		ChunkData = testData[start : len(testData)-1]
-		api.sMu.RUnlock()
+
 	}
 	// формируем ответ
 	response := models.ChunkResponse{
-		Status: http.StatusOK,
+		Status:    http.StatusOK,
 		ChunkData: ChunkData,
 	}
 	return c.JSON(http.StatusOK, response)
