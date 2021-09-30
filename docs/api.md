@@ -5,11 +5,11 @@
 ````
 {
     "status": не 200
-    "error": "описание ошибки"
+    "ErrorMsg": "описание ошибки"
 }
 ````
 
-**Логин:** POST /api/v1/user/login
+**Логин:** POST /login
 
 запрос:
 ````
@@ -22,31 +22,33 @@
 ````
 {
     "status": 200
-    "body" : 
+    "data" : 
     {
-        "ID": 123
+        "login": "login"
         "name": "name"
-        "avatar": jpg?? пока нету
+        "surname": "surname"
+        "email": "email"
+        "score": 123
     }
+    "msg": "OK"
 }
 ````
 
-**Логаут:** POST /api/v1/user/logout
+**Логаут:** POST /logout
 
 запрос:
 ````
-
+{}
 ````
 ответ:
 ````
 {
     "status": 200
-    "GoodbuyMsg": "Goodbuy, mollen@exp.ru!"
-    "body":
+    "goodbye": "Goodbuy, mollen@exp.ru!"
 }
 ````
 
-**Регистрация:** POST /api/v1/user/register
+**Регистрация:** POST /register
 
 запрос:
 ````
@@ -59,15 +61,18 @@
 ````
 {
     "status": 200
-    "body":
+    "data" : 
     {
-        "ID": 123
+        "login": "login"
         "name": "name"
-        "avatar": jpg??
+        "surname": "surname"
+        "email": "email"
+        "score": 123
     }
+    "msg": "OK"
 }
 ````
-**Статьи(не готовы!!):** GET /api/v1/getfeed/
+**Статьи:** GET /getfeed/
 
 запрос:
 ````
