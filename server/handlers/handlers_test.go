@@ -53,9 +53,9 @@ func TestSignUp(t *testing.T) {
 	// Setup
 	e := echo.New()
 	newUser := new(models.RequestSignup)
-	newUser.Login = "yura"
-	newUser.Email = "yuramail.ru"
-	newUser.Password = "yuramail.ru"
+	newUser.Login = "Yura123"
+	newUser.Email = "yura@mail.ru"
+	newUser.Password = "Yuramail1ru"
 	newUser.Name = "yura"
 	newUser.Surname = "Lyubsk"
 	signrec, _ := json.Marshal(newUser)
