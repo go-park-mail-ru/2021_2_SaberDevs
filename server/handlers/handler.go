@@ -5,7 +5,6 @@ import (
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"server/server/data"
 	"server/server/models"
@@ -38,77 +37,81 @@ func formCookie() *http.Cookie {
 	return cookie
 }
 
-func (api *MyHandler) Login(c echo.Context) error {
-	// проверяем активные сессии
-	cooke, err := c.Cookie("session")
-	if err == nil {
-		login, ok := api.sessions.Load(cooke.Value)
-		if ok {
-			u, _ := api.users.Load(login)
-			user := u.(models.User)
-
-			b := models.LoginBody{
-				Login:   user.Login,
-				Name:    user.Name,
-				Surname: user.Surname,
-				Email:   user.Email,
-			}
-			response := models.LoginResponse{
-				Status: http.StatusOK,
-				Data:   b,
-				Msg:    "OK",
-			}
-
-			return c.JSON(http.StatusOK, response)
-		}
+func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
+	if cookie == nil {
+		return false
 	}
-	// достаем данные из запроса
-	// requestUser := new(RequestUser)
-	// if err := c.Bind(requestUser); err != nil {
-	//	errorJson := ErrorBody{
-	//		Status:   http.StatusBadRequest,
-	//		ErrorMsg: "Json request in wrong format",
-	//	}
-	//	c.Logger().Printf("Error: %s", err.Error())
-	//	return c.JSON(http.StatusBadRequest, errorJson)
-	// }
+	_, res := sessionsMap.Load(cookie.Value)
+	return res
+}
+
+func (api *MyHandler) Login(c echo.Context) error {
+	cooke, _ := c.Cookie("session")
+
+	if isUserAuthorized(cooke, &api.sessions) {
+		login, _ := api.sessions.Load(cooke.Value)
+		u, _ := api.users.Load(login)
+
+		user := u.(models.User)
+
+		d := models.LoginData{
+			Login:   user.Login,
+			Name:    user.Name,
+			Surname: user.Surname,
+			Email:   user.Email,
+		}
+		response := models.LoginResponse{
+			Status: http.StatusOK,
+			Data:   d,
+			Msg:    "OK",
+		}
+		return c.JSON(http.StatusOK, response)
+	}
+
 	requestUser := new(models.RequestUser)
+
 	byteContent, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		errorJson := models.ErrorResponse{
+			Status:   http.StatusFailedDependency,
+			ErrorMsg: "Error unpacking JSON",
+		}
+		return c.JSON(http.StatusFailedDependency, errorJson)
+	}
+
 	err = json.Unmarshal(byteContent, &requestUser)
 	if err != nil {
-		log.Println(err)
+		errorJson := models.ErrorResponse{
+			Status:   http.StatusFailedDependency,
+			ErrorMsg: "Error unpacking JSON",
+		}
+		return c.JSON(http.StatusFailedDependency, errorJson)
 	}
-	c.Logger().Printf("login")
-	// тут что-то про передачу bind полей в функции и небезопасность таких операций ¯\_(ツ)_/¯
 
-	// логика логина
 	u, ok := api.users.Load(requestUser.Login)
 	user := u.(models.User)
 
 	if !ok {
-		errorJson := models.ErrorBody{
+		errorJson := models.ErrorResponse{
 			Status:   http.StatusNoContent,
 			ErrorMsg: "User doesnt exist",
 		}
 		return c.JSON(http.StatusNoContent, errorJson)
 	}
 	if user.Password != requestUser.Password {
-		errorJson := models.ErrorBody{
+		errorJson := models.ErrorResponse{
 			Status:   http.StatusForbidden,
 			ErrorMsg: "Wrong password",
 		}
 		return c.JSON(http.StatusForbidden, errorJson)
 	}
-	// ставим куку на сутки
+
 	cookie := formCookie()
 	c.SetCookie(cookie)
 
-	// добавляем пользователя в активные сессии
-	// api.sessions[cookie.Value] = user.(models.User).Login
 	api.sessions.Store(cookie.Value, user.Login)
 
-	// формируем ответ
-	b := models.LoginBody{
+	d := models.LoginData{
 		Login:   user.Login,
 		Name:    user.Email,
 		Surname: user.Email,
@@ -117,7 +120,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 	}
 	response := models.LoginResponse{
 		Status: http.StatusOK,
-		Data:   b,
+		Data:   d,
 		Msg:    "OK",
 	}
 
@@ -125,27 +128,28 @@ func (api *MyHandler) Login(c echo.Context) error {
 }
 
 func (api *MyHandler) Register(c echo.Context) error {
-	// достаем данные из запроса
-	// newUser := new(RequestSignup)
-	// if err := c.Bind(newUser); err != nil {
-	//	errorJson := ErrorBody{
-	//		Status:   http.StatusBadRequest,
-	//		ErrorMsg: "Json request in wrong format",
-	//	}
-	//	c.Logger().Printf("Error: %s", err.Error())
-	//	return c.JSON(http.StatusBadRequest, errorJson)
-	// }
 	newUser := new(models.RequestSignup)
 	byteContent, err := ioutil.ReadAll(c.Request().Body)
-	err = json.Unmarshal(byteContent, &newUser)
 	if err != nil {
-		log.Println(err)
+		errorJson := models.ErrorResponse{
+			Status:   http.StatusFailedDependency,
+			ErrorMsg: "Error unpacking JSON",
+		}
+		return c.JSON(http.StatusFailedDependency, errorJson)
 	}
 
-	_, exists := api.users.Load(newUser.Email)
+	err = json.Unmarshal(byteContent, &newUser)
+	if err != nil {
+		errorJson := models.ErrorResponse{
+			Status:   http.StatusFailedDependency,
+			ErrorMsg: "Error unpacking JSON",
+		}
+		return c.JSON(http.StatusFailedDependency, errorJson)
+	}
 
+	_, exists := api.users.Load(newUser.Login)
 	if exists {
-		errorJson := models.ErrorBody{
+		errorJson := models.ErrorResponse{
 			Status:   http.StatusFailedDependency,
 			ErrorMsg: "User already exists",
 		}
@@ -155,16 +159,15 @@ func (api *MyHandler) Register(c echo.Context) error {
 	cc, err := c.Cookie("session")
 	if err == nil {
 		_, exists = api.sessions.Load(cc.Value)
-
 		if exists {
-			errorJson := models.ErrorBody{
+			errorJson := models.ErrorResponse{
 				Status:   http.StatusFailedDependency,
 				ErrorMsg: "Already authorised",
 			}
 			return c.JSON(http.StatusFailedDependency, errorJson)
 		}
 	}
-	// логика регистрации, добавляем юзера в мапу
+
 	user := models.User{
 		Login:    newUser.Login,
 		Name:     newUser.Name,
@@ -173,19 +176,14 @@ func (api *MyHandler) Register(c echo.Context) error {
 		Password: newUser.Password,
 	}
 
-	// api.users[newUser.Login] = user
 	api.users.Store(newUser.Login, user)
 
-	// ставим куку на сутки
 	cookie := formCookie()
 	c.SetCookie(cookie)
-	//
-	// добавляем пользователя в активные сессии
-	// api.sessions[cookie.Value] = user.Login
+
 	api.sessions.Store(cookie.Value, user.Login)
 
-	// формируем ответ
-	s := models.SignUpBody{
+	s := models.SignUpData{
 		Login:   user.Login,
 		Name:    user.Name,
 		Surname: user.Surname,
@@ -193,7 +191,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	}
 	response := models.SignupResponse{
 		Status: http.StatusOK,
-		SBody:  s,
+		Data:  s,
 		Msg:    "OK",
 	}
 
@@ -201,27 +199,23 @@ func (api *MyHandler) Register(c echo.Context) error {
 }
 
 func (api *MyHandler) Logout(c echo.Context) error {
-	// удаляем пользователя из активных сессий
-	cookie, err := c.Cookie("session")
-	if err != nil {
-		response := models.LogoutResponse{
-			Status:     http.StatusOK,
-			GoodbyeMsg: "Goodbuy, friend!",
+	cookie, _ := c.Cookie("session")
+	if !isUserAuthorized(cookie, &api.sessions) {
+		response := models.ErrorResponse{
+			Status:   http.StatusFailedDependency,
+			ErrorMsg: "Not logged in",
 		}
 		return c.JSON(http.StatusOK, response)
-
 	}
 
-	// delete(api.sessions, cookie.Value)
 	api.sessions.Delete(cookie.Value)
 
-	// ставим протухшую куку
 	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
 	c.SetCookie(cookie)
-	// формируем ответ
+
 	response := models.LogoutResponse{
 		Status:     http.StatusOK,
-		GoodbyeMsg: "Goodbuy, friend!",
+		GoodbyeMsg: "Goodbye, friend!",
 	}
 	return c.JSON(http.StatusOK, response)
 }
@@ -235,7 +229,7 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 
 	from, err := strconv.Atoi(rec)
 	if err != nil {
-		errorJson := models.ErrorBody{
+		errorJson := models.ErrorResponse{
 			Status:   http.StatusNotFound,
 			ErrorMsg: "Not a feed Number",
 		}

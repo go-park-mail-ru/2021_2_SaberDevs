@@ -15,7 +15,7 @@ type RequestUser struct {
 	Password string `json:"password"`
 }
 
-type LoginBody struct {
+type LoginData struct {
 	Login   string `json:"login"`
 	Surname string `json:"surname"`
 	Name    string `json:"name"`
@@ -25,7 +25,7 @@ type LoginBody struct {
 
 type LoginResponse struct {
 	Status uint      `json:"status"`
-	Data   LoginBody `json:"data"`
+	Data   LoginData `json:"data"`
 	Msg    string    `json:"msg"`
 }
 
@@ -34,7 +34,7 @@ type LogoutResponse struct {
 	GoodbyeMsg string `json:"goodbye"`
 }
 
-type SignUpBody struct {
+type SignUpData struct {
 	Login   string `json:"login"`
 	Surname string `json:"surname"`
 	Name    string `json:"name"`
@@ -52,7 +52,7 @@ type RequestSignup struct {
 
 type SignupResponse struct {
 	Status uint       `json:"status"`
-	SBody  SignUpBody `json:"data"`
+	Data  SignUpData `json:"data"`
 	Msg    string     `json:"msg"`
 }
 
@@ -83,7 +83,7 @@ type ChunkResponse struct {
 	ChunkData []NewsRecord `json:"data"`
 }
 
-type ErrorBody struct {
+type ErrorResponse struct {
 	Status   uint   `json:"status"`
 	ErrorMsg string `json:"msg"`
 }
