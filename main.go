@@ -1,7 +1,7 @@
 package main
 
 import (
-	"saverdevs.com/2021_2_Saberdevs/server"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/server"
 )
 
 const serverAdress = "192.168.0.104:8081"
