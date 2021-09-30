@@ -72,38 +72,22 @@ func (api *MyHandler) Login(c echo.Context) error {
 
 	byteContent, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusFailedDependency,
-			ErrorMsg: "Error unpacking JSON",
-		}
-		return c.JSON(http.StatusFailedDependency, errorJson)
+		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
 
 	err = json.Unmarshal(byteContent, &requestUser)
 	if err != nil {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusFailedDependency,
-			ErrorMsg: "Error unpacking JSON",
-		}
-		return c.JSON(http.StatusFailedDependency, errorJson)
+		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
 
 	u, ok := api.users.Load(requestUser.Login)
-	user := u.(models.User)
-
 	if !ok {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusNoContent,
-			ErrorMsg: "User doesnt exist",
-		}
-		return c.JSON(http.StatusNoContent, errorJson)
+		return c.JSON(http.StatusFailedDependency, models.ErrUserDoesntExist)
 	}
+
+	user := u.(models.User)
 	if user.Password != requestUser.Password {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusForbidden,
-			ErrorMsg: "Wrong password",
-		}
-		return c.JSON(http.StatusForbidden, errorJson)
+		return c.JSON(http.StatusFailedDependency, models.ErrWrongPassword)
 	}
 
 	cookie := formCookie()
@@ -116,7 +100,6 @@ func (api *MyHandler) Login(c echo.Context) error {
 		Name:    user.Email,
 		Surname: user.Email,
 		Email:   user.Email,
-		Score:   12345678,
 	}
 	response := models.LoginResponse{
 		Status: http.StatusOK,
@@ -131,41 +114,22 @@ func (api *MyHandler) Register(c echo.Context) error {
 	newUser := new(models.RequestSignup)
 	byteContent, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusFailedDependency,
-			ErrorMsg: "Error unpacking JSON",
-		}
-		return c.JSON(http.StatusFailedDependency, errorJson)
+		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
 
 	err = json.Unmarshal(byteContent, &newUser)
 	if err != nil {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusFailedDependency,
-			ErrorMsg: "Error unpacking JSON",
-		}
-		return c.JSON(http.StatusFailedDependency, errorJson)
+		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
 
 	_, exists := api.users.Load(newUser.Login)
 	if exists {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusFailedDependency,
-			ErrorMsg: "User already exists",
-		}
-		return c.JSON(http.StatusFailedDependency, errorJson)
+		return c.JSON(http.StatusFailedDependency, models.ErrUserExists)
 	}
 
-	cc, err := c.Cookie("session")
-	if err == nil {
-		_, exists = api.sessions.Load(cc.Value)
-		if exists {
-			errorJson := models.ErrorResponse{
-				Status:   http.StatusFailedDependency,
-				ErrorMsg: "Already authorised",
-			}
-			return c.JSON(http.StatusFailedDependency, errorJson)
-		}
+	cc, _ := c.Cookie("session")
+	if isUserAuthorized(cc, &api.sessions) {
+		return c.JSON(http.StatusFailedDependency, models.ErrAuthorised)
 	}
 
 	user := models.User{
@@ -201,11 +165,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 func (api *MyHandler) Logout(c echo.Context) error {
 	cookie, _ := c.Cookie("session")
 	if !isUserAuthorized(cookie, &api.sessions) {
-		response := models.ErrorResponse{
-			Status:   http.StatusFailedDependency,
-			ErrorMsg: "Not logged in",
-		}
-		return c.JSON(http.StatusOK, response)
+		return c.JSON(http.StatusFailedDependency, models.ErrNotLoggedin)
 	}
 
 	api.sessions.Delete(cookie.Value)
@@ -229,12 +189,8 @@ func (api *MyHandler) Getfeed(c echo.Context) error {
 
 	from, err := strconv.Atoi(rec)
 	if err != nil {
-		errorJson := models.ErrorResponse{
-			Status:   http.StatusNotFound,
-			ErrorMsg: "Not a feed Number",
-		}
 		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusNotFound, errorJson)
+		return c.JSON(http.StatusNotFound, models.ErrNotFeedNumber)
 	}
 	to := from + 4
 	var ChunkData []models.NewsRecord
