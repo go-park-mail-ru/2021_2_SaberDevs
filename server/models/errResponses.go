@@ -35,3 +35,18 @@ var ErrNotFeedNumber = ErrorResponse{
 	Status:   http.StatusNotFound,
 	ErrorMsg: "Not a feed Number",
 }
+
+var ErrInvalidEmail = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Invalid symbols in email",
+}
+
+var ErrInvalidPassword = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Invalid symbols in password",
+}
+
+var ErrInvalidLogin = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Invalid symbols in login",
+}

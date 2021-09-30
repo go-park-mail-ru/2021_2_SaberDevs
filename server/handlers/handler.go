@@ -6,6 +6,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
+	"net/mail"
+	"regexp"
 	"server/server/data"
 	"server/server/models"
 	"strconv"
@@ -16,12 +18,14 @@ import (
 type MyHandler struct {
 	sessions sync.Map
 	users    sync.Map
+	validator *regexp.Regexp
 }
 
 var feedSize = 5
 
 func NewMyHandler() *MyHandler {
 	var handler MyHandler
+	handler.validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
 	for _, user := range data.TestUsers {
 		handler.users.Store(user.Login, user)
 	}
@@ -71,6 +75,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 	requestUser := new(models.RequestUser)
 
 	byteContent, err := ioutil.ReadAll(c.Request().Body)
+	defer c.Request().Body.Close()
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
@@ -110,9 +115,18 @@ func (api *MyHandler) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func isValidEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (api *MyHandler) Register(c echo.Context) error {
 	newUser := new(models.RequestSignup)
 	byteContent, err := ioutil.ReadAll(c.Request().Body)
+	defer c.Request().Body.Close()
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
@@ -130,6 +144,15 @@ func (api *MyHandler) Register(c echo.Context) error {
 	cc, _ := c.Cookie("session")
 	if isUserAuthorized(cc, &api.sessions) {
 		return c.JSON(http.StatusFailedDependency, models.ErrAuthorised)
+	}
+
+	switch {
+	case isValidEmail(newUser.Email):
+		return c.JSON(http.StatusFailedDependency, models.ErrInvalidEmail)
+	case api.validator.MatchString(newUser.Password):
+		return c.JSON(http.StatusFailedDependency, models.ErrInvalidPassword)
+	case api.validator.MatchString(newUser.Login):
+		return c.JSON(http.StatusFailedDependency, models.ErrInvalidLogin)
 	}
 
 	user := models.User{
