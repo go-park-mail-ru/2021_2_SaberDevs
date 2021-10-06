@@ -10,7 +10,7 @@ import (
 )
 
 func router(e *echo.Echo) {
-	api := handlers.NewMyHandler()
+	api := handlers.NewHandler()
 
 	e.POST("/login", api.Login)
 	e.POST("/signup", api.Register)

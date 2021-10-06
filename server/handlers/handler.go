@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/mail"
 	"regexp"
@@ -12,50 +10,45 @@ import (
 
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/data"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/models"
+	"github.com/tmdvs/Go-Emoji-Utils"
 
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
 )
 
-type MyHandler struct {
+type Handler struct {
 	sessions sync.Map
 	users    sync.Map
 }
 
 const chunkSize = 5
 
-func NewMyHandler() *MyHandler {
-	var handler MyHandler
+func NewHandler() *Handler {
+	var handler Handler
 	for _, user := range data.TestUsers {
 		handler.users.Store(user.Login, user)
 	}
 	return &handler
 }
 
-func isValid(input string) bool {
-	var validator *regexp.Regexp
-	validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
-	return validator.MatchString(input)
-}
-
 func formCookie() *http.Cookie {
-	cookie := new(http.Cookie)
-	cookie.Name = "session"
-	cookie.Value = uuid.NewV4().String()
-	cookie.HttpOnly = true
-	cookie.Expires = time.Now().Add(10 * time.Hour)
-	return cookie
+	return &http.Cookie{
+		Name: "session",
+		Value: uuid.NewV4().String(),
+		HttpOnly: true,
+		Expires: time.Now().Add(10 * time.Hour),
+	}
 }
 
 func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
 	if cookie == nil {
 		return false
 	}
-	_, res := sessionsMap.Load(cookie.Value)
-	return res
+	_, ok := sessionsMap.Load(cookie.Value)
+	return ok
 }
 
-func (api *MyHandler) Login(c echo.Context) error {
+func (api *Handler) Login(c echo.Context) error {
 	cooke, _ := c.Cookie("session")
 
 	if isUserAuthorized(cooke, &api.sessions) {
@@ -79,14 +72,7 @@ func (api *MyHandler) Login(c echo.Context) error {
 	}
 
 	requestUser := new(models.RequestUser)
-
-	byteContent, err := ioutil.ReadAll(c.Request().Body)
-	defer c.Request().Body.Close()
-	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
-	}
-
-	err = json.Unmarshal(byteContent, &requestUser)
+	err := c.Bind(requestUser)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
@@ -126,15 +112,22 @@ func isValidEmail(email string) bool {
 	return err != nil
 }
 
-func (api *MyHandler) Register(c echo.Context) error {
-	newUser := new(models.RequestSignup)
-	byteContent, err := ioutil.ReadAll(c.Request().Body)
-	defer c.Request().Body.Close()
-	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
-	}
+func isLoginValid(input string) bool {
+	var validator *regexp.Regexp
+	validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
+	return !validator.MatchString(input)
+}
 
-	err = json.Unmarshal(byteContent, &newUser)
+func isPasswordValid(input string) bool {
+	inputWithoutEmoji := emoji.RemoveAll(input)
+	var validator *regexp.Regexp
+	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{8,20}$")
+	return !validator.MatchString(inputWithoutEmoji)
+}
+
+func (api *Handler) Register(c echo.Context) error {
+	newUser := new(models.RequestSignup)
+	err := c.Bind(newUser)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
 	}
@@ -152,9 +145,9 @@ func (api *MyHandler) Register(c echo.Context) error {
 	switch {
 	case isValidEmail(newUser.Email):
 		return c.JSON(http.StatusFailedDependency, models.ErrInvalidEmail)
-	case !isValid(newUser.Password):
+	case isPasswordValid(newUser.Password):
 		return c.JSON(http.StatusFailedDependency, models.ErrInvalidPassword)
-	case !isValid(newUser.Login):
+	case isLoginValid(newUser.Login):
 		return c.JSON(http.StatusFailedDependency, models.ErrInvalidLogin)
 	}
 
@@ -188,7 +181,7 @@ func (api *MyHandler) Register(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (api *MyHandler) Logout(c echo.Context) error {
+func (api *Handler) Logout(c echo.Context) error {
 	cookie, _ := c.Cookie("session")
 	if !isUserAuthorized(cookie, &api.sessions) {
 		return c.JSON(http.StatusFailedDependency, models.ErrNotLoggedin)
@@ -206,7 +199,7 @@ func (api *MyHandler) Logout(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (api *MyHandler) Getfeed(c echo.Context) error {
+func (api *Handler) Getfeed(c echo.Context) error {
 	rec := c.QueryParam("idLastLoaded")
 	if rec == "" {
 		rec = "0"
