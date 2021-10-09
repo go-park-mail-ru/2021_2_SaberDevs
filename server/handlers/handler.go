@@ -5,6 +5,7 @@ import (
 	"net/mail"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -118,10 +119,35 @@ func isLoginValid(input string) bool {
 	return !validator.MatchString(input)
 }
 
+func removeAllAndCount(input string) (string, int) {
+	matches := emoji.FindAll(input)
+	emoCount := 0
+
+	for _, item := range matches {
+		emoCount += item.Occurrences
+		emo := item.Match.(emoji.Emoji)
+		rs := []rune(emo.Value)
+		for _, r := range rs {
+			input = strings.ReplaceAll(input, string([]rune{r}), "")
+		}
+	}
+
+	return input, emoCount
+}
+
+func minPasswordLength(emoCount int) int {
+	minLength := 8
+	if minLength - emoCount < 0 {
+		return 0
+	}
+	return minLength - emoCount
+}
+
 func isPasswordValid(input string) bool {
-	inputWithoutEmoji := emoji.RemoveAll(input)
+	inputWithoutEmoji, emoCount := removeAllAndCount(input)
 	var validator *regexp.Regexp
-	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{8,20}$")
+	minPasswordLength := minPasswordLength(emoCount)
+	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{" + strconv.Itoa(minPasswordLength) + ",20}$")
 	return !validator.MatchString(inputWithoutEmoji)
 }
 
