@@ -2,10 +2,13 @@ package main
 
 import (
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	"log"
 )
 
-const serverAdress = "192.168.0.104:8081"
-
 func main() {
-	server.Run(serverAdress)
+	serverAddress, err := server.Config()
+	if err != nil {
+		log.Fatal("Error starting server: ", err)
+	}
+	server.Run(serverAddress)
 }
