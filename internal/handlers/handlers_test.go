@@ -44,7 +44,7 @@ func TestLogin(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/login")
-	h := NewHandler()
+	h := NewUserHandler()
 
 	// вызываем тест + Assertions
 	if assert.NoError(t, h.Login(c)) {
@@ -86,7 +86,7 @@ func TestSignUp(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/signup")
-	h := NewHandler()
+	h := NewUserHandler()
 
 	// вызываем тест + Assertions
 	if assert.NoError(t, h.Register(c)) {
@@ -116,7 +116,7 @@ func TestFeed(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/feed")
-	h := NewHandler()
+	h := NewArticlesHandler()
 
 	// вызываем тест + Assertions
 	if assert.NoError(t, h.Getfeed(c)) {
@@ -142,7 +142,7 @@ func TestLogout(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/login")
-	h := NewHandler()
+	h := NewUserHandler()
 
 	// вызываем тест + Assertions, что залогинились успешно
 	if assert.NoError(t, h.Login(c)) {

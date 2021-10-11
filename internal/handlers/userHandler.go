@@ -1,6 +1,11 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/models"
+	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
+	emoji "github.com/tmdvs/Go-Emoji-Utils"
 	"net/http"
 	"net/mail"
 	"regexp"
@@ -8,24 +13,15 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/models"
-	"github.com/tmdvs/Go-Emoji-Utils"
-
-	"github.com/labstack/echo/v4"
-	uuid "github.com/satori/go.uuid"
 )
 
-type Handler struct {
+type UserHandler struct {
 	sessions sync.Map
 	users    sync.Map
 }
 
-const chunkSize = 5
-
-func NewHandler() *Handler {
-	var handler Handler
+func NewUserHandler() *UserHandler {
+	var handler UserHandler
 	for _, user := range data.TestUsers {
 		handler.users.Store(user.Login, user)
 	}
@@ -34,10 +30,10 @@ func NewHandler() *Handler {
 
 func formCookie() *http.Cookie {
 	return &http.Cookie{
-		Name: "session",
-		Value: uuid.NewV4().String(),
+		Name:     "session",
+		Value:    uuid.NewV4().String(),
 		HttpOnly: true,
-		Expires: time.Now().Add(10 * time.Hour),
+		Expires:  time.Now().Add(10 * time.Hour),
 	}
 }
 
@@ -49,7 +45,7 @@ func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
 	return ok
 }
 
-func (api *Handler) Login(c echo.Context) error {
+func (api *UserHandler) Login(c echo.Context) error {
 	cooke, _ := c.Cookie("session")
 
 	if isUserAuthorized(cooke, &api.sessions) {
@@ -137,7 +133,7 @@ func removeAllAndCount(input string) (string, int) {
 
 func minPasswordLength(emoCount int) int {
 	minLength := 8
-	if minLength - emoCount < 0 {
+	if minLength-emoCount < 0 {
 		return 0
 	}
 	return minLength - emoCount
@@ -151,7 +147,7 @@ func isPasswordValid(input string) bool {
 	return !validator.MatchString(inputWithoutEmoji)
 }
 
-func (api *Handler) Register(c echo.Context) error {
+func (api *UserHandler) Register(c echo.Context) error {
 	newUser := new(models.RequestSignup)
 	err := c.Bind(newUser)
 	if err != nil {
@@ -207,7 +203,7 @@ func (api *Handler) Register(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (api *Handler) Logout(c echo.Context) error {
+func (api *UserHandler) Logout(c echo.Context) error {
 	cookie, _ := c.Cookie("session")
 	if !isUserAuthorized(cookie, &api.sessions) {
 		return c.JSON(http.StatusFailedDependency, models.ErrNotLoggedin)
@@ -221,38 +217,6 @@ func (api *Handler) Logout(c echo.Context) error {
 	response := models.LogoutResponse{
 		Status:     http.StatusOK,
 		GoodbyeMsg: "Goodbye, friend!",
-	}
-	return c.JSON(http.StatusOK, response)
-}
-
-func (api *Handler) Getfeed(c echo.Context) error {
-	rec := c.QueryParam("idLastLoaded")
-	if rec == "" {
-		rec = "0"
-	}
-
-	from, err := strconv.Atoi(rec)
-	if err != nil {
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusNotFound, models.ErrNotFeedNumber)
-	}
-	var ChunkData []models.NewsRecord
-	// Возвращаем записи
-	testData := data.TestData
-	if from >= 0 && from+chunkSize < len(testData) {
-		ChunkData = testData[from : from+chunkSize]
-	} else {
-		start := 0
-		if len(testData) > chunkSize {
-			start = len(testData) - chunkSize
-		}
-		ChunkData = testData[start : len(testData)-1]
-
-	}
-	// формируем ответ
-	response := models.ChunkResponse{
-		Status:    http.StatusOK,
-		ChunkData: ChunkData,
 	}
 	return c.JSON(http.StatusOK, response)
 }
