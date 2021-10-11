@@ -1,6 +1,6 @@
 package data
 
-import "github.com/go-park-mail-ru/2021_2_SaberDevs/server/models"
+import "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/models"
 
 var TestData = [...]models.NewsRecord{
 	{"1", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",

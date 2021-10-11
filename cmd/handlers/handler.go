@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/data"
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/server/models"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/models"
 	"github.com/tmdvs/Go-Emoji-Utils"
 
 	"github.com/labstack/echo/v4"
