@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type User struct {
 	Login    string `json:"login"`
 	Name     string `json:"name"`
@@ -28,10 +30,14 @@ type LoginResponse struct {
 	Msg    string    `json:"msg"`
 }
 
+// -----------------------------------------------
+
 type LogoutResponse struct {
 	Status     uint   `json:"status"`
 	GoodbyeMsg string `json:"goodbye"`
 }
+
+// -----------------------------------------------
 
 type SignUpData struct {
 	Login   string `json:"login"`
@@ -53,4 +59,16 @@ type SignupResponse struct {
 	Status uint       `json:"status"`
 	Data   SignUpData `json:"data"`
 	Msg    string     `json:"msg"`
+}
+
+// -----------------------------------------------
+
+type UserUsecase interface {
+	GetByLogin(ctx context.Context, login string) error
+	Store(ctx context.Context, user User) error
+}
+
+type UserRepository interface {
+	GetByLogin(ctx context.Context, login string) error
+	Store(ctx context.Context, user User) error
 }

@@ -1,8 +1,9 @@
 package handlers
 
 import (
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/models"
+	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -27,9 +28,9 @@ func (api *ArticlesHandler) Getfeed(c echo.Context) error {
 	from, err := strconv.Atoi(rec)
 	if err != nil {
 		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusNotFound, models.ErrNotFeedNumber)
+		return c.JSON(http.StatusNotFound, errResp.ErrNotFeedNumber)
 	}
-	var ChunkData []models.NewsRecord
+	var ChunkData []amodels.NewsRecord
 	// Возвращаем записи
 	testData := data.TestData
 	if from >= 0 && from+chunkSize < len(testData) {
@@ -43,7 +44,7 @@ func (api *ArticlesHandler) Getfeed(c echo.Context) error {
 
 	}
 	// формируем ответ
-	response := models.ChunkResponse{
+	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
 		ChunkData: ChunkData,
 	}

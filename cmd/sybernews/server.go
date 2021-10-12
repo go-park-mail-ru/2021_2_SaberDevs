@@ -1,13 +1,25 @@
 package server
 
 import (
+	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/router"
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/labstack/echo/v4"
 )
+
+func router(e *echo.Echo) {
+	userApi := uhandler.NewUserHandler()
+	articlesApi := ahandler.NewArticlesHandler()
+
+	e.POST("/login", userApi.Login)
+	e.POST("/signup", userApi.Register)
+	e.POST("/logout", userApi.Logout)
+
+	e.GET("/feed", articlesApi.Getfeed)
+}
 
 func Run(address string) {
 	e := echo.New()
@@ -17,7 +29,7 @@ func Run(address string) {
 		AllowCredentials: true,
 	}))
 
-	router.Router(e)
+	router(e)
 
 	e.Logger.Fatal(e.Start(address))
 }

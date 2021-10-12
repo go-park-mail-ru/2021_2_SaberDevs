@@ -26,8 +26,3 @@ type ChunkResponse struct {
 	Status    uint         `json:"status"`
 	ChunkData []NewsRecord `json:"data"`
 }
-
-type ErrorResponse struct {
-	Status   uint   `json:"status"`
-	ErrorMsg string `json:"msg"`
-}

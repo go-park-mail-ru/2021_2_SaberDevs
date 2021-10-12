@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/models"
+	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
 	emoji "github.com/tmdvs/Go-Emoji-Utils"
+
 	"net/http"
 	"net/mail"
 	"regexp"
@@ -71,17 +73,17 @@ func (api *UserHandler) Login(c echo.Context) error {
 	requestUser := new(models.RequestUser)
 	err := c.Bind(requestUser)
 	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
+		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
 	}
 
 	u, ok := api.users.Load(requestUser.Login)
 	if !ok {
-		return c.JSON(http.StatusFailedDependency, models.ErrUserDoesntExist)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrUserDoesntExist)
 	}
 
 	user := u.(models.User)
 	if user.Password != requestUser.Password {
-		return c.JSON(http.StatusFailedDependency, models.ErrWrongPassword)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrWrongPassword)
 	}
 
 	cookie := formCookie()
@@ -151,26 +153,26 @@ func (api *UserHandler) Register(c echo.Context) error {
 	newUser := new(models.RequestSignup)
 	err := c.Bind(newUser)
 	if err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.ErrUnpackingJSON)
+		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
 	}
 
 	_, exists := api.users.Load(newUser.Login)
 	if exists {
-		return c.JSON(http.StatusFailedDependency, models.ErrUserExists)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrUserExists)
 	}
 
 	cc, _ := c.Cookie("session")
 	if isUserAuthorized(cc, &api.sessions) {
-		return c.JSON(http.StatusFailedDependency, models.ErrAuthorised)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrAuthorised)
 	}
 
 	switch {
 	case isValidEmail(newUser.Email):
-		return c.JSON(http.StatusFailedDependency, models.ErrInvalidEmail)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrInvalidEmail)
 	case isPasswordValid(newUser.Password):
-		return c.JSON(http.StatusFailedDependency, models.ErrInvalidPassword)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrInvalidPassword)
 	case isLoginValid(newUser.Login):
-		return c.JSON(http.StatusFailedDependency, models.ErrInvalidLogin)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrInvalidLogin)
 	}
 
 	user := models.User{
@@ -206,7 +208,7 @@ func (api *UserHandler) Register(c echo.Context) error {
 func (api *UserHandler) Logout(c echo.Context) error {
 	cookie, _ := c.Cookie("session")
 	if !isUserAuthorized(cookie, &api.sessions) {
-		return c.JSON(http.StatusFailedDependency, models.ErrNotLoggedin)
+		return c.JSON(http.StatusFailedDependency, errResp.ErrNotLoggedin)
 	}
 
 	api.sessions.Delete(cookie.Value)
