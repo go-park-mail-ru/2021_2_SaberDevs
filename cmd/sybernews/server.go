@@ -1,9 +1,10 @@
 package server
 
 import (
-	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
-	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	"net/http"
+
+	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/delivery"
+	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 
 	"github.com/labstack/echo/v4/middleware"
 
