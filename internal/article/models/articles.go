@@ -32,7 +32,7 @@ type ChunkResponse struct {
 }
 
 // ArticleUsecase represent the article's usecases
-type ArticleUsecase interface {
+type ArticleUseCase interface {
 	Fetch(ctx context.Context, from, chunkSize int) ([]Article, error)
 	// GetByID(ctx context.Context, id int64) (Article, error)
 	// Update(ctx context.Context, ar *Article) error
