@@ -19,13 +19,13 @@ func router(e *echo.Echo) {
 	e.POST("/signup", userApi.Register)
 	e.POST("/logout", userApi.Logout)
 
-	e.GET("/feed", articlesApi.Getfeed)
+	e.GET("/feed", articlesApi.GetFeed)
 }
 
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://87.228.2.178:8080"},
+		AllowOrigins:     []string{"http://localhost:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
