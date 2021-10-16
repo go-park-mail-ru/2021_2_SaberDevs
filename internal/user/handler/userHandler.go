@@ -18,10 +18,11 @@ import (
 )
 
 type UserHandler struct {
+	UserUsecase models.UserUsecase
 	sessions sync.Map
 	users    sync.Map
 }
-
+// TODO добавить аргумент юзкейс
 func NewUserHandler() *UserHandler {
 	var handler UserHandler
 	for _, user := range data.TestUsers {
@@ -70,40 +71,48 @@ func (api *UserHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusOK, response)
 	}
 
-	requestUser := new(models.RequestUser)
+	requestUser := new(models.User)
 	err := c.Bind(requestUser)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
 	}
 
-	u, ok := api.users.Load(requestUser.Login)
-	if !ok {
-		return c.JSON(http.StatusFailedDependency, errResp.ErrUserDoesntExist)
+	ctx := c.Request().Context()
+	response, err := api.UserUsecase.LoginUser(ctx, requestUser)
+	if err != nil {
+		// TODO send error
 	}
-
-	user := u.(models.User)
-	if user.Password != requestUser.Password {
-		return c.JSON(http.StatusFailedDependency, errResp.ErrWrongPassword)
-	}
-
-	cookie := formCookie()
-	c.SetCookie(cookie)
-
-	api.sessions.Store(cookie.Value, user.Login)
-
-	d := models.LoginData{
-		Login:   user.Login,
-		Name:    user.Email,
-		Surname: user.Email,
-		Email:   user.Email,
-	}
-	response := models.LoginResponse{
-		Status: http.StatusOK,
-		Data:   d,
-		Msg:    "OK",
-	}
-
 	return c.JSON(http.StatusOK, response)
+
+	//
+	// u, ok := api.users.Load(requestUser.Login)
+	// if !ok {
+	// 	return c.JSON(http.StatusFailedDependency, errResp.ErrUserDoesntExist)
+	// }
+	//
+	// user := u.(models.User)
+	// if user.Password != requestUser.Password {
+	// 	return c.JSON(http.StatusFailedDependency, errResp.ErrWrongPassword)
+	// }
+	//
+	// cookie := formCookie()
+	// c.SetCookie(cookie)
+	//
+	// api.sessions.Store(cookie.Value, user.Login)
+	//
+	// d := models.LoginData{
+	// 	Login:   user.Login,
+	// 	Name:    user.Email,
+	// 	Surname: user.Email,
+	// 	Email:   user.Email,
+	// }
+	// response := models.LoginResponse{
+	// 	Status: http.StatusOK,
+	// 	Data:   d,
+	// 	Msg:    "OK",
+	// }
+	//
+	// return c.JSON(http.StatusOK, response)
 }
 
 func isValidEmail(email string) bool {

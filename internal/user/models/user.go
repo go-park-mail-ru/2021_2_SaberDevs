@@ -8,7 +8,7 @@ type User struct {
 	Surname  string `json:"surname"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Score    uint   `json:"score"`
+	Score    int   `json:"score"`
 }
 
 type RequestUser struct {
@@ -64,11 +64,11 @@ type SignupResponse struct {
 // -----------------------------------------------
 
 type UserUsecase interface {
-	GetByLogin(ctx context.Context, login string) error
-	Store(ctx context.Context, user User) error
+	LoginUser(ctx context.Context, user *User) (LoginResponse, error)
+	Signup(ctx context.Context, user *User) (SignupResponse, error)
 }
 
 type UserRepository interface {
-	GetByLogin(ctx context.Context, login string) error
-	Store(ctx context.Context, user User) error
+	GetByEmail(ctx context.Context, email string) (User, error)
+	Store(ctx context.Context, user *User) error
 }
