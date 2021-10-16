@@ -222,7 +222,11 @@ func (api *UserHandler) Logout(c echo.Context) error {
 		return c.JSON(http.StatusFailedDependency, errResp.ErrNotLoggedin)
 	}
 
-	api.sessions.Delete(cookie.Value)
+	ctx := c.Request().Context()
+	err := api.UserUsecase.Logout(ctx, cookie.Value)
+	if err != nil {
+		// TODO error handling
+	}
 
 	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
 	c.SetCookie(cookie)

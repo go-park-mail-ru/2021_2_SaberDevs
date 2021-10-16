@@ -56,3 +56,8 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 	var response umodels.SignupResponse
 	return response, nil
 }
+
+func (uu *userUsecase) Logout(ctx context.Context, cookieValue string) error {
+	err := uu.sessionRepo.DeleteSession(ctx, cookieValue)
+	return err
+}

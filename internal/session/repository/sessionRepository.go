@@ -22,7 +22,8 @@ func (r *sessionMemoryRepo) CreateSession(ctx context.Context, email string) (st
 	return cookieValue, nil
 }
 
-func (r *sessionMemoryRepo) DeleteSession(ctx context.Context) error {
+func (r *sessionMemoryRepo) DeleteSession(ctx context.Context, cookieValue string) error {
+	r.sessions.Delete(cookieValue)
 	return nil
 }
 
