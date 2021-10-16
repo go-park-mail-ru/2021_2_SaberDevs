@@ -5,7 +5,6 @@ import (
 	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/labstack/echo/v4"
-	uuid "github.com/satori/go.uuid"
 	emoji "github.com/tmdvs/Go-Emoji-Utils"
 
 	"net/http"
@@ -31,10 +30,10 @@ func NewUserHandler() *UserHandler {
 	return &handler
 }
 
-func formCookie() *http.Cookie {
+func formCookie(cookeValue string) *http.Cookie {
 	return &http.Cookie{
 		Name:     "session",
-		Value:    uuid.NewV4().String(),
+		Value:    cookeValue,
 		HttpOnly: true,
 		Expires:  time.Now().Add(10 * time.Hour),
 	}
@@ -49,8 +48,8 @@ func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
 }
 
 func (api *UserHandler) Login(c echo.Context) error {
+	// TODO middleware
 	cooke, _ := c.Cookie("session")
-
 	if isUserAuthorized(cooke, &api.sessions) {
 		login, _ := api.sessions.Load(cooke.Value)
 		u, _ := api.users.Load(login)
@@ -78,13 +77,16 @@ func (api *UserHandler) Login(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	response, err := api.UserUsecase.LoginUser(ctx, requestUser)
+	response, cookeValue, err := api.UserUsecase.LoginUser(ctx, requestUser)
 	if err != nil {
 		// TODO send error
 	}
+
+	cookie := formCookie(cookeValue)
+	c.SetCookie(cookie)
+
 	return c.JSON(http.StatusOK, response)
 
-	//
 	// u, ok := api.users.Load(requestUser.Login)
 	// if !ok {
 	// 	return c.JSON(http.StatusFailedDependency, errResp.ErrUserDoesntExist)
@@ -194,7 +196,7 @@ func (api *UserHandler) Register(c echo.Context) error {
 
 	api.users.Store(newUser.Login, user)
 
-	cookie := formCookie()
+	cookie := formCookie("")
 	c.SetCookie(cookie)
 
 	api.sessions.Store(cookie.Value, user.Login)

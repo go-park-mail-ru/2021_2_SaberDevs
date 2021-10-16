@@ -64,7 +64,7 @@ type SignupResponse struct {
 // -----------------------------------------------
 
 type UserUsecase interface {
-	LoginUser(ctx context.Context, user *User) (LoginResponse, error)
+	LoginUser(ctx context.Context, user *User) (LoginResponse, string, error)
 	Signup(ctx context.Context, user *User) (SignupResponse, error)
 }
 

@@ -8,7 +8,7 @@ type Session struct {
 }
 
 type SessionRepository interface {
-	CreateSession(ctx context.Context, email string, cookieValue string) error
+	CreateSession(ctx context.Context, email string) (string, error)
 	DeleteSession(ctx context.Context) error
 	IsSession(ctx context.Context) error
 }
