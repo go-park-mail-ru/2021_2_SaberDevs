@@ -16,8 +16,8 @@ func router(e *echo.Echo) {
 	userApi := uhandler.NewUserHandler()
 	us := usecase.NewArticleUsecase()
 	articlesApi := ahandler.NewArticlesHandler(e, us)
-	e.GET("/feed", articlesApi.GetFeed)
 
+	e.GET("/feed", articlesApi.GetFeed)
 	e.POST("/login", userApi.Login)
 	e.POST("/signup", userApi.Register)
 	e.POST("/logout", userApi.Logout)
