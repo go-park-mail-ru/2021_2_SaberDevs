@@ -6,15 +6,15 @@ import (
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
 	uuscase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
   
-  "net/http"
+    "net/http"
 
-	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/delivery"
+	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 
-	echo "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 )
 
 func router(e *echo.Echo) {
