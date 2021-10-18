@@ -1,11 +1,15 @@
 package server
 
 import (
-	"net/http"
+	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
+	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
+	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
+	uuscase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+  
+  "net/http"
 
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/delivery"
-	usecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
-	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
+	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -14,9 +18,14 @@ import (
 )
 
 func router(e *echo.Echo) {
-	userApi := uhandler.NewUserHandler()
-	us := usecase.NewArticleUsecase()
+	us := ausecase.NewArticleUsecase()
 	articlesApi := ahandler.NewArticlesHandler(e, us)
+
+  userRepo := urepo.NewUserRepository()
+	sessionRepo := srepo.NewSessionRepository()
+
+	userUsecase := uuscase.NewUserUsecase(userRepo, sessionRepo)
+	userApi := uhandler.NewUserHandler(userUsecase)
 
 	e.GET("/feed", articlesApi.GetFeed)
 	e.POST("/login", userApi.Login)
