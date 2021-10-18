@@ -65,11 +65,11 @@ type SignupResponse struct {
 
 type UserUsecase interface {
 	LoginUser(ctx context.Context, user *User) (LoginResponse, string, error)
-	Signup(ctx context.Context, user *User) (SignupResponse, error)
+	Signup(ctx context.Context, user *User) (SignupResponse, string, error)
 	Logout(ctx context.Context, cookieValue string) error
 }
 
 type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (User, error)
-	Store(ctx context.Context, user *User) error
+	Store(ctx context.Context, user *User) (User, error)
 }

@@ -15,7 +15,7 @@ type userMemoryRepo struct {
 func NewUserRepository() umodels.UserRepository {
 	var userRepo userMemoryRepo
 	for _, user := range data.TestUsers {
-		userRepo.users.Store(user.Login, user)
+		userRepo.users.Store(user.Email, user)
 	}
 	return &userRepo
 }
@@ -30,6 +30,7 @@ func (r *userMemoryRepo) GetByEmail(ctx context.Context, email string) (umodels.
 	return u.(umodels.User), nil
 }
 
-func (r *userMemoryRepo) Store(ctx context.Context, user *umodels.User) error {
-	return nil
+func (r *userMemoryRepo) Store(ctx context.Context, user *umodels.User) (umodels.User, error) {
+	r.users.Store(user.Email, user)
+	return *user, nil
 }

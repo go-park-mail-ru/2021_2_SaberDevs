@@ -2,7 +2,10 @@ package server
 
 import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
+	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
+	uuscase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	"net/http"
 
 	"github.com/labstack/echo/v4/middleware"
@@ -11,7 +14,12 @@ import (
 )
 
 func router(e *echo.Echo) {
-	userApi := uhandler.NewUserHandler()
+	userRepo := urepo.NewUserRepository()
+	sessionRepo := srepo.NewSessionRepository()
+
+	userUsecase := uuscase.NewUserUsecase(userRepo, sessionRepo)
+	userApi := uhandler.NewUserHandler(userUsecase)
+
 	articlesApi := ahandler.NewArticlesHandler()
 
 	e.POST("/login", userApi.Login)

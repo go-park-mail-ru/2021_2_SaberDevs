@@ -5,7 +5,12 @@ import (
 	"errors"
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
+	emoji "github.com/tmdvs/Go-Emoji-Utils"
 	"net/http"
+	"net/mail"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 type userUsecase struct {
@@ -52,9 +57,78 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	return response, cookieValue, nil
 }
 
-func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.SignupResponse, error) {
+func isValidEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err != nil
+}
+
+func isLoginValid(input string) bool {
+	var validator *regexp.Regexp
+	validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
+	return !validator.MatchString(input)
+}
+
+func removeAllAndCount(input string) (string, int) {
+	matches := emoji.FindAll(input)
+	emoCount := 0
+
+	for _, item := range matches {
+		emoCount += item.Occurrences
+		emo := item.Match.(emoji.Emoji)
+		rs := []rune(emo.Value)
+		for _, r := range rs {
+			input = strings.ReplaceAll(input, string([]rune{r}), "")
+		}
+	}
+
+	return input, emoCount
+}
+
+func minPasswordLength(emoCount int) int {
+	minLength := 8
+	if minLength-emoCount < 0 {
+		return 0
+	}
+	return minLength - emoCount
+}
+
+func isPasswordValid(input string) bool {
+	inputWithoutEmoji, emoCount := removeAllAndCount(input)
+	var validator *regexp.Regexp
+	minPasswordLength := minPasswordLength(emoCount)
+	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{" + strconv.Itoa(minPasswordLength) + ",20}$")
+	return !validator.MatchString(inputWithoutEmoji)
+}
+
+func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.SignupResponse, string, error) {
 	var response umodels.SignupResponse
-	return response, nil
+
+	signedupUser, err := uu.userRepo.Store(ctx, user)
+	if err != nil {
+		// TODO error
+		return response, "", err
+	}
+
+	d := umodels.SignUpData{
+		Login:   signedupUser.Login,
+		Name:    signedupUser.Name,
+		Surname: signedupUser.Surname,
+		Email:   signedupUser.Email,
+		Score:   signedupUser.Score,
+	}
+	response = umodels.SignupResponse{
+		Status: http.StatusOK,
+		Data:   d,
+		Msg:    "OK",
+	}
+
+	cookieValue, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	if err != nil {
+		// TODO error
+		return response, "", err
+	}
+
+	return response, cookieValue, nil
 }
 
 func (uu *userUsecase) Logout(ctx context.Context, cookieValue string) error {
