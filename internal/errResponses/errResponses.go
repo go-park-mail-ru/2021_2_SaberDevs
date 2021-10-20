@@ -55,3 +55,8 @@ var ErrInvalidLogin = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "Invalid symbols in login",
 }
+
+var ErrNoSession = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Session doesnt exist",
+}

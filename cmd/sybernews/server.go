@@ -4,7 +4,9 @@ import (
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
-	uuscase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
+	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
   
     "net/http"
 
@@ -21,23 +23,29 @@ func router(e *echo.Echo) {
 	us := ausecase.NewArticleUsecase()
 	articlesApi := ahandler.NewArticlesHandler(e, us)
 
-  userRepo := urepo.NewUserRepository()
+    userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
 
-	userUsecase := uuscase.NewUserUsecase(userRepo, sessionRepo)
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
 	userApi := uhandler.NewUserHandler(userUsecase)
 
+	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
+	sessionApi := shandler.NewSessionHandler(sessionUsecase)
+
 	e.GET("/feed", articlesApi.GetFeed)
+
 	e.POST("/login", userApi.Login)
 	e.POST("/signup", userApi.Register)
 	e.POST("/logout", userApi.Logout)
+
+	e.POST("/", sessionApi.CheckSession)
 
 }
 
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://127.0.0.1:8080"},
+		AllowOrigins:     []string{"http://87.228.2.178:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))

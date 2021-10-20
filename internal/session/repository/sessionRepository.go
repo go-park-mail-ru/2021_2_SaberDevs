@@ -27,6 +27,11 @@ func (r *sessionMemoryRepo) DeleteSession(ctx context.Context, cookieValue strin
 	return nil
 }
 
-func (r *sessionMemoryRepo) IsSession(ctx context.Context) error {
-	return nil
+func (r *sessionMemoryRepo) IsSession(ctx context.Context, cookie string) (string, error) {
+	email, ok := r.sessions.Load(cookie)
+	if !ok {
+		// TODO return good error
+		return "" , nil
+	}
+	return email.(string), nil
 }

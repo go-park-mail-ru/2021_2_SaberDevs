@@ -12,7 +12,7 @@ import (
 type UserHandler struct {
 	UserUsecase models.UserUsecase
 }
-// TODO добавить аргумент юзкейс
+
 func NewUserHandler(uu models.UserUsecase) *UserHandler {
 	return &UserHandler{uu}
 }
