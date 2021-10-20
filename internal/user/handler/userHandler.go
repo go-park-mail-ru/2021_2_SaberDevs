@@ -35,28 +35,6 @@ func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
 }
 
 func (api *UserHandler) Login(c echo.Context) error {
-	// TODO middleware
-	// cooke, _ := c.Cookie("session")
-	// if isUserAuthorized(cooke, &api.sessions) {
-	// 	login, _ := api.sessions.Load(cooke.Value)
-	// 	u, _ := api.users.Load(login)
-	//
-	// 	user := u.(models.User)
-	//
-	// 	d := models.LoginData{
-	// 		Login:   user.Login,
-	// 		Name:    user.Name,
-	// 		Surname: user.Surname,
-	// 		Email:   user.Email,
-	// 	}
-	// 	response := models.LoginResponse{
-	// 		Status: http.StatusOK,
-	// 		Data:   d,
-	// 		Msg:    "OK",
-	// 	}
-	// 	return c.JSON(http.StatusOK, response)
-	// }
-
 	requestUser := new(models.User)
 	err := c.Bind(requestUser)
 	if err != nil {
@@ -96,10 +74,6 @@ func (api *UserHandler) Register(c echo.Context) error {
 }
 
 func (api *UserHandler) Logout(c echo.Context) error {
-	// if !isUserAuthorized(cookie, &api.sessions) {
-	// 	return c.JSON(http.StatusFailedDependency, errResp.ErrNotLoggedin)
-	// }
-
 	cookie, _ := c.Cookie("session")
 	ctx := c.Request().Context()
 	err := api.UserUsecase.Logout(ctx, cookie.Value)

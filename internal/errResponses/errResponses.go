@@ -11,6 +11,7 @@ var ErrUnpackingJSON = ErrorResponse{
 	Status:   http.StatusUnprocessableEntity,
 	ErrorMsg: "Error unpacking JSON",
 }
+
 var ErrUserDoesntExist = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "User doesnt exist",
