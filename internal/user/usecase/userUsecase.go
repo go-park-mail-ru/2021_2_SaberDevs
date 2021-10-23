@@ -2,9 +2,10 @@ package usecases
 
 import (
 	"context"
-	"errors"
+	// "errors"
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
+	"github.com/pkg/errors"
 	emoji "github.com/tmdvs/Go-Emoji-Utils"
 	"net/http"
 	"net/mail"
@@ -30,8 +31,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	var response umodels.LoginResponse
 	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Email)
 	if err != nil {
-		// TODO user doesnt exist err
-		return response, "", err
+		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
 
 	if userInRepo.Password != user.Password {
@@ -39,7 +39,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 		return response, "", err
 	}
 
-	cookieValue, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
 
 	d := umodels.LoginData{
 		Login:   userInRepo.Login,
@@ -54,7 +54,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 		Msg:    "OK",
 	}
 
-	return response, cookieValue, nil
+	return response, sessionID, nil
 }
 
 func isValidEmail(email string) bool {
@@ -122,13 +122,13 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 		Msg:    "OK",
 	}
 
-	cookieValue, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
 	if err != nil {
 		// TODO error
 		return response, "", err
 	}
 
-	return response, cookieValue, nil
+	return response, sessionID, nil
 }
 
 func (uu *userUsecase) Logout(ctx context.Context, cookieValue string) error {

@@ -4,6 +4,7 @@ import (
 	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 	"net/http"
 	"sync"
 	"time"
@@ -38,16 +39,21 @@ func (api *UserHandler) Login(c echo.Context) error {
 	requestUser := new(models.User)
 	err := c.Bind(requestUser)
 	if err != nil {
+		// return sbErr.ErrUnpackingJSON{
+		// 	Reason:   err.Error(),
+		// 	Function: "userHandler.Login",
+		// }
 		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
 	}
 
 	ctx := c.Request().Context()
-	response, cookeValue, err := api.UserUsecase.LoginUser(ctx, requestUser)
+	response, sessionID, err := api.UserUsecase.LoginUser(ctx, requestUser)
 	if err != nil {
+		return errors.Wrap(err, "userHandler/Login")
 		// TODO send error
 	}
 
-	cookie := formCookie(cookeValue)
+	cookie := formCookie(sessionID)
 	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, response)
@@ -57,17 +63,21 @@ func (api *UserHandler) Register(c echo.Context) error {
 	newUser := new(models.User)
 	err := c.Bind(newUser)
 	if err != nil {
+		// return sbErr.ErrUnpackingJSON{
+		// 	Reason:   err.Error(),
+		// 	Function: "userHandler.Register",
+		// }
 		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
 	}
 
 	ctx := c.Request().Context()
-	response, cookeValue, err := api.UserUsecase.Signup(ctx, newUser)
+	response, sessionID, err := api.UserUsecase.Signup(ctx, newUser)
 
 	if err != nil {
 		// TODO send error
 	}
 
-	cookie := formCookie(cookeValue)
+	cookie := formCookie(sessionID)
 	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, response)

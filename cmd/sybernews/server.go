@@ -1,14 +1,15 @@
 package server
 
 import (
+	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
+	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
+	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
-	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
-	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
-  
-    "net/http"
+
+	"net/http"
 
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
@@ -31,6 +32,9 @@ func router(e *echo.Echo) {
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionApi := shandler.NewSessionHandler(sessionUsecase)
+
+	// e.Use(syberMiddleware.ValidateRequestBody)
+	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 
 	e.GET("/feed", articlesApi.GetFeed)
 

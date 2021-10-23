@@ -2,8 +2,8 @@ package repisitory
 
 import (
 	"context"
-	"errors"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"sync"
 )
@@ -24,8 +24,8 @@ func NewUserRepository() umodels.UserRepository {
 func (r *userMemoryRepo) GetByEmail(ctx context.Context, email string) (umodels.User, error) {
 	u, ok := r.users.Load(email)
 	if !ok {
-		var err = errors.New("wrong password")
-		return u.(umodels.User), err
+		// var err = errors.New("wrong password")
+		return umodels.User{}, sbErr.ErrUserDoesntExist{Reason: "no user in memory repo", Function: "userRepository/GetByEmail"}
 	}
 	return u.(umodels.User), nil
 }
