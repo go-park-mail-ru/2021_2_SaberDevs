@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"context"
-	// "errors"
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/pkg/errors"
 	emoji "github.com/tmdvs/Go-Emoji-Utils"
@@ -29,17 +29,20 @@ func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umo
 // TODO error handling
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
+
 	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Email)
 	if err != nil {
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
 
 	if userInRepo.Password != user.Password {
-		var err = errors.New("wrong password")
-		return response, "", err
+		return response, "", sbErr.ErrWrongPassword{"wrong password", "userUsecase/LoginUser"}
 	}
 
 	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	if err != nil {
+		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
+	}
 
 	d := umodels.LoginData{
 		Login:   userInRepo.Login,
@@ -105,8 +108,12 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 
 	signedupUser, err := uu.userRepo.Store(ctx, user)
 	if err != nil {
-		// TODO error
-		return response, "", err
+		return response, "", errors.Wrap(err, "userUsecase/Signup")
+	}
+
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	if err != nil {
+		return response, "", errors.Wrap(err, "userUsecase/Signup")
 	}
 
 	d := umodels.SignUpData{
@@ -122,16 +129,10 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 		Msg:    "OK",
 	}
 
-	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
-	if err != nil {
-		// TODO error
-		return response, "", err
-	}
-
 	return response, sessionID, nil
 }
 
 func (uu *userUsecase) Logout(ctx context.Context, cookieValue string) error {
 	err := uu.sessionRepo.DeleteSession(ctx, cookieValue)
-	return err
+	return errors.Wrap(err, "userUsecase/Logout")
 }

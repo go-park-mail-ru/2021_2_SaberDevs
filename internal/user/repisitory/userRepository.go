@@ -24,8 +24,10 @@ func NewUserRepository() umodels.UserRepository {
 func (r *userMemoryRepo) GetByEmail(ctx context.Context, email string) (umodels.User, error) {
 	u, ok := r.users.Load(email)
 	if !ok {
-		// var err = errors.New("wrong password")
-		return umodels.User{}, sbErr.ErrUserDoesntExist{Reason: "no user in memory repo", Function: "userRepository/GetByEmail"}
+		return umodels.User{}, sbErr.ErrUserDoesntExist{
+			Reason: "no user in memory repo",
+			Function: "userRepository/GetByEmail",
+		}
 	}
 	return u.(umodels.User), nil
 }

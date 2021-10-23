@@ -7,6 +7,11 @@ type ErrorResponse struct {
 	ErrorMsg string `json:"msg"`
 }
 
+var ErrInternal = ErrorResponse{
+	Status:   http.StatusInternalServerError,
+	ErrorMsg: "Internal server error",
+}
+
 var ErrUnpackingJSON = ErrorResponse{
 	Status:   http.StatusUnprocessableEntity,
 	ErrorMsg: "Error unpacking JSON",

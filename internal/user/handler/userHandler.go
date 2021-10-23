@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
@@ -39,18 +39,16 @@ func (api *UserHandler) Login(c echo.Context) error {
 	requestUser := new(models.User)
 	err := c.Bind(requestUser)
 	if err != nil {
-		// return sbErr.ErrUnpackingJSON{
-		// 	Reason:   err.Error(),
-		// 	Function: "userHandler.Login",
-		// }
-		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
+		return sbErr.ErrUnpackingJSON{
+			Reason:   err.Error(),
+			Function: "userHandler/Login",
+		}
 	}
 
 	ctx := c.Request().Context()
 	response, sessionID, err := api.UserUsecase.LoginUser(ctx, requestUser)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/Login")
-		// TODO send error
 	}
 
 	cookie := formCookie(sessionID)
@@ -63,18 +61,16 @@ func (api *UserHandler) Register(c echo.Context) error {
 	newUser := new(models.User)
 	err := c.Bind(newUser)
 	if err != nil {
-		// return sbErr.ErrUnpackingJSON{
-		// 	Reason:   err.Error(),
-		// 	Function: "userHandler.Register",
-		// }
-		return c.JSON(http.StatusUnprocessableEntity, errResp.ErrUnpackingJSON)
+		return sbErr.ErrUnpackingJSON{
+			Reason:   err.Error(),
+			Function: "userHandler.Register",
+		}
 	}
 
 	ctx := c.Request().Context()
 	response, sessionID, err := api.UserUsecase.Signup(ctx, newUser)
-
 	if err != nil {
-		// TODO send error
+		return errors.Wrap(err, "userHandler/Register")
 	}
 
 	cookie := formCookie(sessionID)
@@ -85,10 +81,12 @@ func (api *UserHandler) Register(c echo.Context) error {
 
 func (api *UserHandler) Logout(c echo.Context) error {
 	cookie, _ := c.Cookie("session")
+	// TODO middleware
+
 	ctx := c.Request().Context()
 	err := api.UserUsecase.Logout(ctx, cookie.Value)
 	if err != nil {
-		// TODO error handling
+		return errors.Wrap(err, "userHandler/Logout")
 	}
 
 	cookie.Expires = time.Now().Local().Add(-1 * time.Hour)
