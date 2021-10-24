@@ -8,12 +8,16 @@ import (
 )
 
 func main() {
-	connStr := "user=pqgotest dbname=pqgotest sslmode=verify-full"
+	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
 	age := 21
 	_, err = db.Query("SELECT name FROM users WHERE age = $1", age)
 
