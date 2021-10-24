@@ -53,10 +53,10 @@ func main() {
 	_, err = db.Exec(schema)
 	// schema = `DROP TABLE articles`
 	// _, err = db.Exec(schema)
-	//insert_article := `INSERT INTO articles (id, PreviewUrl, Tags, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
-	for _, a := range data.TestData {
-		a = a
-		// 	db.Exec(article, data.Id, data.PreviewUrl, data.Tags[0], data.Title, data.Text, data.AuthorUrl, data.AuthorName, data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
+	insert_article := `INSERT INTO articles (id, PreviewUrl, Tags, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+	for _, data := range data.TestData {
+		//data = data
+		db.Exec(insert_article, data.Id, data.PreviewUrl, data.Tags[0], data.Title, data.Text, data.AuthorUrl, data.AuthorName, data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
 	}
 	//_, err = db.Exec(insert_article, "123", "data.PreviewUrl", "data.Tags[0]", "data.Title", "data.Text", "data.AuthorUrl", "data.AuthorName", "data.AuthorAvatar", "data.CommentsUrl", 1, 1)
 	fmt.Println(err)
