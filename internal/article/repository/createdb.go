@@ -18,12 +18,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	schema := `CREATE TABLE place (
+	schema := `CREATE TABLE IF NOT EXISTS place (
 		country text,
 		city text NULL,
 		telcode integer);`
 
 	// execute a query on the server
+	_, err = db.Exec(schema)
+	schema = `DROP TABLE place`
 	_, err = db.Exec(schema)
 
 }
