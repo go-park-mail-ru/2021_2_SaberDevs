@@ -1,14 +1,14 @@
 package server
 
 import (
+	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
+	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
-	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
-	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
-  
-    "net/http"
+
+	"net/http"
 
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
@@ -23,7 +23,7 @@ func router(e *echo.Echo) {
 	us := ausecase.NewArticleUsecase()
 	articlesApi := ahandler.NewArticlesHandler(e, us)
 
-    userRepo := urepo.NewUserRepository()
+	userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
 
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
@@ -45,7 +45,7 @@ func router(e *echo.Echo) {
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://87.228.2.178:8080"},
+		AllowOrigins:     []string{"http://127.0.0.1:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))

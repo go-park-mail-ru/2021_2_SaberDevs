@@ -18,17 +18,8 @@ func NewArticlesHandler(e *echo.Echo, us amodels.ArticleUseCase) ArticlesHandler
 		UseCase: us,
 	}
 	// e.GET("/articles", handler.GetFeed)
-	// e.GET("/feed", handler.GetFeed)
-	// e.POST("/articles", handler.Store)
-	// e.GET("/articles/:id", handler.GetByID)
-	// e.DELETE("/articles/:id", handler.Delete)
 	return *handler
 }
-
-// func NewArticleHandler() *ArticlesHandler {
-// 	var handler ArticlesHandler
-// 	return &handler
-// }
 
 const chunkSize = 5
 
