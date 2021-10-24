@@ -18,7 +18,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	age := 21
-	_, err = db.Query("SELECT name FROM users WHERE age = $1", age)
+	schema := `CREATE TABLE place (
+		country text,
+		city text NULL,
+		telcode integer);`
+
+	// execute a query on the server
+	_, err = db.Exec(schema)
 
 }
