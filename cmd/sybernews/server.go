@@ -11,9 +11,6 @@ import (
 
 	"net/http"
 
-	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
-	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
-
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 
@@ -21,8 +18,8 @@ import (
 )
 
 func router(e *echo.Echo) {
-	us := ausecase.NewArticleUsecase()
-	articlesAPI := ahandler.NewArticlesHandler(e, us)
+	// us := ausecase.NewArticleUsecase()
+	// articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
@@ -36,7 +33,7 @@ func router(e *echo.Echo) {
 	// e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 
-	e.GET("/feed", articlesAPI.GetFeed)
+	// e.GET("/feed", articlesAPI.GetFeed)
 
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
@@ -49,7 +46,7 @@ func router(e *echo.Echo) {
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://127.0.0.1:8080"},
+		AllowOrigins:     []string{"http://127.0.0.1:8080", "http://87.228.2.178:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
