@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 )
 

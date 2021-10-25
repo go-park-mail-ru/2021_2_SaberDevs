@@ -22,27 +22,27 @@ import (
 
 func router(e *echo.Echo) {
 	us := ausecase.NewArticleUsecase()
-	articlesApi := ahandler.NewArticlesHandler(e, us)
+	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
 
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
-	userApi := uhandler.NewUserHandler(userUsecase)
+	userAPI := uhandler.NewUserHandler(userUsecase)
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
-	sessionApi := shandler.NewSessionHandler(sessionUsecase)
+	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 
-	e.GET("/feed", articlesApi.GetFeed)
+	e.GET("/feed", articlesAPI.GetFeed)
 
-	e.POST("/login", userApi.Login)
-	e.POST("/signup", userApi.Register)
-	e.POST("/logout", userApi.Logout)
+	e.POST("/login", userAPI.Login)
+	e.POST("/signup", userAPI.Register)
+	e.POST("/logout", userAPI.Logout)
 
-	e.POST("/", sessionApi.CheckSession)
+	e.POST("/", sessionAPI.CheckSession)
 
 }
 

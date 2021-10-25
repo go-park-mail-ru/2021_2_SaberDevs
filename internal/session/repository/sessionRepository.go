@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
+	"sync"
+
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	uuid "github.com/satori/go.uuid"
-	"sync"
 )
 
 type sessionMemoryRepo struct {

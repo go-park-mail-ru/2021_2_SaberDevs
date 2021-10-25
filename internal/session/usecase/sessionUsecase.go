@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/pkg/errors"

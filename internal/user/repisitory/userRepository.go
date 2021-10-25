@@ -2,10 +2,11 @@ package repisitory
 
 import (
 	"context"
+	"sync"
+
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
-	"sync"
 )
 
 type userMemoryRepo struct {

@@ -2,16 +2,17 @@ package usecases
 
 import (
 	"context"
-	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
-	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
-	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
-	"github.com/pkg/errors"
-	emoji "github.com/tmdvs/Go-Emoji-Utils"
 	"net/http"
 	"net/mail"
 	"regexp"
 	"strconv"
 	"strings"
+
+	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
+	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
+	"github.com/pkg/errors"
+	emoji "github.com/tmdvs/Go-Emoji-Utils"
 )
 
 type userUsecase struct {

@@ -12,3 +12,7 @@ linters:
     - varcheck
     - goimports
     - revive
+run:
+  tests: false
+  skip-dirs:
+    - internal/data

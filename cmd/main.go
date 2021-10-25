@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 	"log"
+
+	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 )
 
 func main() {
