@@ -17,8 +17,12 @@ type articleUseCase struct {
 func newArticleUsecase(repo amodels.ArticleRepository) amodels.ArticleUseCase {
 	return &articleUseCase{repo}
 }
+
+// func NewArticleUsecase() amodels.ArticleUseCase {
+// 	return &articleUseCase{repository.NewDataArticleRepository()}
+// }
 func NewArticleUsecase() amodels.ArticleUseCase {
-	return &articleUseCase{repository.NewDataArticleRepository()}
+	return &articleUseCase{repository.NewpsqlArticleRepository()}
 }
 
 func (m *articleUseCase) Fetch(ctx echo.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
