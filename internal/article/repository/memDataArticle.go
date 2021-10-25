@@ -1,7 +1,7 @@
 package article
 
 import (
-	echo "github.com/labstack/echo/v4"
+	"context"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
@@ -19,7 +19,7 @@ func NewDataArticleRepository() amodels.ArticleRepository {
 	return &memDataArticleRepository{data.TestData[:]}
 }
 
-func (m *memDataArticleRepository) Fetch(ctx echo.Context, from, chunkSize int) (result []amodels.Article, err error) {
+func (m *memDataArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {
 	var ChunkData []amodels.Article
 	if from >= 0 && from+chunkSize < len(m.Data) {
 		ChunkData = m.Data[from : from+chunkSize]

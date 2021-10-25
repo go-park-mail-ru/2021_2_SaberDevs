@@ -1,6 +1,6 @@
 package models
 
-import echo "github.com/labstack/echo/v4"
+import "context"
 
 //Представление записи
 type Article struct {
@@ -31,7 +31,7 @@ type ChunkResponse struct {
 
 // ArticleUsecase represent the article's usecases
 type ArticleUseCase interface {
-	Fetch(ctx echo.Context, idLastLoaded string, chunkSize int) ([]Article, error)
+	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
 	// GetByID(ctx context.Context, id int64) (Article, error)
 	// Update(ctx context.Context, ar *Article) error
 	// GetByTitle(ctx context.Context, title string) (Article, error)
@@ -41,7 +41,7 @@ type ArticleUseCase interface {
 
 // ArticleRepository represent the article's repository contract
 type ArticleRepository interface {
-	Fetch(ctx echo.Context, from, chunkSize int) ([]Article, error)
+	Fetch(ctx context.Context, from, chunkSize int) ([]Article, error)
 	// GetByID(ctx context.Context, id int64) (Article, error)
 	// GetByTitle(ctx context.Context, title string) (Article, error)
 	// Update(ctx context.Context, ar *Article) error

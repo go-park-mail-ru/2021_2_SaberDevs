@@ -3,7 +3,7 @@ package article
 import (
 	"strconv"
 
-	echo "github.com/labstack/echo/v4"
+	"context"
 
 	repository "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 
@@ -25,7 +25,7 @@ func NewArticleUsecase() amodels.ArticleUseCase {
 	return &articleUseCase{repository.NewpsqlArticleRepository()}
 }
 
-func (m *articleUseCase) Fetch(ctx echo.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+func (m *articleUseCase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
 	if idLastLoaded == "" {
 		idLastLoaded = "0"
 	}

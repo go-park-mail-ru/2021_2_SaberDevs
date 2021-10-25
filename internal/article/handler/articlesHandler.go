@@ -25,7 +25,8 @@ const chunkSize = 5
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	rec := c.QueryParam("idLastLoaded")
-	ChunkData, err := api.UseCase.Fetch(c, rec, chunkSize)
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.Fetch(ctx, rec, chunkSize)
 	if err != nil {
 		c.Logger().Printf("Error: %s", err.Error())
 		return c.JSON(http.StatusNotFound, errResp.ErrNotFeedNumber)
