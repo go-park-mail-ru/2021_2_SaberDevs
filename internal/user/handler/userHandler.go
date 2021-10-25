@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"net/http"
+	"sync"
+	"time"
+
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"net/http"
-	"sync"
-	"time"
 )
 
 type UserHandler struct {

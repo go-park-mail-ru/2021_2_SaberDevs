@@ -8,18 +8,18 @@ import (
 )
 
 type sessionUsecase struct {
-	userRepo umodels.UserRepository
+	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
 }
 
 func NewsessionUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) smodels.SessionUsecase {
 	return &sessionUsecase{
-		userRepo: ur,
+		userRepo:    ur,
 		sessionRepo: sr,
 	}
 }
 
-func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels.User ,error) {
+func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels.User, error) {
 	var user umodels.User
 
 	email, err := su.sessionRepo.IsSession(ctx, cookie)

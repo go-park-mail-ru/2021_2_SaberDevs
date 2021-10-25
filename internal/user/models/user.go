@@ -8,7 +8,7 @@ type User struct {
 	Surname  string `json:"surname"`
 	Email    string `json:"email" valid:"email,optional"`
 	Password string `json:"password"`
-	Score    int   `json:"score"`
+	Score    int    `json:"score"`
 }
 
 type RequestUser struct {

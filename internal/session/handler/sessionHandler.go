@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+
 	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 type SessionHandler struct {

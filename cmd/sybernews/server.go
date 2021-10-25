@@ -24,7 +24,7 @@ func router(e *echo.Echo) {
 	us := ausecase.NewArticleUsecase()
 	articlesApi := ahandler.NewArticlesHandler(e, us)
 
-    userRepo := urepo.NewUserRepository()
+	userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
 
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)

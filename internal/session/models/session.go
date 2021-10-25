@@ -7,11 +7,11 @@ import (
 
 type Session struct {
 	CookieValue string
-	UserEmail string
+	UserEmail   string
 }
 
 type SessionUsecase interface {
-	IsSession(ctx context.Context, cookie string) (umodels.User ,error)
+	IsSession(ctx context.Context, cookie string) (umodels.User, error)
 }
 
 type SessionRepository interface {

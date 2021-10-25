@@ -9,7 +9,7 @@ import (
 )
 
 type userMemoryRepo struct {
-	users    sync.Map
+	users sync.Map
 }
 
 func NewUserRepository() umodels.UserRepository {
@@ -25,7 +25,7 @@ func (r *userMemoryRepo) GetByEmail(ctx context.Context, email string) (umodels.
 	u, ok := r.users.Load(email)
 	if !ok {
 		return umodels.User{}, sbErr.ErrUserDoesntExist{
-			Reason: "no user in memory repo",
+			Reason:   "no user in memory repo",
 			Function: "userRepository/GetByEmail",
 		}
 	}

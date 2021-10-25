@@ -8,7 +8,7 @@ import (
 )
 
 type sessionMemoryRepo struct {
-	sessions    sync.Map
+	sessions sync.Map
 }
 
 func NewSessionRepository() smodels.SessionRepository {
@@ -31,7 +31,7 @@ func (r *sessionMemoryRepo) IsSession(ctx context.Context, cookie string) (strin
 	email, ok := r.sessions.Load(cookie)
 	if !ok {
 		// TODO return good error
-		return "" , nil
+		return "", nil
 	}
 	return email.(string), nil
 }

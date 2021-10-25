@@ -15,13 +15,13 @@ import (
 )
 
 type userUsecase struct {
-	userRepo umodels.UserRepository
+	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
 }
 
 func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umodels.UserUsecase {
 	return &userUsecase{
-		userRepo: ur,
+		userRepo:    ur,
 		sessionRepo: sr,
 	}
 }
@@ -36,7 +36,9 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	}
 
 	if userInRepo.Password != user.Password {
-		return response, "", sbErr.ErrWrongPassword{"wrong password", "userUsecase/LoginUser"}
+		return response, "", sbErr.ErrWrongPassword{
+			Reason:   "wrong password",
+			Function: "userUsecase/LoginUser"}
 	}
 
 	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
@@ -66,8 +68,7 @@ func isValidEmail(email string) bool {
 }
 
 func isLoginValid(input string) bool {
-	var validator *regexp.Regexp
-	validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
+	validator := regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
 	return !validator.MatchString(input)
 }
 

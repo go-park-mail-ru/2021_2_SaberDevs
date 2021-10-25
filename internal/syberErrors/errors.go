@@ -3,7 +3,7 @@ package syberErrors
 import "fmt"
 
 type ErrUnpackingJSON struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -14,7 +14,7 @@ func (e ErrUnpackingJSON) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrUserDoesntExist struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -25,7 +25,7 @@ func (e ErrUserDoesntExist) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrWrongPassword struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -36,7 +36,7 @@ func (e ErrWrongPassword) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrUserExists struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -47,7 +47,7 @@ func (e ErrUserExists) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrAuthorised struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -58,7 +58,7 @@ func (e ErrAuthorised) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrNotLoggedin struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -69,7 +69,7 @@ func (e ErrNotLoggedin) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrNotFeedNumber struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -80,7 +80,7 @@ func (e ErrNotFeedNumber) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrInvalidEmail struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -91,7 +91,7 @@ func (e ErrInvalidEmail) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrInvalidPassword struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -102,7 +102,7 @@ func (e ErrInvalidPassword) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrInvalidLogin struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
@@ -113,7 +113,7 @@ func (e ErrInvalidLogin) Error() string {
 // -------------------------------------------------------------------------------
 
 type ErrNoSession struct {
-	Reason string
+	Reason   string
 	Function string
 }
 
