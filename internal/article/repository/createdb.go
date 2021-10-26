@@ -46,10 +46,10 @@ func main() {
 	// 	Password string `json:"password"`
 	// 	Score    int    `json:"score"`
 	// }
-	schema := `DROP TABLE IF EXISTS articles;
-		DROP TABLE IF EXISTS author;
-		DROP TABLE IF EXISTS categories;
-		DROP TABLE IF EXISTS categories_articles;`
+	schema := `DROP TABLE IF EXISTS articles CASCADE;
+		DROP TABLE IF EXISTS author CASCADE;
+		DROP TABLE IF EXISTS categories CASCADE;
+		DROP TABLE IF EXISTS categories_articles CASCADE;`
 
 	schema1 := `CREATE TABLE author(
 		Id SERIAL PRIMARY KEY NOT NULL,
@@ -73,7 +73,7 @@ func main() {
 			Title        VARCHAR(45),
 			Text         TEXT,
 			AuthorUrl    VARCHAR(45),
-			AuthorName   VARCHAR(45) REFERENCES author(Name),
+			AuthorName   VARCHAR(45) REFERENCES author(Name) ON DELETE CASCADE,
 			AuthorAvatar VARCHAR(45),
 			CommentsUrl  VARCHAR(45),
 			Comments     INT,
@@ -82,7 +82,7 @@ func main() {
 	schema4 := `CREATE TABLE categories_articles (
 		articles_id INT REFERENCES articles(id),
 		categories_id INT REFERENCES categories(id),
-		CONSTRAINT id PRIMARY KEY (articles_id, categories_id)
+		CONSTRAINT id PRIMARY KEY (articles_id, categories_id) 
 		   );`
 
 	// execute a query on the server
