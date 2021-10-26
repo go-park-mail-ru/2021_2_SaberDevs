@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	// amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -55,7 +54,7 @@ func main() {
 		DROP TABLE IF EXISTS categories_articles CASCADE;`
 
 	schema1 := `CREATE TABLE author(
-		Id SERIAL PRIMARY KEY NOT NULL,
+		Id       SERIAL PRIMARY KEY NOT NULL,
 		Login    VARCHAR(45),
 		Name     VARCHAR(45) NOT NULL UNIQUE,
 		Surname  VARCHAR(45),
@@ -65,25 +64,26 @@ func main() {
 		);`
 
 	schema2 := `CREATE TABLE categories (
-		id SERIAL PRIMARY KEY NOT NULL,
+		id   SERIAL PRIMARY KEY NOT NULL,
 		tag  VARCHAR(45)
 		);`
 
 	schema3 := `CREATE TABLE articles (
-		    id SERIAL PRIMARY KEY NOT NULL,
-			name_id VARCHAR(45),
-			PreviewUrl   VARCHAR(45),
-			Title        VARCHAR(45),
-			Text         TEXT,
-			AuthorUrl    VARCHAR(45),
-			AuthorName   VARCHAR(45) REFERENCES author(Name) ON DELETE CASCADE,
-			AuthorAvatar VARCHAR(45),
-			CommentsUrl  VARCHAR(45),
-			Comments     INT,
-			Likes        INT );`
+		id           SERIAL PRIMARY KEY NOT NULL,
+		string_id    VARCHAR(45),
+		PreviewUrl   VARCHAR(45),
+		Title        VARCHAR(45),
+		Text         TEXT,
+		AuthorUrl    VARCHAR(45),
+		AuthorName   VARCHAR(45) REFERENCES author(Name) ON DELETE CASCADE,
+		AuthorAvatar VARCHAR(45),
+		CommentsUrl  VARCHAR(45),
+		Comments     INT,
+		Likes        INT 
+		);`
 
 	schema4 := `CREATE TABLE categories_articles (
-		articles_id INT REFERENCES articles(id),
+		articles_id   INT REFERENCES articles(id),
 		categories_id INT REFERENCES categories(id),
 		CONSTRAINT id PRIMARY KEY (articles_id, categories_id) 
 		   );`
@@ -122,19 +122,24 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	var names []string
 	var author Author
 	for rows.Next() {
 		err = rows.StructScan(&author)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fmt.Println(author.Login)
+		names = append(names, author.Name)
+		fmt.Println(author.Name)
 	}
 
-	// insert_article := `INSERT INTO articles (id, PreviewUrl, Tags, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
-	// for _, data := range data.TestData {
-	// 	db.Exec(insert_article, data.Id, data.PreviewUrl, data.Tags[0], data.Title, data.Text, data.AuthorUrl, data.AuthorName, data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
-	// }
+	insert_article := `INSERT INTO articles (string_id, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+	for i, data := range data.TestData {
+		_, err = db.Exec(insert_article, data.Id, data.PreviewUrl, data.Title, data.Text, data.AuthorUrl, names[i/4], data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
 
 	// rows, err := db.Queryx("SELECT * FROM ARTICLES")
 	// if err != nil {
