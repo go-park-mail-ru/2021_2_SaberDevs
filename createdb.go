@@ -1,7 +1,5 @@
 package main
 
-// package article
-
 import (
 	"fmt"
 	"log"
@@ -25,19 +23,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// type Article struct {
-	// 	Id           string   `json:"id"`
-	// 	PreviewUrl   string   `json:"previewUrl"`
-	// 	Tags         []string `json:"tags"`
-	// 	Title        string   `json:"title"`
-	// 	Text         string   `json:"text"`
-	// 	AuthorUrl    string   `json:"authorUrl"`
-	// 	AuthorName   string   `json:"authorName"`
-	// 	AuthorAvatar string   `json:"authorAvatar"`
-	// 	CommentsUrl  string   `json:"commentsUrl"`
-	// 	Comments     uint     `json:"comments"`
-	// 	Likes        uint     `json:"likes"`
-	// }
+	type dbArticle struct {
+		Id           int
+		StringId     string `json:"id"`
+		PreviewUrl   string `json:"previewUrl"`
+		Title        string `json:"title"`
+		Text         string `json:"text"`
+		AuthorUrl    string `json:"authorUrl"`
+		AuthorName   string `json:"authorName"`
+		AuthorAvatar string `json:"authorAvatar"`
+		CommentsUrl  string `json:"commentsUrl"`
+		Comments     uint   `json:"comments"`
+		Likes        uint   `json:"likes"`
+	}
 
 	type Author struct {
 		Id       int
@@ -69,8 +67,8 @@ func main() {
 		);`
 
 	schema3 := `CREATE TABLE articles (
-		id           SERIAL PRIMARY KEY NOT NULL,
-		string_id    VARCHAR(45),
+		Id           SERIAL PRIMARY KEY NOT NULL,
+		StringId    VARCHAR(45),
 		PreviewUrl   VARCHAR(45),
 		Title        VARCHAR(45),
 		Text         TEXT,
@@ -133,7 +131,7 @@ func main() {
 		fmt.Println(author.Name)
 	}
 
-	insert_article := `INSERT INTO articles (string_id, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+	insert_article := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
 	for i, data := range data.TestData {
 		_, err = db.Exec(insert_article, data.Id, data.PreviewUrl, data.Title, data.Text, data.AuthorUrl, names[i/4], data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
@@ -141,17 +139,17 @@ func main() {
 		}
 	}
 
-	// rows, err := db.Queryx("SELECT * FROM ARTICLES")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// var newArticle amodels.Article
-	// for rows.Next() {
-	// 	err = rows.StructScan(&newArticle)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	fmt.Println(newArticle.Id, newArticle.PreviewUrl)
-	// }
+	rows, err = db.Queryx("SELECT * FROM ARTICLES")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var newArticle dbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Print(newArticle.StringId, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
+	}
 
 }
