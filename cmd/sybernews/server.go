@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -8,6 +9,7 @@ import (
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	"github.com/tarantool/go-tarantool"
 
 	"net/http"
 
@@ -20,6 +22,16 @@ import (
 func router(e *echo.Echo) {
 	// us := ausecase.NewArticleUsecase()
 	// articlesAPI := ahandler.NewArticlesHandler(e, us)
+
+	opts := tarantool.Opts{User: "guest"}
+	client, err := tarantool.Connect(":3302", opts)
+	if err != nil {
+		fmt.Println("Connection refused:", err)
+	}
+	resp, err := client.Ping()
+	fmt.Println(resp.Code)
+	fmt.Println(resp.Data)
+	fmt.Println(err)
 
 	userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
