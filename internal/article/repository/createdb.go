@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	// amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -38,14 +40,15 @@ func main() {
 	// 	Likes        uint     `json:"likes"`
 	// }
 
-	// type User struct {
-	// 	Login    string `json:"login"`
-	// 	Name     string `json:"name"`
-	// 	Surname  string `json:"surname"`
-	// 	Email    string `json:"email" valid:"email,optional"`
-	// 	Password string `json:"password"`
-	// 	Score    int    `json:"score"`
-	// }
+	type Author struct {
+		Id       int
+		Login    string `json:"login"`
+		Name     string `json:"name"`
+		Surname  string `json:"surname"`
+		Email    string `json:"email" valid:"email,optional"`
+		Password string `json:"password"`
+		Score    int    `json:"score"`
+	}
 	schema := `DROP TABLE IF EXISTS articles CASCADE;
 		DROP TABLE IF EXISTS author CASCADE;
 		DROP TABLE IF EXISTS categories CASCADE;
@@ -58,7 +61,7 @@ func main() {
 		Surname  VARCHAR(45),
 		Email    VARCHAR(45),
 		Password VARCHAR(45),
-		score    VARCHAR(45)
+		Score    VARCHAR(45)
 		);`
 
 	schema2 := `CREATE TABLE categories (
@@ -107,13 +110,32 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
+	insert_author := `INSERT INTO author (Login, Name, Surname, Email, Password, Score) VALUES ($1, $2, $3, $4, $5, $6);`
+
+	for _, data := range data.TestUsers {
+		_, err = db.Exec(insert_author, data.Login, data.Name, data.Surname, data.Email, data.Password, data.Score)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	rows, err := db.Queryx("SELECT * FROM author")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var author Author
+	for rows.Next() {
+		err = rows.StructScan(&author)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Println(author.Login)
+	}
+
 	// insert_article := `INSERT INTO articles (id, PreviewUrl, Tags, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
 	// for _, data := range data.TestData {
-	// 	//data = data
 	// 	db.Exec(insert_article, data.Id, data.PreviewUrl, data.Tags[0], data.Title, data.Text, data.AuthorUrl, data.AuthorName, data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
 	// }
-	// //_, err = db.Exec(insert_article, "123", "data.PreviewUrl", "data.Tags[0]", "data.Title", "data.Text", "data.AuthorUrl", "data.AuthorName", "data.AuthorAvatar", "data.CommentsUrl", 1, 1)
-	// fmt.Println(err)
+
 	// rows, err := db.Queryx("SELECT * FROM ARTICLES")
 	// if err != nil {
 	// 	log.Fatal(err)
