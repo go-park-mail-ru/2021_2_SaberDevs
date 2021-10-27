@@ -152,4 +152,25 @@ func main() {
 		fmt.Print(newArticle.StringId, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
 	}
 
+	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
+
+	insert_cat := `INSERT INTO categories (tag) VALUES ($1);`
+	for data := range categories {
+		_, err = db.Exec(insert_cat, data)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	// insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES ($1, $2);`
+	// for i := 0; i <= 10; i++ {
+	// 	_, err = db.Exec(insert_junc, i, rand.Int63n(5))
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 	}
+	// 	_, err = db.Exec(insert_junc, i, rand.Int63n(5))
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 	}
+	// }
+
 }
