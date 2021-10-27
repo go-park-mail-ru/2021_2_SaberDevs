@@ -62,7 +62,7 @@ func main() {
 		);`
 
 	schema2 := `CREATE TABLE categories (
-		id   SERIAL PRIMARY KEY NOT NULL,
+		Id   SERIAL PRIMARY KEY NOT NULL,
 		tag  VARCHAR(45)
 		);`
 
@@ -149,7 +149,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Print(newArticle.StringId, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
+		fmt.Print(newArticle.Id, "  ", newArticle.StringId, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
 	}
 
 	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
@@ -161,16 +161,16 @@ func main() {
 			fmt.Println(err.Error())
 		}
 	}
-	// insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES ($1, $2);`
-	// for i := 0; i <= 10; i++ {
-	// 	_, err = db.Exec(insert_junc, i, rand.Int63n(5))
-	// 	if err != nil {
-	// 		fmt.Println(err.Error())
-	// 	}
-	// 	_, err = db.Exec(insert_junc, i, rand.Int63n(5))
-	// 	if err != nil {
-	// 		fmt.Println(err.Error())
-	// 	}
-	// }
+
+	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
+	((SELECT Id FROM articles WHERE Id = $1) ,    
+	(SELECT Id FROM categories WHERE Id = $2));`
+
+	for i := 1; i <= 11; i++ {
+		_, err = db.Exec(insert_junc, i, i%5+1)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
 
 }
