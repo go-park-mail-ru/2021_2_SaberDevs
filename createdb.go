@@ -38,6 +38,11 @@ func main() {
 		Likes        uint   `json:"likes"`
 	}
 
+	type categories_articles struct {
+		articles_id   uint
+		categories_id uint
+	}
+
 	type Author struct {
 		Id       int
 		Login    string `json:"login"`
@@ -68,7 +73,7 @@ func main() {
 		);`
 
 	schema3 := `CREATE TABLE articles (
-		Id           SERIAL PRIMARY KEY NOT NULL,
+		Id           SERIAL PRIMARY KEY,
 		StringId    VARCHAR(45),
 		PreviewUrl   VARCHAR(45),
 		Title        VARCHAR(45),
@@ -167,9 +172,9 @@ func main() {
 	((SELECT Id FROM articles WHERE Id = $1) ,    
 	(SELECT Id FROM categories WHERE Id = $2));`
 
+	rand.Seed(4)
 	for i := 1; i <= 11; i++ {
-		rand.Seed(2)
-		_, err = db.Exec(insert_junc, i, rand.Int63n(4)+1)
+		_, err = db.Exec(insert_junc, i, rand.Int63n(4)+2)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -177,6 +182,19 @@ func main() {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+	}
+
+	rows, err = db.Queryx("SELECT * FROM categories_articles;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var tag categories_articles
+	for rows.Next() {
+		err = rows.Scan(&tag.articles_id, &tag.categories_id)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Print(tag.articles_id, "  ", tag.categories_id, "\n")
 	}
 
 }
