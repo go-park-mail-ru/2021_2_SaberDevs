@@ -33,17 +33,18 @@ func articleConv(val amodels.DbArticle, Db *sqlx.DB) amodels.Article {
 		article.Text = val.Text[1:50]
 	}
 	article.Title = val.Title
-	rows, err := Db.Queryx("SELECT * FROM TAGS")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	article.Tags = append(article.Tags, "FUBAR")
+	// rows, err := Db.Queryx("SELECT * FROM TAGS")
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
 
-	for rows.Next() {
-		//	err = rows.StructScan(&newArticle)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-	}
+	// for rows.Next() {
+	// 	//	err = rows.StructScan(&newArticle)
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 	}
+	// }
 	return article
 }
 
@@ -82,5 +83,5 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		//fmt.Println(newArticle.Id, newArticle.PreviewUrl)
 	}
 
-	return ChunkData, nil
+	return ChunkData[:5], nil
 }
