@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
@@ -167,7 +168,12 @@ func main() {
 	(SELECT Id FROM categories WHERE Id = $2));`
 
 	for i := 1; i <= 11; i++ {
-		_, err = db.Exec(insert_junc, i, i%5+1)
+		rand.Seed(2)
+		_, err = db.Exec(insert_junc, i, rand.Int63n(4)+1)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		_, err = db.Exec(insert_junc, i, rand.Int63n(5)+1)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
