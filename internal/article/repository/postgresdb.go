@@ -35,19 +35,20 @@ func articleConv(val amodels.DbArticle, Db *sqlx.DB) amodels.Article {
 	article.Title = val.Title
 	article.Tags = append(article.Tags, "FUBAR")
 	rows, err := Db.Queryx(`select c.tag from categories c
-	join table categories_articles ca  on c.Id = ca.categories_id
+	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
-	where a.StringId = $1;`, val.StringId)
+	where a.StringId = $1;`, "11")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var tag string
+	var mytag string
 	for rows.Next() {
-		err = rows.Scan(&tag)
+		err = rows.Scan(&mytag)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		article.Tags = append(article.Tags, tag)
+		article.Tags = append(article.Tags, mytag)
+		//fmt.Printf("%s\n", mytag)
 	}
 	return article
 }
