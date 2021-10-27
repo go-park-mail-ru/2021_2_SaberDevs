@@ -74,7 +74,7 @@ func main() {
 
 	schema3 := `CREATE TABLE articles (
 		Id           SERIAL PRIMARY KEY,
-		StringId    VARCHAR(45),
+		StringId     VARCHAR(45),
 		PreviewUrl   VARCHAR(45),
 		Title        VARCHAR(45),
 		Text         TEXT,
@@ -161,19 +161,34 @@ func main() {
 	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
 
 	insert_cat := `INSERT INTO categories (tag) VALUES ($1);`
-	for data := range categories {
+	for _, data := range categories {
 		_, err = db.Exec(insert_cat, data)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 	}
+	fmt.Print("whereami", "\n")
+	rows, err = db.Queryx("SELECT * FROM categories;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var mytag string
+	var tagid int
+	for rows.Next() {
+		err = rows.Scan(&tagid, &mytag)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Print(tagid, "  ", mytag, "\n")
+	}
+	fmt.Print("whereami", "\n")
 
 	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
 	((SELECT Id FROM articles WHERE Id = $1) ,    
 	(SELECT Id FROM categories WHERE Id = $2));`
 
 	rand.Seed(4)
-	for i := 1; i <= 11; i++ {
+	for i := 1; i <= 12; i++ {
 		_, err = db.Exec(insert_junc, i, rand.Int63n(4)+2)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -195,6 +210,22 @@ func main() {
 			fmt.Println(err.Error())
 		}
 		fmt.Print(tag.articles_id, "  ", tag.categories_id, "\n")
+	}
+
+	rows, err = db.Queryx(`select c.tag from categories c
+	inner join categories_articles ca  on c.Id = ca.categories_id
+	inner join articles a on a.Id = ca.articles_id
+	where a.StringId = $1;`, "11")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&mytag)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Printf("%s\n", mytag)
 	}
 
 }
