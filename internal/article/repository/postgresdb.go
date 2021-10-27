@@ -71,8 +71,24 @@ func NewpsqlArticleRepository() amodels.ArticleRepository {
 func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {
 
 	var ChunkData []amodels.Article
-	//rows, err := m.Db.Queryx("SELECT * FROM ARTICLES" LIMIT $1 OFFSET $2", from, from+chunkSize")
-	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES")
+	rows, err := m.Db.Queryx("SELECT count(*) FROM articles;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var count int
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	// fmt.Println(count)
+	if count <= from+chunkSize {
+		from = count - chunkSize
+	}
+
+	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES LIMIT $1 OFFSET $2", chunkSize, from)
+	// rows, err = m.Db.Queryx("SELECT * FROM ARTICLES")
 	if err != nil {
 		fmt.Println(err.Error())
 	}

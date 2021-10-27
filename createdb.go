@@ -228,4 +228,17 @@ func main() {
 		fmt.Printf("%s\n", mytag)
 	}
 
+	rows, err = db.Queryx("SELECT count(*) FROM articles;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var count int
+	for rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	fmt.Println("!", count)
+
 }
