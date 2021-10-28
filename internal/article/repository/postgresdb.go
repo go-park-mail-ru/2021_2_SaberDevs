@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -105,4 +106,26 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	}
 
 	return ChunkData[:5], nil
+}
+
+func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
+	var a models.Article
+	return a, nil
+}
+func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (result amodels.Article, err error) {
+	var a models.Article
+	return a, nil
+}
+func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) (result amodels.Article, err error) {
+	var a models.Article
+	return a, nil
+}
+func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
+	return nil
+}
+func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) error {
+	return nil
+}
+func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
+	return nil
 }
