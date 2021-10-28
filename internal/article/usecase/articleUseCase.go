@@ -29,11 +29,12 @@ func (m *articleUseCase) Fetch(ctx context.Context, idLastLoaded string, chunkSi
 	if idLastLoaded == "" {
 		idLastLoaded = "0"
 	}
+	if idLastLoaded == "end" {
+		idLastLoaded = "12"
+	}
 
 	from, err := strconv.Atoi(idLastLoaded)
 	if err != nil {
-		//c.Logger().Printf("Error: %s", err.Error())
-		//return c.JSON(http.StatusNotFound, errResp.ErrNotFeedNumber)
 		return nil, err
 	}
 

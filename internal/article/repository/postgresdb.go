@@ -34,6 +34,25 @@ func articleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
 	}
 	article.Title = val.Title
 	article.Tags = append(article.Tags, "FUBAR")
+	return article, nil
+}
+func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
+	var article amodels.Article
+	article.AuthorAvatar = val.AuthorAvatar
+	article.AuthorName = val.AuthorName
+	article.AuthorUrl = val.AuthorUrl
+	article.Comments = val.Comments
+	article.CommentsUrl = val.CommentsUrl
+	article.Id = val.StringId
+	article.Likes = val.Likes
+	article.PreviewUrl = val.PreviewUrl
+	if len(val.Text) <= previewLen {
+		article.Text = val.Text
+	} else {
+		article.Text = val.Text[1:50]
+	}
+	article.Title = val.Title
+	article.Tags = append(article.Tags, "FUBAR")
 	rows, err := Db.Queryx(`select c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
@@ -84,10 +103,10 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	}
 	// fmt.Println(count)
 	if count <= from+chunkSize {
-		from = count - chunkSize
+		from = count - chunkSize - 1
 	}
 
-	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES LIMIT $1 OFFSET $2", chunkSize, from)
+	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
 	// rows, err = m.Db.Queryx("SELECT * FROM ARTICLES")
 	if err != nil {
 		return ChunkData, err
@@ -104,10 +123,42 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 			return ChunkData, err
 		}
 		ChunkData = append(ChunkData, outArticle)
-		//fmt.Println(newArticle.Id, newArticle.PreviewUrl)
 	}
+	schema := `select a.StringId, a.Id, c.tag from categories c
+	inner join categories_articles ca  on c.Id = ca.categories_id
+	inner join articles a on a.Id = ca.articles_id
+	where a.StringId in (`
+	var ids []interface{}
+	for i, data := range ChunkData {
+		ids = append(ids, data.Id)
+		schema = schema + `$` + fmt.Sprint(i+1)
+		if i < len(ChunkData)-1 {
+			schema = schema + `,`
+		}
+	}
+	schema = schema + `) order by a.Id, c.tag;`
 
-	return ChunkData[:5], nil
+	rows, err = m.Db.Queryx(schema, ids...)
+	if err != nil {
+		return ChunkData, err
+	}
+	var newtag string
+	var strid string
+	var id int
+	i := 0
+	for rows.Next() {
+		err = rows.Scan(&strid, &id, &newtag)
+		if err != nil {
+			return ChunkData, err
+		}
+		if ChunkData[i].Id == strid {
+			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
+		} else {
+			i++
+			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
+		}
+	}
+	return ChunkData, nil
 }
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
