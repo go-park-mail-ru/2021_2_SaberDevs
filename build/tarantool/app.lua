@@ -7,8 +7,7 @@ box.once('init', function()
         {name = 'sessionID', type = 'string'},
         {name = 'email', type = 'string'}
     })
-    box.space.sessions:create_index('primary',
-        { type = 'TREE', parts = {'sessionID'}})
+    s:create_index('primary', {type = 'hash', parts = {'sessionID'}})
 
      print('Hello, world!')
 end)

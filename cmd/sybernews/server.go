@@ -24,14 +24,27 @@ func router(e *echo.Echo) {
 	// articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	opts := tarantool.Opts{User: "guest"}
-	client, err := tarantool.Connect(":3302", opts)
+	conn, err := tarantool.Connect(":3302", opts)
 	if err != nil {
 		fmt.Println("Connection refused:", err)
 	}
-	resp, err := client.Ping()
+	resp, err := conn.Ping()
 	fmt.Println(resp.Code)
 	fmt.Println(resp.Data)
 	fmt.Println(err)
+
+	resp, err = conn.Insert("sessions", []interface{}{"Jesus", "Jesus"})
+	if err != nil {
+		fmt.Println("Error", err)
+		fmt.Println("Code", resp.Code)
+	}
+
+	resp, err = conn.Select("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{"Jesus"})
+	if err != nil {
+		fmt.Println("Error", err)
+		fmt.Println("Code", resp.Code)
+		return
+	}
 
 	userRepo := urepo.NewUserRepository()
 	sessionRepo := srepo.NewSessionRepository()
