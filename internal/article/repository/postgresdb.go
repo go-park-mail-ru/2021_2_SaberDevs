@@ -18,7 +18,7 @@ type psqlArticleRepository struct {
 
 const previewLen = 50
 
-func articleConv(val amodels.DbArticle, Db *sqlx.DB) amodels.Article {
+func articleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
 	var article amodels.Article
 	article.AuthorAvatar = val.AuthorAvatar
 	article.AuthorName = val.AuthorName
@@ -40,18 +40,18 @@ func articleConv(val amodels.DbArticle, Db *sqlx.DB) amodels.Article {
 	inner join articles a on a.Id = ca.articles_id
 	where a.StringId = $1;`, val.StringId)
 	if err != nil {
-		fmt.Println(err.Error())
+		return article, err
 	}
 	var mytag string
 	for rows.Next() {
 		err = rows.Scan(&mytag)
 		if err != nil {
-			fmt.Println(err.Error())
+			return article, err
 		}
 		article.Tags = append(article.Tags, mytag)
 		//fmt.Printf("%s\n", mytag)
 	}
-	return article
+	return article, nil
 }
 
 func NewpsqlArticleRepository() amodels.ArticleRepository {
@@ -74,13 +74,13 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	var ChunkData []amodels.Article
 	rows, err := m.Db.Queryx("SELECT count(*) FROM articles;")
 	if err != nil {
-		fmt.Println(err.Error())
+		return ChunkData, err
 	}
 	var count int
 	for rows.Next() {
 		err = rows.Scan(&count)
 		if err != nil {
-			fmt.Println(err.Error())
+			return ChunkData, err
 		}
 	}
 	// fmt.Println(count)
@@ -91,16 +91,19 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES LIMIT $1 OFFSET $2", chunkSize, from)
 	// rows, err = m.Db.Queryx("SELECT * FROM ARTICLES")
 	if err != nil {
-		fmt.Println(err.Error())
+		return ChunkData, err
 	}
 	var newArticle amodels.DbArticle
 	var outArticle amodels.Article
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			fmt.Println(err.Error())
+			return ChunkData, err
 		}
-		outArticle = articleConv(newArticle, m.Db)
+		outArticle, err = articleConv(newArticle, m.Db)
+		if err != nil {
+			return ChunkData, err
+		}
 		ChunkData = append(ChunkData, outArticle)
 		//fmt.Println(newArticle.Id, newArticle.PreviewUrl)
 	}
@@ -121,17 +124,37 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 			return outArticle, err
 		}
 	}
-	outArticle = articleConv(newArticle, m.Db)
+	outArticle, err = articleConv(newArticle, m.Db)
+	if err != nil {
+		return outArticle, err
+	}
 	return outArticle, nil
 }
 
-func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (result amodels.Article, err error) {
-	var a models.Article
+func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (result []amodels.Article, err error) {
+	var a []models.Article
 	return a, nil
 }
-func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) (result amodels.Article, err error) {
-	var a models.Article
-	return a, nil
+func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) (result []amodels.Article, err error) {
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1", author)
+	var articles []amodels.Article
+	if err != nil {
+		return articles, err
+	}
+	var outArticle amodels.Article
+	var newArticle amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return articles, err
+		}
+		outArticle, err = articleConv(newArticle, m.Db)
+		if err != nil {
+			return articles, err
+		}
+		articles = append(articles, outArticle)
+	}
+	return articles, nil
 }
 func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
 	return nil

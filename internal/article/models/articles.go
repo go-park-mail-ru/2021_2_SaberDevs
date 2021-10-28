@@ -57,8 +57,8 @@ type ArticleUseCase interface {
 type ArticleRepository interface {
 	Fetch(ctx context.Context, from, chunkSize int) ([]Article, error)
 	GetByID(ctx context.Context, id int64) (Article, error)
-	GetByTag(ctx context.Context, tag string) (Article, error)
-	GetByAuthor(ctx context.Context, author string) (Article, error)
+	GetByTag(ctx context.Context, tag string) ([]Article, error)
+	GetByAuthor(ctx context.Context, author string) ([]Article, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) error
 	Delete(ctx context.Context, id int64) error
