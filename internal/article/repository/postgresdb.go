@@ -109,9 +109,22 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 }
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
-	var a models.Article
-	return a, nil
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.StringId = $1", id)
+	var outArticle amodels.Article
+	if err != nil {
+		return outArticle, err
+	}
+	var newArticle amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return outArticle, err
+		}
+	}
+	outArticle = articleConv(newArticle, m.Db)
+	return outArticle, nil
 }
+
 func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (result amodels.Article, err error) {
 	var a models.Article
 	return a, nil

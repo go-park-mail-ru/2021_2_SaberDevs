@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
 
+	repo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -240,5 +242,11 @@ func main() {
 		}
 	}
 	fmt.Println("!", count)
+	myRepo := repo.NewpsqlArticleRepository()
+	result, err := myRepo.GetByID(context.TODO(), 10)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
 }
