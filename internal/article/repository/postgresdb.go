@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -132,8 +131,28 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 }
 
 func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (result []amodels.Article, err error) {
-	var a []models.Article
-	return a, nil
+	rows, err := m.Db.Queryx(`select a.* from categories c
+	inner join categories_articles ca  on c.Id = ca.categories_id
+	inner join articles a on a.Id = ca.articles_id
+	where c.tag = $1;`, tag)
+	var articles []amodels.Article
+	if err != nil {
+		return articles, err
+	}
+	var outArticle amodels.Article
+	var newArticle amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return articles, err
+		}
+		outArticle, err = articleConv(newArticle, m.Db)
+		if err != nil {
+			return articles, err
+		}
+		articles = append(articles, outArticle)
+	}
+	return articles, nil
 }
 func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) (result []amodels.Article, err error) {
 	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1", author)

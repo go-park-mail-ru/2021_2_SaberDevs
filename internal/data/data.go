@@ -51,7 +51,7 @@ var TestData = [...]amodels.Article{
 		"#", 97, 1010,
 	},
 	{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
-		"А всё, а раньше надо было", "", "#", "Tester-ender",
+		"А всё, а раньше надо было", "А всё, а раньше надо было", "#", "Tester-ender",
 		"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0,
 	},
 }

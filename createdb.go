@@ -256,5 +256,12 @@ func main() {
 	for _, result := range results {
 		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
-
+	fmt.Println()
+	results, err = myRepo.GetByTag(context.TODO(), "finance")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range results {
+		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
 }
