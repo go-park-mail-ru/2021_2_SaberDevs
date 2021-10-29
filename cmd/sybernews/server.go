@@ -39,7 +39,7 @@ func router(e *echo.Echo) {
 	e.GET("/feed", articlesAPI.GetFeed)
 	e.POST("/create", articlesAPI.Create)
 	e.POST("/update", articlesAPI.Update)
-	e.POST("/delete", articlesAPI.Delete)
+	e.DELETE("/delete", articlesAPI.Delete)
 	e.POST("/signup", userAPI.Register)
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
