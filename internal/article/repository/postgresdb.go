@@ -230,8 +230,28 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 	return nil
 }
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) error {
+	insertArticle := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+	_, err := m.Db.Exec(insertArticle, a.Id, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
+	if err != nil {
+		return err
+	}
+	var tags interface{} = a.Tags
+	//find existing tags
+	schema := `SELECT tag FROM categories WHERE tag IN (`
+	for i := range a.Tags {
+		schema = schema + `$` + fmt.Sprint(i+1)
+		if i < len(a.Tags)-1 {
+			schema = schema + `,`
+		}
+	}
+	schema = schema + `)`
+	_, err = m.Db.Exec(schema, tags)
+	if err != nil {
+		return err
+	}
 	return nil
 }
+
 func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
