@@ -235,20 +235,38 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 	if err != nil {
 		return err
 	}
-	var tags interface{} = a.Tags
+	var tags []interface{}
+	exTags := make(map[string]int)
 	//find existing tags
 	schema := `SELECT tag FROM categories WHERE tag IN (`
-	for i := range a.Tags {
+	for i, tag := range a.Tags {
+		exTags[tag] = 0
+		tags = append(tags, tag)
 		schema = schema + `$` + fmt.Sprint(i+1)
 		if i < len(a.Tags)-1 {
 			schema = schema + `,`
 		}
 	}
 	schema = schema + `)`
-	_, err = m.Db.Exec(schema, tags)
+	rows, err := m.Db.Queryx(schema, tags)
 	if err != nil {
 		return err
 	}
+	var tag string
+	for rows.Next() {
+		err = rows.Scan(&tag)
+		if err != nil {
+			return err
+		}
+		exTags[tag] = 1
+	}
+	var newtags []interface{}
+	for _, v := range a.Tags {
+		if exTags[v] == 0 {
+			newtags = append(newtags, v)
+		}
+	}
+
 	return nil
 }
 
