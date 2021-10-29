@@ -41,3 +41,31 @@ func (m *articleUseCase) Fetch(ctx context.Context, idLastLoaded string, chunkSi
 	result, err = m.articleRepo.Fetch(ctx, from, chunkSize)
 	return result, err
 }
+
+func (m *articleUseCase) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
+	result, err = m.articleRepo.GetByID(ctx, id)
+	return result, err
+}
+
+func (m *articleUseCase) GetByTag(ctx context.Context, tag string) (result []amodels.Article, err error) {
+	result, err = m.articleRepo.GetByTag(ctx, tag)
+	return result, err
+}
+func (m *articleUseCase) GetByAuthor(ctx context.Context, author string) (result []amodels.Article, err error) {
+	result, err = m.articleRepo.GetByTag(ctx, author)
+	return result, err
+}
+
+func (m *articleUseCase) Store(ctx context.Context, a *amodels.Article) error {
+	err := m.articleRepo.Store(ctx, a)
+	return err
+}
+
+func (m *articleUseCase) Delete(ctx context.Context, id int64) error {
+	err := m.articleRepo.Delete(ctx, id)
+	return err
+}
+func (m *articleUseCase) Update(ctx context.Context, a *amodels.Article) error {
+	err := m.articleRepo.Update(ctx, a)
+	return err
+}

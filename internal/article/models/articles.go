@@ -46,11 +46,12 @@ type ChunkResponse struct {
 // ArticleUsecase represent the article's usecases
 type ArticleUseCase interface {
 	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
-	// GetByID(ctx context.Context, id int64) (Article, error)
-	// Update(ctx context.Context, ar *Article) error
-	// GetByTitle(ctx context.Context, title string) (Article, error)
-	// Store(context.Context, *Article) error
-	// Delete(ctx context.Context, id int64) error
+	GetByID(ctx context.Context, id int64) (Article, error)
+	GetByTag(ctx context.Context, tag string) ([]Article, error)
+	GetByAuthor(ctx context.Context, author string) ([]Article, error)
+	Update(ctx context.Context, a *Article) error
+	Store(ctx context.Context, a *Article) error
+	Delete(ctx context.Context, id int64) error
 }
 
 // ArticleRepository represent the article's repository contract

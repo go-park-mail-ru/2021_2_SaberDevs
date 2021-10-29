@@ -5,6 +5,7 @@ package article
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/jmoiron/sqlx"
@@ -225,9 +226,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 	}
 	return articles, nil
 }
-func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
-	return nil
-}
+
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) error {
 	insertArticle := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
 	_, err := m.Db.Exec(insertArticle, a.Id, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
@@ -288,6 +287,28 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 
 func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
 	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.StringId = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
+	if a.Id == "" {
+		a.Id = "0"
+	}
+	if a.Id == "end" {
+		a.Id = "12"
+	}
+
+	uniqId, err := strconv.Atoi(a.Id)
+	if err != nil {
+		return err
+	}
+	err = m.Delete(ctx, int64(uniqId))
+	if err != nil {
+		return err
+	}
+	err = m.Store(ctx, a)
 	if err != nil {
 		return err
 	}
