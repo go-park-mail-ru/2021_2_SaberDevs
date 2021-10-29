@@ -33,7 +33,6 @@ func articleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
 		article.Text = val.Text[1:50]
 	}
 	article.Title = val.Title
-	article.Tags = append(article.Tags, "FUBAR")
 	return article, nil
 }
 func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
@@ -174,7 +173,7 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 			return outArticle, err
 		}
 	}
-	outArticle, err = articleConv(newArticle, m.Db)
+	outArticle, err = fullArticleConv(newArticle, m.Db)
 	if err != nil {
 		return outArticle, err
 	}
@@ -197,7 +196,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (resul
 		if err != nil {
 			return articles, err
 		}
-		outArticle, err = articleConv(newArticle, m.Db)
+		outArticle, err = fullArticleConv(newArticle, m.Db)
 		if err != nil {
 			return articles, err
 		}
@@ -248,7 +247,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 		}
 	}
 	schema = schema + `)`
-	rows, err := m.Db.Queryx(schema, tags)
+	rows, err := m.Db.Queryx(schema, tags...)
 	if err != nil {
 		return err
 	}
@@ -260,6 +259,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 		}
 		exTags[tag] = 1
 	}
+	//create new tags
 	var newtags []interface{}
 	for _, v := range a.Tags {
 		if exTags[v] == 0 {
@@ -267,6 +267,22 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 		}
 	}
 
+	insertCat := `INSERT INTO categories (tag) VALUES ($1);`
+	for _, data := range newtags {
+		_, err = m.Db.Exec(insertCat, data)
+		if err != nil {
+			return err
+		}
+	}
+	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
+	((SELECT Id FROM articles WHERE StringId = $1) ,    
+	(SELECT Id FROM categories WHERE tag = $2));`
+	for _, v := range a.Tags {
+		_, err = m.Db.Exec(insert_junc, a.Id, v)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

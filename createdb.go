@@ -264,4 +264,20 @@ func main() {
 	for _, result := range results {
 		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
+
+	fmt.Println()
+	ar := data.TestData[3]
+	ar.Id = "13"
+	ar.AuthorName = "dar@exp.ru"
+	ar.Tags = append(ar.Tags, "finance")
+	err = myRepo.Store(context.TODO(), &ar)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("!", count)
+	result, err = myRepo.GetByID(context.TODO(), 13)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 }
