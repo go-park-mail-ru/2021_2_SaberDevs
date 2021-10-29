@@ -51,7 +51,7 @@ type ArticleUseCase interface {
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) error
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, id string) error
 }
 
 // ArticleRepository represent the article's repository contract

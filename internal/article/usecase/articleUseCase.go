@@ -61,8 +61,19 @@ func (m *articleUseCase) Store(ctx context.Context, a *amodels.Article) error {
 	return err
 }
 
-func (m *articleUseCase) Delete(ctx context.Context, id int64) error {
-	err := m.articleRepo.Delete(ctx, id)
+func (m *articleUseCase) Delete(ctx context.Context, id string) error {
+	if id == "" {
+		id = "0"
+	}
+	if id == "end" {
+		id = "12"
+	}
+
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return err
+	}
+	err = m.articleRepo.Delete(ctx, int64(idInt))
 	return err
 }
 func (m *articleUseCase) Update(ctx context.Context, a *amodels.Article) error {
