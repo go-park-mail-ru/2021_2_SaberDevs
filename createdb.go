@@ -89,7 +89,7 @@ func main() {
 		);`
 
 	schema4 := `CREATE TABLE categories_articles (
-		articles_id   INT REFERENCES articles(id),
+		articles_id   INT REFERENCES articles(id) ON DELETE CASCADE,
 		categories_id INT REFERENCES categories(id),
 		CONSTRAINT id PRIMARY KEY (articles_id, categories_id) 
 		   );`
@@ -280,4 +280,24 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+
+	err = myRepo.Delete(context.TODO(), 3)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println()
+	newresult, err := myRepo.Fetch(context.TODO(), 0, 6)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+	newresult, err = myRepo.Fetch(context.TODO(), 5, 6)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
 }

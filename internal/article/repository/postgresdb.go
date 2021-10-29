@@ -287,5 +287,9 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 }
 
 func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
+	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.StringId = $1", id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
