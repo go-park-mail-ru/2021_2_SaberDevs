@@ -31,7 +31,7 @@ func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umo
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
 
-	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Email)
+	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Login)
 	if err != nil {
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
@@ -42,7 +42,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 			Function: "userUsecase/LoginUser"}
 	}
 
-	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Login)
 	if err != nil {
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
@@ -113,7 +113,7 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 		return response, "", errors.Wrap(err, "userUsecase/Signup")
 	}
 
-	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Login)
 	if err != nil {
 		return response, "", errors.Wrap(err, "userUsecase/Signup")
 	}

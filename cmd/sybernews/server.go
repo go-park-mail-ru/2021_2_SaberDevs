@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -23,31 +22,19 @@ func router(e *echo.Echo) {
 	// us := ausecase.NewArticleUsecase()
 	// articlesAPI := ahandler.NewArticlesHandler(e, us)
 
-	opts := tarantool.Opts{User: "guest"}
-	conn, err := tarantool.Connect(":3302", opts)
+	opts := tarantool.Opts{User: "admin", Pass: "pass"}
+	sessionsDbConn, err := tarantool.Connect(":3302", opts)
 	if err != nil {
-		fmt.Println("Connection refused:", err)
-	}
-	resp, err := conn.Ping()
-	fmt.Println(resp.Code)
-	fmt.Println(resp.Data)
-	fmt.Println(err)
-
-	resp, err = conn.Insert("sessions", []interface{}{"Jesus", "Jesus"})
-	if err != nil {
-		fmt.Println("Error", err)
-		fmt.Println("Code", resp.Code)
+		panic("error connetcting to session DB: " + err.Error())
 	}
 
-	resp, err = conn.Select("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{"Jesus"})
+	_, err = sessionsDbConn.Ping()
 	if err != nil {
-		fmt.Println("Error", err)
-		fmt.Println("Code", resp.Code)
-		return
+		panic("error pinging session DB: " + err.Error())
 	}
 
 	userRepo := urepo.NewUserRepository()
-	sessionRepo := srepo.NewSessionRepository()
+	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)

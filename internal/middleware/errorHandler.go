@@ -56,7 +56,7 @@ func ErrorHandler(err error, c echo.Context) {
 
 	case errors.As(err, &sbErr.ErrNoSession{}):
 		responseCode = http.StatusFailedDependency
-		responseBody = errResp.ErrInvalidLogin
+		responseBody = errResp.ErrNoSession
 
 	default:
 		responseCode = http.StatusInternalServerError

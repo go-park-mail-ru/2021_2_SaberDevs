@@ -12,4 +12,5 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/tarantool/go-tarantool v0.0.0-20210330210617-56fe55c5fa5c // indirect
 	github.com/tmdvs/Go-Emoji-Utils v1.1.0
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 )
