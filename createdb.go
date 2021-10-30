@@ -300,4 +300,16 @@ func main() {
 	for _, result := range newresult {
 		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
+	fmt.Println()
+	fmt.Println()
+	ar.Tags = append(ar.Tags, "jojo")
+	err = myRepo.Update(context.TODO(), &ar)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	result, err = myRepo.GetByID(context.TODO(), 13)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 }
