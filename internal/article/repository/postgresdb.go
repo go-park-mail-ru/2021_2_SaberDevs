@@ -27,7 +27,7 @@ func SanitizeArticle(a *amodels.Article) *amodels.Article {
 	// s := bluemonday.NewPolicy()
 	//s.AllowStandardURLs()
 	s := bluemonday.StrictPolicy()
-	// l := bluemonday.UGCPolicy()
+	l := bluemonday.UGCPolicy()
 	a.AuthorAvatar = s.Sanitize(a.AuthorAvatar)
 	a.AuthorName = s.Sanitize(a.AuthorName)
 	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
@@ -37,7 +37,7 @@ func SanitizeArticle(a *amodels.Article) *amodels.Article {
 	// a.Likes = s.Sanitize(a.Likes)//not a string
 	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
 	for i := range a.Tags {
-		a.Tags[i] = s.Sanitize(a.Tags[i])
+		a.Tags[i] = l.Sanitize(a.Tags[i])
 	}
 	a.Text = s.Sanitize(a.Text)
 	a.Title = s.Sanitize(a.Title)
