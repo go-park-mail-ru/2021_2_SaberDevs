@@ -242,7 +242,7 @@ func main() {
 		}
 	}
 	fmt.Println("!", count)
-	myRepo := repo.NewpsqlArticleRepository()
+	myRepo := repo.NewpsqlArticleRepository(db)
 	result, err := myRepo.GetByID(context.TODO(), 10)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -302,6 +302,7 @@ func main() {
 	}
 	fmt.Println()
 	fmt.Println()
+	ar.Text = `<a onblur="alert(secret)" href="http://www.google.com">Google</a>`
 	ar.Tags = append(ar.Tags, "jojo")
 	err = myRepo.Update(context.TODO(), &ar)
 	if err != nil {

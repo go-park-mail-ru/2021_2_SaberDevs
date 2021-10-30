@@ -21,7 +21,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func dbConnect() (*sqlx.DB, error) {
+func DbConnect() (*sqlx.DB, error) {
 	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
@@ -34,7 +34,7 @@ func dbConnect() (*sqlx.DB, error) {
 	return db, err
 }
 
-func dbClose(db *sqlx.DB) error {
+func DbClose(db *sqlx.DB) error {
 	err := db.Close()
 	if err != nil {
 		return err
@@ -75,7 +75,7 @@ func Run(address string) {
 		LogLevel:  log.ERROR,
 	}))
 
-	db, err := dbConnect()
+	db, err := DbConnect()
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func Run(address string) {
 	e.POST("/create", articlesAPI.Create)
 	e.POST("/update", articlesAPI.Update)
 	e.DELETE("/delete", articlesAPI.Delete)
-	defer dbClose(db)
+	defer DbClose(db)
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))
