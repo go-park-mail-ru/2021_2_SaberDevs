@@ -80,9 +80,7 @@ func Run(address string) {
 		e.Logger.Fatal(err)
 	}
 	articles := e.Group("/feed")
-	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}\n",
-	}))
+	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	us := ausecase.NewArticleUsecase(db)
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
