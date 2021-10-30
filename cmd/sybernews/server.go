@@ -34,17 +34,18 @@ func dbConnect() (*sqlx.DB, error) {
 	return db, err
 }
 
-func router(e *echo.Echo) {
-	db, err := dbConnect()
+func dbClose(db *sqlx.DB) error {
+	err := db.Close()
 	if err != nil {
-		e.Logger.Fatal(err)
+		return err
 	}
-	us := ausecase.NewArticleUsecase(db)
-	articlesAPI := ahandler.NewArticlesHandler(e, us)
+	return err
+}
 
-	userRepo := urepo.NewUserRepository()
+func router(e *echo.Echo) {
+
 	sessionRepo := srepo.NewSessionRepository()
-
+	userRepo := urepo.NewUserRepository()
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
 
@@ -54,17 +55,11 @@ func router(e *echo.Echo) {
 	// e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 
-	e.GET("/feed", articlesAPI.GetFeed)
-	e.POST("/create", articlesAPI.Create)
-	e.POST("/update", articlesAPI.Update)
-	e.DELETE("/delete", articlesAPI.Delete)
 	e.POST("/signup", userAPI.Register)
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
 	e.POST("/logout", userAPI.Logout)
-
 	e.POST("/", sessionAPI.CheckSession)
-
 }
 
 func Run(address string) {
@@ -80,6 +75,18 @@ func Run(address string) {
 		LogLevel:  log.ERROR,
 	}))
 
+	db, err := dbConnect()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	us := ausecase.NewArticleUsecase(db)
+	articlesAPI := ahandler.NewArticlesHandler(e, us)
+
+	e.GET("/feed", articlesAPI.GetFeed)
+	e.POST("/create", articlesAPI.Create)
+	e.POST("/update", articlesAPI.Update)
+	e.DELETE("/delete", articlesAPI.Delete)
+	defer dbClose(db)
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))
