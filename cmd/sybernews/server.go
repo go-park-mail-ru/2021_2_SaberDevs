@@ -80,6 +80,8 @@ func Run(address string) {
 		e.Logger.Fatal(err)
 	}
 	articles := e.Group("/feed")
+	articles.Use(syberMiddleware.AddId)
+
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	us := ausecase.NewArticleUsecase(db)
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
