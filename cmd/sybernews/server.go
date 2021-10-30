@@ -79,13 +79,14 @@ func Run(address string) {
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
+	articles := e.Group("/feed")
 	us := ausecase.NewArticleUsecase(db)
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
-	e.GET("/feed", articlesAPI.GetFeed)
-	e.POST("/create", articlesAPI.Create)
-	e.POST("/update", articlesAPI.Update)
-	e.DELETE("/delete", articlesAPI.Delete)
+	articles.GET("", articlesAPI.GetFeed)
+	articles.POST("/create", articlesAPI.Create)
+	articles.POST("/update", articlesAPI.Update)
+	articles.DELETE("/delete", articlesAPI.Delete)
 	defer DbClose(db)
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
