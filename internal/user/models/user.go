@@ -3,12 +3,12 @@ package models
 import "context"
 
 type User struct {
-	Login    string `json:"login"`
-	Name     string `json:"name"`
-	Surname  string `json:"surname"`
-	Email    string `json:"email" valid:"email,optional"`
-	Password string `json:"password"`
-	Score    int    `json:"score"`
+	Login    string `json:"login" db:"Login"`
+	Name     string `json:"name" db:"Name"`
+	Surname  string `json:"surname" db:"Surname"`
+	Email    string `json:"email" db:"Email" valid:"email,optional" `
+	Password string `json:"password" db:"Password"`
+	Score    int    `json:"score" db:"Score"`
 }
 
 type RequestUser struct {
