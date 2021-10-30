@@ -46,7 +46,7 @@ func SanitizeArticle(a *amodels.Article) *amodels.Article {
 
 const previewLen = 50
 
-func articleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
+func articleShortConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
 	var article amodels.Article
 	article.AuthorAvatar = val.AuthorAvatar
 	article.AuthorName = val.AuthorName
@@ -59,7 +59,7 @@ func articleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
 	} else {
-		article.Text = val.Text[1:50]
+		article.Text = val.Text[:50]
 	}
 	article.Title = val.Title
 	return article, nil
@@ -77,7 +77,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
 	} else {
-		article.Text = val.Text[1:50]
+		article.Text = val.Text
 	}
 	article.Title = val.Title
 	article.Tags = append(article.Tags, "FUBAR")
@@ -131,7 +131,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		if err != nil {
 			return ChunkData, err
 		}
-		outArticle, err = articleConv(newArticle, m.Db)
+		outArticle, err = articleShortConv(newArticle, m.Db)
 		if err != nil {
 			return ChunkData, err
 		}
@@ -231,7 +231,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 		if err != nil {
 			return articles, err
 		}
-		outArticle, err = articleConv(newArticle, m.Db)
+		outArticle, err = fullArticleConv(newArticle, m.Db)
 		if err != nil {
 			return articles, err
 		}
