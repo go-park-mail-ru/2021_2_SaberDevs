@@ -16,6 +16,11 @@ type psqlArticleRepository struct {
 	Db *sqlx.DB
 }
 
+func NewpsqlArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
+	//TODO defer db.Close()
+	return &psqlArticleRepository{db}
+}
+
 const previewLen = 50
 
 func articleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
@@ -70,21 +75,6 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 		//fmt.Printf("%s\n", mytag)
 	}
 	return article, nil
-}
-
-func NewpsqlArticleRepository() amodels.ArticleRepository {
-	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
-	db, err := sqlx.Open("postgres", connStr)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	err = db.Ping()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	//TODO defer db.Close()
-	return &psqlArticleRepository{db}
 }
 
 func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {

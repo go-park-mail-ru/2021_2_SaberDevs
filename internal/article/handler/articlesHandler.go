@@ -58,10 +58,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, errResp.ErrUnpackingJSON)
 	}
 
-	response := amodels.ChunkResponse{
-		Status:    http.StatusOK,
-		ChunkData: nil,
-	}
+	response := "UPDATED"
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -81,10 +78,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, errResp.ErrUnpackingJSON)
 	}
 
-	response := amodels.ChunkResponse{
-		Status:    http.StatusOK,
-		ChunkData: nil,
-	}
+	response := "CREATED"
 	return c.JSON(http.StatusOK, response)
 }
 

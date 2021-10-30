@@ -8,6 +8,7 @@ import (
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	"github.com/jmoiron/sqlx"
 
 	"net/http"
 
@@ -20,8 +21,25 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func dbConnect() (*sqlx.DB, error) {
+	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return db, err
+	}
+	err = db.Ping()
+	if err != nil {
+		return db, err
+	}
+	return db, err
+}
+
 func router(e *echo.Echo) {
-	us := ausecase.NewArticleUsecase()
+	db, err := dbConnect()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	us := ausecase.NewArticleUsecase(db)
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	userRepo := urepo.NewUserRepository()
