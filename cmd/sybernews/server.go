@@ -94,6 +94,8 @@ func Run(address string) {
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
+	authM := syberMiddleware.NewAuthMiddleware(sessionRepo)
+
 	// e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 
@@ -106,7 +108,7 @@ func Run(address string) {
 	e.GET("/user", userAPI.AuthorProfile)
 	articles.Use(syberMiddleware.AddId)
 
-	articles.GET("", articlesAPI.GetFeed)
+	articles.GET("", articlesAPI.GetFeed, authM.CheckAuth)
 	articles.POST("/create", articlesAPI.Create)
 	articles.POST("/update", articlesAPI.Update)
 	articles.DELETE("/delete", articlesAPI.Delete)
