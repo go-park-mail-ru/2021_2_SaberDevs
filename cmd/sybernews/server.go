@@ -117,7 +117,7 @@ func Run(address string) {
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))
 
-	router(e)
+	// router(e)
 
 	e.Logger.Fatal(e.Start(address))
 }
