@@ -87,15 +87,15 @@ func Run(address string) {
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
-
+	e.Use(syberMiddleware.AddId)
+	e.Use(syberMiddleware.AccessLogger)
+	e.Logger.SetLevel(log.INFO)
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
 	e.POST("/logout", userAPI.Logout)
 	e.POST("/", sessionAPI.CheckSession)
 	articles := e.Group("/feed")
-	articles.Use(syberMiddleware.AddId)
-
-	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	//articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	us := ausecase.NewArticleUsecase(db)
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
 

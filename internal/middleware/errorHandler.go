@@ -66,7 +66,8 @@ func ErrorHandler(err error, c echo.Context) {
 		responseCode = http.StatusInternalServerError
 		responseBody = errResp.ErrInternal
 	}
-
+	Id := c.Request().Header.Get(echo.HeaderXRequestID)
+	c.Logger().Error("Id = ", Id, "  ", responseBody)
 	_err := c.JSON(responseCode, responseBody)
 	if _err != nil {
 		return
