@@ -2,10 +2,16 @@ package models
 
 import "net/http"
 
+type ErrorResponse struct {
+	Status   uint   `json:"status"`
+	ErrorMsg string `json:"msg"`
+}
+
 var ErrUnpackingJSON = ErrorResponse{
 	Status:   http.StatusUnprocessableEntity,
 	ErrorMsg: "Error unpacking JSON",
 }
+
 var ErrUserDoesntExist = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "User doesnt exist",
@@ -49,4 +55,9 @@ var ErrInvalidPassword = ErrorResponse{
 var ErrInvalidLogin = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "Invalid symbols in login",
+}
+
+var ErrNoSession = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Session doesnt exist",
 }
