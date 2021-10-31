@@ -18,17 +18,17 @@ type Article struct {
 }
 
 type DbArticle struct {
-	Id           int
-	StringId     string `json:"id"`
-	PreviewUrl   string `json:"previewUrl"`
-	Title        string `json:"title"`
-	Text         string `json:"text"`
-	AuthorUrl    string `json:"authorUrl"`
-	AuthorName   string `json:"authorName"`
-	AuthorAvatar string `json:"authorAvatar"`
-	CommentsUrl  string `json:"commentsUrl"`
-	Comments     uint   `json:"comments"`
-	Likes        uint   `json:"likes"`
+	Id           int    `json:"Id"  db:"Id"`
+	StringId     string `json:"StringId"  db:"StringId"`
+	PreviewUrl   string `json:"PreviewUrl" db:"PreviewUrl"`
+	Title        string `json:"title" db:"Title"`
+	Text         string `json:"text" db:"Text"`
+	AuthorUrl    string `json:"authorUrl" db:"AuthorUrl"`
+	AuthorName   string `json:"authorName" db:"AuthorName"`
+	AuthorAvatar string `json:"authorAvatar" db:"AuthorAvatar"`
+	CommentsUrl  string `json:"commentsUrl" db:"CommentsUrl"`
+	Comments     uint   `json:"comments" db:"Comments"`
+	Likes        uint   `json:"likes" db:"Likes"`
 }
 
 //Тело ответа на API-call /getfeed

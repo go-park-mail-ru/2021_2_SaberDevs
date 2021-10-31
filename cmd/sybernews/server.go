@@ -93,22 +93,47 @@ func Run(address string) {
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
+  
+  
+
+	e.Use(syberMiddleware.ValidateRequestBody)
 
 	authM := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
-	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 
+  
+  
+	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
+	e.Use(syberMiddleware.AddId)
+	//Logger.SetOutput() //to file
+	e.Logger.SetLevel(log.INFO)
+	// e.Logger.SetLevel(log.ERROR)
+	e.Use(syberMiddleware.AccessLogger)
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
 	e.POST("/logout", userAPI.Logout)
 	e.POST("/", sessionAPI.CheckSession)
+  
+  
+
+	articles := e.Group("/feed")
+	//articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	repo := arepo.NewpsqlArticleRepository(db)
+	us := ausecase.NewArticleUseCase(repo)
+	articlesAPI := ahandler.NewArticlesHandler(e, us)
+
+	articles.GET("", articlesAPI.GetFeed)
+
 	e.POST("/profile/update", userAPI.UpdateProfile)
 	e.GET("/profile", userAPI.UserProfile)
 	e.GET("/user", userAPI.AuthorProfile)
 	articles.Use(syberMiddleware.AddId)
 
 	articles.GET("", articlesAPI.GetFeed, authM.CheckAuth)
+
+  
+  
 	articles.POST("/create", articlesAPI.Create)
 	articles.POST("/update", articlesAPI.Update)
 	articles.DELETE("/delete", articlesAPI.Delete)
