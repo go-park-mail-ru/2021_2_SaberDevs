@@ -20,5 +20,6 @@ require (
 	github.com/tarantool/go-tarantool v0.0.0-20210330210617-56fe55c5fa5c
 	github.com/tmdvs/Go-Emoji-Utils v1.1.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/zhashkevych/go-sqlxmock v1.5.1
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 )

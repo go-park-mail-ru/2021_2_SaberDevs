@@ -2,32 +2,41 @@ package article
 
 import (
 	"context"
+	"regexp"
 	"testing"
-	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
-	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
+	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 )
 
 func TestGetByID(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	dbx := sqlx.NewDb(db, "gopkg.in/DATA-DOG/go-sqlmock.v1")
-	rows := sqlmock.NewRows([]string{"id", "name", "updated_at", "created_at"}).
-		AddRow(1, "Iman Tumorang", time.Now(), time.Now())
+	rows := sqlxmock.NewRows([]string{"StringId", "PreviewUrl", "Title", "Text", "AuthorUrl", "AuthorName", "AuthorAvatar", "CommentsUrl", "Comments", "Likes"}).
+		AddRow("1", "static/img/computer.png", "7 Skills of Highly Effective Programmers",
+			"Our team was inspired by the seven skills of highly effective", "#", "mollenTEST1", "static/img/photo-elon-musk.jpg",
+			"#", 97, 1001)
 
-	query := "SELECT id, name, created_at, updated_at FROM author WHERE id=\\?"
+	query := `SELECT * FROM ARTICLES WHERE articles.StringId = $1`
 
-	prep := mock.ExpectPrepare(query)
-	userID := int64(1)
-	prep.ExpectQuery().WithArgs(userID).WillReturnRows(rows)
+	articleID := int64(1)
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(articleID).WillReturnRows(rows)
 
-	a := NewpsqlArticleRepository(dbx)
+	rowsNew := sqlxmock.NewRows([]string{"tag"}).AddRow("design").AddRow("finance")
 
-	anArticle, err := a.GetByID(context.TODO(), userID)
+	queryNew := `select c.tag from categories c
+	inner join categories_articles ca  on c.Id = ca.categories_id
+	inner join articles a on a.Id = ca.articles_id
+	where a.StringId = $1;`
+
+	articleIDString := "1"
+	mock.ExpectQuery(regexp.QuoteMeta(queryNew)).WithArgs(articleIDString).WillReturnRows(rowsNew)
+
+	a := NewpsqlArticleRepository(db)
+
+	anArticle, err := a.GetByID(context.TODO(), 1)
 	assert.NoError(t, err)
 	assert.NotNil(t, anArticle)
 }
