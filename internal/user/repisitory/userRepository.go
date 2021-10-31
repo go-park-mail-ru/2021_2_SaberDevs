@@ -24,7 +24,7 @@ func (r *userPsqlRepo) GetByEmail(ctx context.Context, email string) (umodels.Us
 	err := r.Db.Get(&user, "SELECT Name, Surname, Email, Password, Score FROM author WHERE Email = $1", email)
 	if err != nil {
 		return user, sbErr.ErrUserDoesntExist{
-			Reason: err.Error(),
+			Reason:   err.Error(),
 			Function: "userRepositiry/GetByEmail",
 		}
 	}
@@ -38,13 +38,13 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	err := r.Db.Get(&email, "SELECT Email FROM author WHERE Email = $1", user.Email)
 	if err != nil {
 		return *user, sbErr.ErrInternal{
-			Reason:  err.Error(),
+			Reason:   err.Error(),
 			Function: "userRepository/Store",
 		}
 	}
 	if email != "" {
 		return *user, sbErr.ErrUserExists{
-			Reason:  "email already in use",
+			Reason:   "email already in use",
 			Function: "userRepository/Store",
 		}
 	}
@@ -53,7 +53,7 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	_, err = r.Db.Exec(schema, user.Name, user.Surname, user.Email, user.Password, 0)
 	if err != nil {
 		return *user, sbErr.ErrInternal{
-			Reason:  err.Error(),
+			Reason:   err.Error(),
 			Function: "userRepository/Store",
 		}
 	}

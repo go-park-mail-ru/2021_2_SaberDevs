@@ -23,7 +23,7 @@ func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, email string) 
 
 	_, err := r.conn.Insert("sessions", []interface{}{sessionID, email})
 	if err != nil {
-		return "", sbErr.ErrNoSession{
+		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
 			Function: "sessionRepositiry/CreateSession"}
 	}
@@ -34,7 +34,7 @@ func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, email string) 
 func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID string) error {
 	_, err := r.conn.Delete("sessions", "primary", []interface{}{sessionID})
 	if err != nil {
-		return sbErr.ErrNoSession{
+		return sbErr.ErrInternal{
 			Reason:   err.Error(),
 			Function: "sessionRepositiry/IsSession"}
 	}

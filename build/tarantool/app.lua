@@ -8,4 +8,11 @@ box.once('init', function()
         {name = 'email', type = 'string'}
     })
     s:create_index('primary', {type = 'tree', parts = {'sessionID'}})
+
+    k = box.schema.space.create('keys')
+    k:format({
+        {name = 'email', type = 'string'},
+        {name = 'salt', type = 'string'}
+    })
+    k:create_index('primary', {type = 'tree', parts = {'email'}})
 end)
