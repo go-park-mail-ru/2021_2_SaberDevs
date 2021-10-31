@@ -3,6 +3,7 @@ package server
 import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
+	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -79,7 +80,8 @@ func Run(address string) {
 
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
+	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)

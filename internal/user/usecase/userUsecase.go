@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
+
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
@@ -18,16 +20,17 @@ import (
 type userUsecase struct {
 	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
+	keyRepo     kmodels.KeyRepository
 }
 
-func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umodels.UserUsecase {
+func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, kr kmodels.KeyRepository) umodels.UserUsecase {
 	return &userUsecase{
 		userRepo:    ur,
 		sessionRepo: sr,
+		keyRepo:     kr,
 	}
 }
 
-// TODO error handling
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
 

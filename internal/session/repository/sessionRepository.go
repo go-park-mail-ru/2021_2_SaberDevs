@@ -47,8 +47,13 @@ func (r *sessionTarantoolRepo) IsSession(ctx context.Context, sessionID string) 
 
 	err := r.conn.SelectTyped("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
 	if err != nil {
-		return "", sbErr.ErrNoSession{
+		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
+			Function: "sessionRepositiry/IsSession"}
+	}
+	if len(user) == 0 {
+		return "", sbErr.ErrNoSession{
+			Reason:   "no session",
 			Function: "sessionRepositiry/IsSession"}
 	}
 
