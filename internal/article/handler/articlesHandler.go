@@ -66,7 +66,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
-			Function: "userHandler.Register",
+			Function: "articlesHandler/Create",
 		}
 	}
 	ctx := c.Request().Context()
