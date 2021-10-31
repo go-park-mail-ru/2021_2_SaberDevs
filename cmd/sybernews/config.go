@@ -4,7 +4,7 @@ import "github.com/spf13/viper"
 
 func Config() (string, error) {
 	viper.SetConfigName("config")
-	viper.AddConfigPath("../configs")
+	viper.AddConfigPath("./configs")
 	viper.SetConfigType("json")
 
 	err := viper.ReadInConfig()

@@ -11,11 +11,11 @@ import (
 )
 
 type ArticlesHandler struct {
-	UseCase amodels.ArticleUseCase
+	UseCase amodels.ArticleUsecase
 }
 
 // NewArticleHandler will initialize the articles/ resources endpoint
-func NewArticlesHandler(e *echo.Echo, us amodels.ArticleUseCase) ArticlesHandler {
+func NewArticlesHandler(e *echo.Echo, us amodels.ArticleUsecase) ArticlesHandler {
 	handler := &ArticlesHandler{
 		UseCase: us,
 	}

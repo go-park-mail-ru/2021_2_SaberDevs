@@ -83,61 +83,47 @@ func Run(address string) {
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
 	articleRepo := arepo.NewpsqlArticleRepository(db)
+
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
 
-	articles := e.Group("/feed")
-	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
-	us := ausecase.NewArticleUsecase(db)
-	articlesAPI := ahandler.NewArticlesHandler(e, us)
-
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
-  
-  
 
-	e.Use(syberMiddleware.ValidateRequestBody)
 
-	authM := syberMiddleware.NewAuthMiddleware(sessionRepo)
+	articlesUsecase := ausecase.NewArticleUsecase(articleRepo)
+	articlesAPI := ahandler.NewArticlesHandler(e, articlesUsecase)
+
+	articles := e.Group("/feed")
+	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
 
-  
-  
-	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
-	e.Use(syberMiddleware.AddId)
+
 	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)
 	// e.Logger.SetLevel(log.ERROR)
+
+	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 	e.Use(syberMiddleware.AccessLogger)
-	e.POST("/login", userAPI.Login)
-	e.POST("/signup", userAPI.Register)
-	e.POST("/logout", userAPI.Logout)
-	e.POST("/", sessionAPI.CheckSession)
-  
-  
-
-	articles := e.Group("/feed")
-	//articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
-	repo := arepo.NewpsqlArticleRepository(db)
-	us := ausecase.NewArticleUseCase(repo)
-	articlesAPI := ahandler.NewArticlesHandler(e, us)
-
-	articles.GET("", articlesAPI.GetFeed)
-
-	e.POST("/profile/update", userAPI.UpdateProfile)
-	e.GET("/profile", userAPI.UserProfile)
-	e.GET("/user", userAPI.AuthorProfile)
+	e.Use(syberMiddleware.AddId)
 	articles.Use(syberMiddleware.AddId)
 
-	articles.GET("", articlesAPI.GetFeed, authM.CheckAuth)
+	e.POST("/login", userAPI.Login)
+	e.POST("/signup", userAPI.Register)
+	e.POST("/logout", userAPI.Logout, authMiddleware.CheckAuth)
+	e.POST("/", sessionAPI.CheckSession)
+	e.POST("/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
+	e.GET("/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
+	e.GET("/user", userAPI.AuthorProfile)
 
-  
-  
-	articles.POST("/create", articlesAPI.Create)
-	articles.POST("/update", articlesAPI.Update)
-	articles.DELETE("/delete", articlesAPI.Delete)
+	articles.GET("", articlesAPI.GetFeed)
+	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
+	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
+	articles.DELETE("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
 	defer DbClose(db)
+
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))

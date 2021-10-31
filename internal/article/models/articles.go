@@ -18,17 +18,17 @@ type Article struct {
 }
 
 type DbArticle struct {
-	Id           int    `json:"Id"  db:"Id"`
-	StringId     string `json:"StringId"  db:"StringId"`
-	PreviewUrl   string `json:"PreviewUrl" db:"PreviewUrl"`
-	Title        string `json:"title" db:"Title"`
-	Text         string `json:"text" db:"Text"`
-	AuthorUrl    string `json:"authorUrl" db:"AuthorUrl"`
-	AuthorName   string `json:"authorName" db:"AuthorName"`
-	AuthorAvatar string `json:"authorAvatar" db:"AuthorAvatar"`
-	CommentsUrl  string `json:"commentsUrl" db:"CommentsUrl"`
-	Comments     uint   `json:"comments" db:"Comments"`
-	Likes        uint   `json:"likes" db:"Likes"`
+	Id           int    `json:"Id"  db:"id"`
+	StringId     string `json:"StringId"  db:"stringid"`
+	PreviewUrl   string `json:"PreviewUrl" db:"previewurl"`
+	Title        string `json:"title" db:"title"`
+	Text         string `json:"text" db:"text"`
+	AuthorUrl    string `json:"authorUrl" db:"authorurl"`
+	AuthorName   string `json:"authorName" db:"authorname"`
+	AuthorAvatar string `json:"authorAvatar" db:"authoravatar"`
+	CommentsUrl  string `json:"commentsUrl" db:"commentsurl"`
+	Comments     uint   `json:"comments" db:"comments"`
+	Likes        uint   `json:"likes" db:"likes"`
 }
 
 //Тело ответа на API-call /getfeed
@@ -44,7 +44,7 @@ type ChunkResponse struct {
 }
 
 // ArticleUsecase represent the article's usecases
-type ArticleUseCase interface {
+type ArticleUsecase interface {
 	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
 	GetByID(ctx context.Context, id int64) (Article, error)
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
