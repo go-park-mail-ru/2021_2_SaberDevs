@@ -18,10 +18,10 @@ func NewSessionRepository(conn *tarantool.Connection) smodels.SessionRepository 
 	return &sessionTarantoolRepo{conn: conn}
 }
 
-func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, email string) (string, error) {
+func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) (string, error) {
 	sessionID := uuid.NewV4().String()
 
-	_, err := r.conn.Insert("sessions", []interface{}{sessionID, email})
+	_, err := r.conn.Insert("sessions", []interface{}{sessionID, login})
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -52,5 +52,5 @@ func (r *sessionTarantoolRepo) IsSession(ctx context.Context, sessionID string) 
 			Function: "sessionRepositiry/IsSession"}
 	}
 
-	return user[0].UserEmail, nil
+	return user[0].UserLogin, nil
 }

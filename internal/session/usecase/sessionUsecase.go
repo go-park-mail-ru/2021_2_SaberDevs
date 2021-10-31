@@ -24,12 +24,12 @@ func NewsessionUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) 
 func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels.LoginResponse, error) {
 	var response umodels.LoginResponse
 
-	email, err := su.sessionRepo.IsSession(ctx, cookie)
+	login, err := su.sessionRepo.IsSession(ctx, cookie)
 	if err != nil {
 		return response, errors.Wrap(err, "sessionUsecase/IsSession")
 	}
 
-	userInRepo, err := su.userRepo.GetByEmail(ctx, email)
+	userInRepo, err := su.userRepo.GetByLogin(ctx, login)
 	if err != nil {
 		return response, errors.Wrap(err, "sessionUsecase/IsSession")
 	}

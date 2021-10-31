@@ -31,7 +31,7 @@ func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umo
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
 
-	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Login)
+	userInRepo, err := uu.userRepo.GetByLogin(ctx, user.Login)
 	if err != nil {
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
