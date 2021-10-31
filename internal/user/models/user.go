@@ -3,7 +3,7 @@ package models
 import "context"
 
 type User struct {
-	Login    string `json:"login" db:"Login"`
+	Login    string `json:"Login" db:"Login"`
 	Name     string `json:"name" db:"Name"`
 	Surname  string `json:"surname" db:"Surname"`
 	Email    string `json:"email" db:"Email" valid:"email,optional" `

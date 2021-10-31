@@ -11,7 +11,6 @@ import (
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/microcosm-cc/bluemonday"
 )
 
 type psqlArticleRepository struct {
@@ -21,27 +20,6 @@ type psqlArticleRepository struct {
 func NewpsqlArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	//TODO defer db.Close()
 	return &psqlArticleRepository{db}
-}
-
-func SanitizeArticle(a *amodels.Article) *amodels.Article {
-	// s := bluemonday.NewPolicy()
-	//s.AllowStandardURLs()
-	s := bluemonday.StrictPolicy()
-	l := bluemonday.UGCPolicy()
-	a.AuthorAvatar = s.Sanitize(a.AuthorAvatar)
-	a.AuthorName = s.Sanitize(a.AuthorName)
-	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
-	//a.Comments = s.Sanitize(a.Comments) //not a string
-	a.CommentsUrl = s.Sanitize(a.CommentsUrl)
-	a.Id = s.Sanitize(a.Id)
-	// a.Likes = s.Sanitize(a.Likes)//not a string
-	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
-	for i := range a.Tags {
-		a.Tags[i] = l.Sanitize(a.Tags[i])
-	}
-	a.Text = s.Sanitize(a.Text)
-	a.Title = s.Sanitize(a.Title)
-	return a
 }
 
 const previewLen = 50
@@ -296,7 +274,6 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 }
 
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) error {
-	a = SanitizeArticle(a)
 	insertArticle := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
 	_, err := m.Db.Exec(insertArticle, a.Id, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
 	if err != nil {

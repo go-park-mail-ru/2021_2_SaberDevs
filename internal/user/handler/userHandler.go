@@ -8,6 +8,7 @@ import (
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/labstack/echo/v4"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 )
 
@@ -17,6 +18,16 @@ type UserHandler struct {
 
 func NewUserHandler(uu models.UserUsecase) *UserHandler {
 	return &UserHandler{uu}
+}
+func SanitizeUser(a *models.User) *models.User {
+	s := bluemonday.StrictPolicy()
+	a.Email = s.Sanitize(a.Email)
+	a.Login = s.Sanitize(a.Login)
+	a.Name = s.Sanitize(a.Name)
+	a.Password = s.Sanitize(a.Password)
+	//a.Score = s.Sanitize(a.Score)
+	a.Surname = s.Sanitize(a.Surname)
+	return a
 }
 
 func formCookie(cookeValue string) *http.Cookie {
@@ -45,7 +56,7 @@ func (api *UserHandler) Login(c echo.Context) error {
 			Function: "userHandler/Login",
 		}
 	}
-
+	requestUser = SanitizeUser(requestUser)
 	ctx := c.Request().Context()
 	response, sessionID, err := api.UserUsecase.LoginUser(ctx, requestUser)
 	if err != nil {
@@ -67,7 +78,7 @@ func (api *UserHandler) Register(c echo.Context) error {
 			Function: "userHandler.Register",
 		}
 	}
-
+	newUser = SanitizeUser(newUser)
 	ctx := c.Request().Context()
 	response, sessionID, err := api.UserUsecase.Signup(ctx, newUser)
 	if err != nil {

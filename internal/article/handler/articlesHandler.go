@@ -6,6 +6,7 @@ import (
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 )
 
@@ -23,6 +24,27 @@ func NewArticlesHandler(e *echo.Echo, us amodels.ArticleUseCase) ArticlesHandler
 }
 
 const chunkSize = 5
+
+func SanitizeArticle(a *amodels.Article) *amodels.Article {
+	// s := bluemonday.NewPolicy()
+	//s.AllowStandardURLs()
+	s := bluemonday.StrictPolicy()
+	l := bluemonday.UGCPolicy()
+	a.AuthorAvatar = s.Sanitize(a.AuthorAvatar)
+	a.AuthorName = s.Sanitize(a.AuthorName)
+	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
+	//a.Comments = s.Sanitize(a.Comments) //not a string
+	a.CommentsUrl = s.Sanitize(a.CommentsUrl)
+	a.Id = s.Sanitize(a.Id)
+	// a.Likes = s.Sanitize(a.Likes)//not a string
+	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
+	for i := range a.Tags {
+		a.Tags[i] = l.Sanitize(a.Tags[i])
+	}
+	a.Text = s.Sanitize(a.Text)
+	a.Title = s.Sanitize(a.Title)
+	return a
+}
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	rec := c.QueryParam("idLastLoaded")
@@ -50,6 +72,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 			Function: "articlesHandler/Update",
 		}
 	}
+	newArticle = SanitizeArticle(newArticle)
 	ctx := c.Request().Context()
 	err = api.UseCase.Update(ctx, newArticle)
 	if err != nil {
@@ -69,6 +92,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 			Function: "articlesHandler/Create",
 		}
 	}
+	newArticle = SanitizeArticle(newArticle)
 	ctx := c.Request().Context()
 	err = api.UseCase.Store(ctx, newArticle)
 	if err != nil {
