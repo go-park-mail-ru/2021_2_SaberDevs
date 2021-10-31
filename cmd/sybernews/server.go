@@ -2,6 +2,7 @@ package server
 
 import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
@@ -81,8 +82,14 @@ func Run(address string) {
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo)
+	articleRepo := arepo.NewpsqlArticleRepository(db)
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
+
+	articles := e.Group("/feed")
+	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	us := ausecase.NewArticleUsecase(db)
+	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
@@ -94,12 +101,10 @@ func Run(address string) {
 	e.POST("/signup", userAPI.Register)
 	e.POST("/logout", userAPI.Logout)
 	e.POST("/", sessionAPI.CheckSession)
-	articles := e.Group("/feed")
+	e.POST("/profile/update", userAPI.UpdateProfile)
+	e.GET("/profile", userAPI.UserProfile)
+	e.GET("/user", userAPI.AuthorProfile)
 	articles.Use(syberMiddleware.AddId)
-
-	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
-	us := ausecase.NewArticleUsecase(db)
-	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	articles.GET("", articlesAPI.GetFeed)
 	articles.POST("/create", articlesAPI.Create)

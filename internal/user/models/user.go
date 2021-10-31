@@ -1,6 +1,9 @@
 package models
 
-import "context"
+import (
+	"context"
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+)
 
 type User struct {
 	Login    string `json:"login" db:"login"`
@@ -52,6 +55,22 @@ type LogoutResponse struct {
 
 // -----------------------------------------------
 
+type GetUserData struct {
+	Login    string            `json:"login"`
+	Surname  string            `json:"surname"`
+	Name     string            `json:"name"`
+	Score    int               `json:"score"`
+	Articles []amodels.Article `json:"articles"`
+}
+
+type GetUserResponse struct {
+	Status uint        `json:"status"`
+	Data   GetUserData `json:"data"`
+	Msg    string      `json:"msg"`
+}
+
+// -----------------------------------------------
+
 type SignUpData struct {
 	Login   string `json:"login"`
 	Surname string `json:"surname"`
@@ -78,6 +97,8 @@ type SignupResponse struct {
 
 type UserUsecase interface {
 	UpdateProfile(ctx context.Context, user *User, sessionID string) (UpdateProfileResponse, error)
+	GetAuthorProfile(ctx context.Context, author string) (GetUserResponse, error)
+	GetUserProfile(ctx context.Context, sessionID string) (GetUserResponse, error)
 	LoginUser(ctx context.Context, user *User) (LoginResponse, string, error)
 	Signup(ctx context.Context, user *User) (SignupResponse, string, error)
 	Logout(ctx context.Context, cookieValue string) error
@@ -86,5 +107,6 @@ type UserUsecase interface {
 type UserRepository interface {
 	UpdateUser(ctx context.Context, user *User) (User, error)
 	GetByLogin(ctx context.Context, login string) (User, error)
+	GetByName(ctx context.Context, name string) (User, error)
 	Store(ctx context.Context, user *User) (User, error)
 }

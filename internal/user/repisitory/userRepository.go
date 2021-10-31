@@ -17,6 +17,20 @@ func NewUserRepository(db *sqlx.DB) umodels.UserRepository {
 	return &userPsqlRepo{db}
 }
 
+func (r *userPsqlRepo) GetByName(ctx context.Context, name string) (umodels.User, error) {
+	user := umodels.User{}
+
+	err := r.Db.Get(&user, `SELECT Login, Name, Surname, Email, Password, Score FROM author WHERE Name = $1`, name)
+	if err != nil {
+		return umodels.User{}, sbErr.ErrUserDoesntExist{
+			Reason:   err.Error(),
+			Function: "userRepositiry/GetByName",
+		}
+	}
+
+	return user, nil
+}
+
 func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umodels.User, error) {
 	tx, err := r.Db.Beginx()
 	if err != nil {
@@ -80,13 +94,13 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 	if err != nil {
 		// добавить Rollback?
 		return umodels.User{}, sbErr.ErrInternal{
-				Reason:   err.Error(),
-				Function: "userRepository/UpdateUser",
-			}
+			Reason:   err.Error(),
+			Function: "userRepository/UpdateUser",
+		}
 	}
 
 	updatedUser := umodels.User{
-		Name: user.Name,
+		Name:    user.Name,
 		Surname: user.Surname,
 	}
 

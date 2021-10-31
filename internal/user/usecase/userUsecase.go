@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+
 	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
 
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
@@ -21,14 +23,75 @@ type userUsecase struct {
 	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
 	keyRepo     kmodels.KeyRepository
+	articleRepo amodels.ArticleRepository
 }
 
-func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, kr kmodels.KeyRepository) umodels.UserUsecase {
+func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, kr kmodels.KeyRepository, ar amodels.ArticleRepository) umodels.UserUsecase {
 	return &userUsecase{
 		userRepo:    ur,
 		sessionRepo: sr,
 		keyRepo:     kr,
+		articleRepo: ar,
 	}
+}
+
+func (uu *userUsecase) GetAuthorProfile(ctx context.Context, author string) (umodels.GetUserResponse, error) {
+	articles, err := uu.articleRepo.GetByAuthor(ctx, author)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
+	}
+
+	authorInDb, err1 := uu.userRepo.GetByName(ctx, author)
+	if err1 != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
+	}
+
+	responseData := umodels.GetUserData{
+		Login:    authorInDb.Login,
+		Name:     authorInDb.Name,
+		Surname:  authorInDb.Surname,
+		Score:    authorInDb.Score,
+		Articles: articles,
+	}
+	response := umodels.GetUserResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "ok",
+	}
+
+	return response, nil
+}
+
+func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (umodels.GetUserResponse, error) {
+	userLogin, err := uu.sessionRepo.GetSessionLogin(ctx, sessionID)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	userInDb, err := uu.userRepo.GetByLogin(ctx, userLogin)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	articles, err := uu.articleRepo.GetByAuthor(ctx, userInDb.Name)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	responseData := umodels.GetUserData{
+		Login:    userInDb.Login,
+		Name:     userInDb.Name,
+		Surname:  userInDb.Surname,
+		Score:    userInDb.Score,
+		Articles: articles,
+	}
+	response := umodels.GetUserResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "ok",
+	}
+
+	return response, nil
 }
 
 func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, sessionID string) (umodels.UpdateProfileResponse, error) {
