@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"net/http"
 
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
@@ -20,18 +21,31 @@ func NewsessionUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) 
 	}
 }
 
-func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels.User, error) {
-	var user umodels.User
+func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels.LoginResponse, error) {
+	var response umodels.LoginResponse
 
 	email, err := su.sessionRepo.IsSession(ctx, cookie)
 	if err != nil {
-		return user, errors.Wrap(err, "sessionUsecase/IsSession")
+		return response, errors.Wrap(err, "sessionUsecase/IsSession")
 	}
 
-	user, err = su.userRepo.GetByEmail(ctx, email)
+	userInRepo, err := su.userRepo.GetByEmail(ctx, email)
 	if err != nil {
-		return user, errors.Wrap(err, "sessionUsecase/IsSession")
+		return response, errors.Wrap(err, "sessionUsecase/IsSession")
 	}
 
-	return user, nil
+	d := umodels.LoginData{
+		Login:   userInRepo.Login,
+		Name:    userInRepo.Name,
+		Surname: userInRepo.Surname,
+		Email:   userInRepo.Email,
+		Score:   userInRepo.Score,
+	}
+	response = umodels.LoginResponse{
+		Status: http.StatusOK,
+		Data:   d,
+		Msg:    "OK",
+	}
+
+	return response, nil
 }

@@ -7,12 +7,13 @@ import (
 )
 
 type Session struct {
+	_msgpack    struct{} `msgpack:",asArray"`
 	CookieValue string
 	UserEmail   string
 }
 
 type SessionUsecase interface {
-	IsSession(ctx context.Context, cookie string) (umodels.User, error)
+	IsSession(ctx context.Context, cookie string) (umodels.LoginResponse, error)
 }
 
 type SessionRepository interface {

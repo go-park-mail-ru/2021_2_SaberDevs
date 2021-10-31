@@ -9,11 +9,9 @@ import (
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	"github.com/jmoiron/sqlx"
+	"github.com/tarantool/go-tarantool"
 
 	"net/http"
-
-	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
-	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -44,28 +42,16 @@ func DbClose(db *sqlx.DB) error {
 
 func router(e *echo.Echo) {
 
-	sessionRepo := srepo.NewSessionRepository()
-	userRepo := urepo.NewUserRepository()
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
-	userAPI := uhandler.NewUserHandler(userUsecase)
+	// us := ausecase.NewArticleUsecase()
+	// articlesAPI := ahandler.NewArticlesHandler(e, us)
 
-	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
-	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
-
-	// e.Use(syberMiddleware.ValidateRequestBody)
-	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
-
-	e.POST("/signup", userAPI.Register)
-	e.POST("/login", userAPI.Login)
-	e.POST("/signup", userAPI.Register)
-	e.POST("/logout", userAPI.Logout)
-	e.POST("/", sessionAPI.CheckSession)
+	
 }
 
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://127.0.0.1:8080"},
+		AllowOrigins:     []string{"http://127.0.0.1:8080", "http://87.228.2.178:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
@@ -79,6 +65,33 @@ func Run(address string) {
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
+  opts := tarantool.Opts{User: "admin", Pass: "pass"}
+	sessionsDbConn, err := tarantool.Connect(":3302", opts)
+	if err != nil {
+		panic("error connetcting to session DB: " + err.Error())
+	}
+
+	_, err = sessionsDbConn.Ping()
+	if err != nil {
+		panic("error pinging session DB: " + err.Error())
+	}
+
+	userRepo := urepo.NewUserRepository()
+	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
+	userAPI := uhandler.NewUserHandler(userUsecase)
+
+	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
+	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
+
+	// e.Use(syberMiddleware.ValidateRequestBody)
+	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
+
+
+	e.POST("/login", userAPI.Login)
+	e.POST("/signup", userAPI.Register)
+	e.POST("/logout", userAPI.Logout)
+	e.POST("/", sessionAPI.CheckSession)
 	articles := e.Group("/feed")
 	articles.Use(syberMiddleware.AddId)
 
