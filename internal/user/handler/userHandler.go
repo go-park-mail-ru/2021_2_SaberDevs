@@ -108,5 +108,6 @@ func (api *UserHandler) Logout(c echo.Context) error {
 		Status:     http.StatusOK,
 		GoodbyeMsg: "Goodbye, friend!",
 	}
+	c.Logger()
 	return c.JSON(http.StatusOK, response)
 }

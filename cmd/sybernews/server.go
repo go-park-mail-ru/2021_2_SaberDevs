@@ -85,11 +85,13 @@ func Run(address string) {
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
-	// e.Use(syberMiddleware.ValidateRequestBody)
+	e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 	e.Use(syberMiddleware.AddId)
-	e.Use(syberMiddleware.AccessLogger)
+	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)
+	// e.Logger.SetLevel(log.ERROR)
+	e.Use(syberMiddleware.AccessLogger)
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
 	e.POST("/logout", userAPI.Logout)
