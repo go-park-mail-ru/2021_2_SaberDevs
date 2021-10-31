@@ -1,6 +1,8 @@
 package server
 
 import (
+	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -45,7 +47,6 @@ func router(e *echo.Echo) {
 	// us := ausecase.NewArticleUsecase()
 	// articlesAPI := ahandler.NewArticlesHandler(e, us)
 
-	
 }
 
 func Run(address string) {
@@ -65,7 +66,7 @@ func Run(address string) {
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
-  opts := tarantool.Opts{User: "admin", Pass: "pass"}
+	opts := tarantool.Opts{User: "admin", Pass: "pass"}
 	sessionsDbConn, err := tarantool.Connect(":3302", opts)
 	if err != nil {
 		panic("error connetcting to session DB: " + err.Error())
@@ -76,7 +77,7 @@ func Run(address string) {
 		panic("error pinging session DB: " + err.Error())
 	}
 
-	userRepo := urepo.NewUserRepository()
+	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
@@ -86,7 +87,6 @@ func Run(address string) {
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
-
 
 	e.POST("/login", userAPI.Login)
 	e.POST("/signup", userAPI.Register)
