@@ -57,6 +57,6 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 			Function: "userRepository/Store",
 		}
 	}
-	// r.users.Store(user.Email, user)
+
 	return *user, nil
 }
