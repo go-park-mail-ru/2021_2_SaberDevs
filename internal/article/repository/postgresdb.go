@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/microcosm-cc/bluemonday"
-
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type psqlArticleRepository struct {
@@ -86,13 +86,19 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	inner join articles a on a.Id = ca.articles_id
 	where a.StringId = $1;`, val.StringId)
 	if err != nil {
-		return article, err
+		return article, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/fullArticleConv",
+		}
 	}
 	var mytag string
 	for rows.Next() {
 		err = rows.Scan(&mytag)
 		if err != nil {
-			return article, err
+			return article, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/fullArticleConv",
+			}
 		}
 		article.Tags = append(article.Tags, mytag)
 		//fmt.Printf("%s\n", mytag)
@@ -105,13 +111,19 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	var ChunkData []amodels.Article
 	rows, err := m.Db.Queryx("SELECT count(*) FROM articles;")
 	if err != nil {
-		return ChunkData, err
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
 	}
 	var count int
 	for rows.Next() {
 		err = rows.Scan(&count)
 		if err != nil {
-			return ChunkData, err
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
 		}
 	}
 	// fmt.Println(count)
@@ -122,18 +134,27 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
 	// rows, err = m.Db.Queryx("SELECT * FROM ARTICLES")
 	if err != nil {
-		return ChunkData, err
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
 	}
 	var newArticle amodels.DbArticle
 	var outArticle amodels.Article
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			return ChunkData, err
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
 		}
 		outArticle, err = articleShortConv(newArticle, m.Db)
 		if err != nil {
-			return ChunkData, err
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
 		}
 		ChunkData = append(ChunkData, outArticle)
 	}
@@ -153,7 +174,10 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 
 	rows, err = m.Db.Queryx(schema, ids...)
 	if err != nil {
-		return ChunkData, err
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
 	}
 	var newtag string
 	var strid string
@@ -162,7 +186,10 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	for rows.Next() {
 		err = rows.Scan(&strid, &id, &newtag)
 		if err != nil {
-			return ChunkData, err
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
 		}
 		if ChunkData[i].Id == strid {
 			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
@@ -178,18 +205,27 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.StringId = $1", id)
 	var outArticle amodels.Article
 	if err != nil {
-		return outArticle, err
+		return outArticle, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/GetByID",
+		}
 	}
 	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			return outArticle, err
+			return outArticle, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/GetByID",
+			}
 		}
 	}
 	outArticle, err = fullArticleConv(newArticle, m.Db)
 	if err != nil {
-		return outArticle, err
+		return outArticle, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/GetByID",
+		}
 	}
 	return outArticle, nil
 }
@@ -201,18 +237,27 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (resul
 	where c.tag = $1;`, tag)
 	var articles []amodels.Article
 	if err != nil {
-		return articles, err
+		return articles, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/GetByTag",
+		}
 	}
 	var outArticle amodels.Article
 	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			return articles, err
+			return articles, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/GetByTag",
+			}
 		}
 		outArticle, err = fullArticleConv(newArticle, m.Db)
 		if err != nil {
-			return articles, err
+			return articles, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/GetByTag",
+			}
 		}
 		articles = append(articles, outArticle)
 	}
@@ -222,20 +267,30 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1", author)
 	var articles []amodels.Article
 	if err != nil {
-		return articles, err
+		return articles, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/GetByAuthor",
+		}
 	}
 	var outArticle amodels.Article
 	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			return articles, err
+			return articles, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/GetByAuthor",
+			}
 		}
 		outArticle, err = fullArticleConv(newArticle, m.Db)
 		if err != nil {
-			return articles, err
+			return articles, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/GetByAuthor",
+			}
 		}
 		articles = append(articles, outArticle)
+
 	}
 	return articles, nil
 }
@@ -245,7 +300,10 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 	insertArticle := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
 	_, err := m.Db.Exec(insertArticle, a.Id, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
 	if err != nil {
-		return err
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Store",
+		}
 	}
 	var tags []interface{}
 	exTags := make(map[string]int)
@@ -262,13 +320,19 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 	schema = schema + `)`
 	rows, err := m.Db.Queryx(schema, tags...)
 	if err != nil {
-		return err
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Store",
+		}
 	}
 	var tag string
 	for rows.Next() {
 		err = rows.Scan(&tag)
 		if err != nil {
-			return err
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
 		}
 		exTags[tag] = 1
 	}
@@ -284,7 +348,10 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 	for _, data := range newtags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
-			return err
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
 		}
 	}
 	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
@@ -293,7 +360,10 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, a.Id, v)
 		if err != nil {
-			return err
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
 		}
 	}
 	return nil
@@ -302,7 +372,10 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
 	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.StringId = $1", id)
 	if err != nil {
-		return err
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Delete",
+		}
 	}
 	return nil
 }
@@ -316,15 +389,24 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 
 	uniqId, err := strconv.Atoi(a.Id)
 	if err != nil {
-		return err
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Delete",
+		}
 	}
 	err = m.Delete(ctx, int64(uniqId))
 	if err != nil {
-		return err
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Delete",
+		}
 	}
 	err = m.Store(ctx, a)
 	if err != nil {
-		return err
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Delete",
+		}
 	}
 	return nil
 }

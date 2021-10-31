@@ -120,3 +120,14 @@ type ErrNoSession struct {
 func (e ErrNoSession) Error() string {
 	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
+
+// -------------------------------------------------------------------------------
+
+type ErrDbError struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrDbError) Error() string {
+	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
+}

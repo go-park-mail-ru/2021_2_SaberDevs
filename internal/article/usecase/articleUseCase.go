@@ -1,9 +1,10 @@
 package article
 
 import (
+	"context"
 	"strconv"
 
-	"context"
+	"github.com/pkg/errors"
 
 	repository "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	"github.com/jmoiron/sqlx"
@@ -29,31 +30,31 @@ func (m *articleUseCase) Fetch(ctx context.Context, idLastLoaded string, chunkSi
 
 	from, err := strconv.Atoi(idLastLoaded)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "articleUsecase/Fetch")
 	}
 
 	result, err = m.articleRepo.Fetch(ctx, from, chunkSize)
-	return result, err
+	return result, errors.Wrap(err, "articleUsecase/Fetch")
 }
 
 func (m *articleUseCase) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
 	result, err = m.articleRepo.GetByID(ctx, id)
-	return result, err
+	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
 func (m *articleUseCase) GetByTag(ctx context.Context, tag string) (result []amodels.Article, err error) {
 	result, err = m.articleRepo.GetByTag(ctx, tag)
-	return result, err
+	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 
 func (m *articleUseCase) GetByAuthor(ctx context.Context, author string) (result []amodels.Article, err error) {
-	result, err = m.articleRepo.GetByTag(ctx, author)
-	return result, err
+	result, err = m.articleRepo.GetByAuthor(ctx, author)
+	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
 func (m *articleUseCase) Store(ctx context.Context, a *amodels.Article) error {
 	err := m.articleRepo.Store(ctx, a)
-	return err
+	return errors.Wrap(err, "articleUsecase/Store")
 }
 
 func (m *articleUseCase) Delete(ctx context.Context, id string) error {
@@ -66,12 +67,12 @@ func (m *articleUseCase) Delete(ctx context.Context, id string) error {
 
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "articleUsecase/Delete")
 	}
 	err = m.articleRepo.Delete(ctx, int64(idInt))
-	return err
+	return errors.Wrap(err, "articleUsecase/Delete")
 }
 func (m *articleUseCase) Update(ctx context.Context, a *amodels.Article) error {
 	err := m.articleRepo.Update(ctx, a)
-	return err
+	return errors.Wrap(err, "articleUsecase/Update")
 }

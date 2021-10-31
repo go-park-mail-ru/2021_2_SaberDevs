@@ -62,6 +62,11 @@ var ErrInvalidLogin = ErrorResponse{
 	ErrorMsg: "Invalid symbols in login",
 }
 
+var ErrDbFailure = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Invalid data in DB",
+}
+
 var ErrNoSession = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "Session doesnt exist",

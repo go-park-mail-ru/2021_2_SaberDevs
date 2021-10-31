@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
-	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type ArticlesHandler struct {
@@ -29,8 +29,7 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.Fetch(ctx, rec, chunkSize)
 	if err != nil {
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusNotFound, errResp.ErrNotFeedNumber)
+		return errors.Wrap(err, "articlesHandler/GetFeed")
 	}
 	// Возвращаем записи
 
@@ -48,14 +47,13 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
-			Function: "userHandler.Register",
+			Function: "articlesHandler/Update",
 		}
 	}
 	ctx := c.Request().Context()
 	err = api.UseCase.Update(ctx, newArticle)
 	if err != nil {
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, errResp.ErrUnpackingJSON)
+		return errors.Wrap(err, "articlesHandler/Update")
 	}
 
 	response := "UPDATED"
@@ -74,8 +72,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	ctx := c.Request().Context()
 	err = api.UseCase.Store(ctx, newArticle)
 	if err != nil {
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, errResp.ErrUnpackingJSON)
+		return errors.Wrap(err, "articlesHandler/Create")
 	}
 
 	response := "CREATED"
@@ -87,8 +84,7 @@ func (api *ArticlesHandler) Delete(c echo.Context) error {
 	ctx := c.Request().Context()
 	err := api.UseCase.Delete(ctx, id)
 	if err != nil {
-		c.Logger().Printf("Error: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, errResp.ErrUnpackingJSON)
+		return errors.Wrap(err, "articlesHandler/Delete")
 	}
 	// формируем ответ
 	response := "DELETED"
