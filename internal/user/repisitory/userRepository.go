@@ -21,7 +21,7 @@ func NewUserRepository(db *sqlx.DB) umodels.UserRepository {
 func (r *userPsqlRepo) GetByEmail(ctx context.Context, email string) (umodels.User, error) {
 	user := umodels.User{}
 
-	err := r.Db.Get(&user, "SELECT Name, Surname, Email, Password, Score FROM author WHERE Email = $1", email)
+	err := r.Db.Get(&user, "SELECT Login, Name, Surname, Email, Password, Score FROM author WHERE Email = $1", email)
 	if err != nil {
 		return user, sbErr.ErrUserDoesntExist{
 			Reason:   err.Error(),
