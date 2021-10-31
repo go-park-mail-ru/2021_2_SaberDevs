@@ -4,6 +4,8 @@ go 1.13
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
+	github.com/bxcodec/go-clean-arch v2.0.1+incompatible
+	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.1.2
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/labstack/echo v3.3.10+incompatible

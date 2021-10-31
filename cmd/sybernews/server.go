@@ -2,6 +2,7 @@ package server
 
 import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
@@ -98,7 +99,8 @@ func Run(address string) {
 	e.POST("/", sessionAPI.CheckSession)
 	articles := e.Group("/feed")
 	//articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
-	us := ausecase.NewArticleUsecase(db)
+	repo := arepo.NewpsqlArticleRepository(db)
+	us := ausecase.NewArticleUseCase(repo)
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	articles.GET("", articlesAPI.GetFeed)

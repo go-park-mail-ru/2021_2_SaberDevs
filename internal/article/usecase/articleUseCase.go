@@ -6,9 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	repository "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
-	"github.com/jmoiron/sqlx"
-
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 )
 
@@ -16,8 +13,8 @@ type articleUseCase struct {
 	articleRepo amodels.ArticleRepository
 }
 
-func NewArticleUsecase(db *sqlx.DB) amodels.ArticleUseCase {
-	return &articleUseCase{repository.NewpsqlArticleRepository(db)}
+func NewArticleUseCase(articleRepo amodels.ArticleRepository) amodels.ArticleUseCase {
+	return &articleUseCase{articleRepo}
 }
 
 func (m *articleUseCase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
