@@ -36,25 +36,25 @@ func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID stri
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
-			Function: "sessionRepositiry/IsSession"}
+			Function: "sessionRepositiry/GetSessionLogin"}
 	}
 
 	return nil
 }
 
-func (r *sessionTarantoolRepo) IsSession(ctx context.Context, sessionID string) (string, error) {
+func (r *sessionTarantoolRepo) GetSessionLogin(ctx context.Context, sessionID string) (string, error) {
 	var user []smodels.Session
 
 	err := r.conn.SelectTyped("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
-			Function: "sessionRepositiry/IsSession"}
+			Function: "sessionRepositiry/GetSessionLogin"}
 	}
 	if len(user) == 0 {
 		return "", sbErr.ErrNoSession{
 			Reason:   "no session",
-			Function: "sessionRepositiry/IsSession"}
+			Function: "sessionRepositiry/GetSessionLogin"}
 	}
 
 	return user[0].UserLogin, nil

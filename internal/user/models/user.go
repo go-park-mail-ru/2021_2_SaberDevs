@@ -32,6 +32,19 @@ type LoginResponse struct {
 
 // -----------------------------------------------
 
+type UpdateProfileData struct {
+	Surname string `json:"surname"`
+	Name    string `json:"name"`
+}
+
+type UpdateProfileResponse struct {
+	Status uint              `json:"status"`
+	Data   UpdateProfileData `json:"data"`
+	Msg    string            `json:"msg"`
+}
+
+// -----------------------------------------------
+
 type LogoutResponse struct {
 	Status     uint   `json:"status"`
 	GoodbyeMsg string `json:"goodbye"`
@@ -64,12 +77,14 @@ type SignupResponse struct {
 // -----------------------------------------------
 
 type UserUsecase interface {
+	UpdateProfile(ctx context.Context, user *User, sessionID string) (UpdateProfileResponse, error)
 	LoginUser(ctx context.Context, user *User) (LoginResponse, string, error)
 	Signup(ctx context.Context, user *User) (SignupResponse, string, error)
 	Logout(ctx context.Context, cookieValue string) error
 }
 
 type UserRepository interface {
+	UpdateUser(ctx context.Context, user *User) (User, error)
 	GetByLogin(ctx context.Context, login string) (User, error)
 	Store(ctx context.Context, user *User) (User, error)
 }

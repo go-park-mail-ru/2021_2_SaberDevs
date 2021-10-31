@@ -36,6 +36,27 @@ func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
 	return ok
 }
 
+func (api *UserHandler) UpdateProfile(c echo.Context) error {
+	requestUser := new(models.User)
+	err := c.Bind(requestUser)
+	if err != nil {
+		return sbErr.ErrUnpackingJSON{
+			Reason:   err.Error(),
+			Function: "userHandler/Login",
+		}
+	}
+
+	ctx := c.Request().Context()
+	sessionID, err := c.Cookie("session")
+
+	response, err := api.UserUsecase.UpdateProfile(ctx, requestUser, sessionID.Value)
+	if err != nil {
+		return errors.Wrap(err, "userHandler/UpdateProfile")
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (api *UserHandler) Login(c echo.Context) error {
 	requestUser := new(models.User)
 	err := c.Bind(requestUser)

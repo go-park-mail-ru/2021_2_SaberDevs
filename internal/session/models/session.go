@@ -19,5 +19,5 @@ type SessionUsecase interface {
 type SessionRepository interface {
 	CreateSession(ctx context.Context, login string) (string, error)
 	DeleteSession(ctx context.Context, cookieValue string) error
-	IsSession(ctx context.Context, cookie string) (string, error)
+	GetSessionLogin(ctx context.Context, cookie string) (string, error)
 }
