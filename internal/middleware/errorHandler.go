@@ -58,6 +58,10 @@ func ErrorHandler(err error, c echo.Context) {
 		responseCode = http.StatusFailedDependency
 		responseBody = errResp.ErrNoSession
 
+	case errors.As(err, &sbErr.ErrDbError{}):
+		responseCode = http.StatusFailedDependency
+		responseBody = errResp.ErrDbFailure
+
 	default:
 		responseCode = http.StatusInternalServerError
 		responseBody = errResp.ErrInternal

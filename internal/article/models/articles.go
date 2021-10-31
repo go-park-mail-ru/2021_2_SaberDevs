@@ -1,6 +1,6 @@
 package models
 
-import echo "github.com/labstack/echo/v4"
+import "context"
 
 //Представление записи
 type Article struct {
@@ -17,6 +17,20 @@ type Article struct {
 	Likes        uint     `json:"likes"`
 }
 
+type DbArticle struct {
+	Id           int
+	StringId     string `json:"id"`
+	PreviewUrl   string `json:"previewUrl"`
+	Title        string `json:"title"`
+	Text         string `json:"text"`
+	AuthorUrl    string `json:"authorUrl"`
+	AuthorName   string `json:"authorName"`
+	AuthorAvatar string `json:"authorAvatar"`
+	CommentsUrl  string `json:"commentsUrl"`
+	Comments     uint   `json:"comments"`
+	Likes        uint   `json:"likes"`
+}
+
 //Тело ответа на API-call /getfeed
 
 // type RequestChunk struct {
@@ -31,20 +45,22 @@ type ChunkResponse struct {
 
 // ArticleUsecase represent the article's usecases
 type ArticleUseCase interface {
-	Fetch(ctx echo.Context, idLastLoaded string, chunkSize int) ([]Article, error)
-	// GetByID(ctx context.Context, id int64) (Article, error)
-	// Update(ctx context.Context, ar *Article) error
-	// GetByTitle(ctx context.Context, title string) (Article, error)
-	// Store(context.Context, *Article) error
-	// Delete(ctx context.Context, id int64) error
+	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
+	GetByID(ctx context.Context, id int64) (Article, error)
+	GetByTag(ctx context.Context, tag string) ([]Article, error)
+	GetByAuthor(ctx context.Context, author string) ([]Article, error)
+	Update(ctx context.Context, a *Article) error
+	Store(ctx context.Context, a *Article) error
+	Delete(ctx context.Context, id string) error
 }
 
 // ArticleRepository represent the article's repository contract
 type ArticleRepository interface {
-	Fetch(ctx echo.Context, from, chunkSize int) ([]Article, error)
-	// GetByID(ctx context.Context, id int64) (Article, error)
-	// GetByTitle(ctx context.Context, title string) (Article, error)
-	// Update(ctx context.Context, ar *Article) error
-	// Store(ctx context.Context, a *Article) error
-	// Delete(ctx context.Context, id int64) error
+	Fetch(ctx context.Context, from, chunkSize int) ([]Article, error)
+	GetByID(ctx context.Context, id int64) (Article, error)
+	GetByTag(ctx context.Context, tag string) ([]Article, error)
+	GetByAuthor(ctx context.Context, author string) ([]Article, error)
+	Update(ctx context.Context, a *Article) error
+	Store(ctx context.Context, a *Article) error
+	Delete(ctx context.Context, id int64) error
 }
