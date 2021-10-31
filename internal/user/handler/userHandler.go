@@ -47,6 +47,63 @@ func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
 	return ok
 }
 
+func (api *UserHandler) UserProfile(c echo.Context) error {
+	sessionID, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrNotLoggedin{
+			Reason:   err.Error(),
+			Function: "userUsecase/UpdateProfile",
+		}
+	}
+
+	ctx := c.Request().Context()
+	response, err := api.UserUsecase.GetUserProfile(ctx, sessionID.Value)
+	if err != nil {
+		return errors.Wrap(err, "userHandler/UserProfile")
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *UserHandler) AuthorProfile(c echo.Context) error {
+	authorName := c.QueryParam("user")
+	ctx := c.Request().Context()
+
+	response, err := api.UserUsecase.GetAuthorProfile(ctx, authorName)
+	if err != nil {
+		return errors.Wrap(err, "userHandler/AuthorProfile")
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *UserHandler) UpdateProfile(c echo.Context) error {
+	requestUser := new(models.User)
+	err := c.Bind(requestUser)
+	if err != nil {
+		return sbErr.ErrUnpackingJSON{
+			Reason:   err.Error(),
+			Function: "userHandler/Login",
+		}
+	}
+
+	sessionID, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrNotLoggedin{
+			Reason:   err.Error(),
+			Function: "userUsecase/UpdateProfile",
+		}
+	}
+
+	ctx := c.Request().Context()
+	response, err := api.UserUsecase.UpdateProfile(ctx, requestUser, sessionID.Value)
+	if err != nil {
+		return errors.Wrap(err, "userHandler/UpdateProfile")
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (api *UserHandler) Login(c echo.Context) error {
 	requestUser := new(models.User)
 	err := c.Bind(requestUser)

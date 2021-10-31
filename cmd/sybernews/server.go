@@ -4,6 +4,7 @@ import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
+	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -53,7 +54,7 @@ func router(e *echo.Echo) {
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://127.0.0.1:8080", "http://87.228.2.178:8080"},
+		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
@@ -80,13 +81,29 @@ func Run(address string) {
 
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
+	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
+	articleRepo := arepo.NewpsqlArticleRepository(db)
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
+
+	articles := e.Group("/feed")
+	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	us := ausecase.NewArticleUsecase(db)
+	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
+  
+  
 
 	e.Use(syberMiddleware.ValidateRequestBody)
+
+	authM := syberMiddleware.NewAuthMiddleware(sessionRepo)
+
+	// e.Use(syberMiddleware.ValidateRequestBody)
+
+  
+  
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 	e.Use(syberMiddleware.AddId)
 	//Logger.SetOutput() //to file
@@ -97,6 +114,9 @@ func Run(address string) {
 	e.POST("/signup", userAPI.Register)
 	e.POST("/logout", userAPI.Logout)
 	e.POST("/", sessionAPI.CheckSession)
+  
+  
+
 	articles := e.Group("/feed")
 	//articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	repo := arepo.NewpsqlArticleRepository(db)
@@ -104,6 +124,16 @@ func Run(address string) {
 	articlesAPI := ahandler.NewArticlesHandler(e, us)
 
 	articles.GET("", articlesAPI.GetFeed)
+
+	e.POST("/profile/update", userAPI.UpdateProfile)
+	e.GET("/profile", userAPI.UserProfile)
+	e.GET("/user", userAPI.AuthorProfile)
+	articles.Use(syberMiddleware.AddId)
+
+	articles.GET("", articlesAPI.GetFeed, authM.CheckAuth)
+
+  
+  
 	articles.POST("/create", articlesAPI.Create)
 	articles.POST("/update", articlesAPI.Update)
 	articles.DELETE("/delete", articlesAPI.Delete)
@@ -112,7 +142,7 @@ func Run(address string) {
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))
 
-	router(e)
+	// router(e)
 
 	e.Logger.Fatal(e.Start(address))
 }

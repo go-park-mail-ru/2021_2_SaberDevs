@@ -9,7 +9,7 @@ import (
 type Session struct {
 	_msgpack    struct{} `msgpack:",asArray"`
 	CookieValue string
-	UserEmail   string
+	UserLogin   string
 }
 
 type SessionUsecase interface {
@@ -17,7 +17,7 @@ type SessionUsecase interface {
 }
 
 type SessionRepository interface {
-	CreateSession(ctx context.Context, email string) (string, error)
+	CreateSession(ctx context.Context, login string) (string, error)
 	DeleteSession(ctx context.Context, cookieValue string) error
-	IsSession(ctx context.Context, cookie string) (string, error)
+	GetSessionLogin(ctx context.Context, cookie string) (string, error)
 }

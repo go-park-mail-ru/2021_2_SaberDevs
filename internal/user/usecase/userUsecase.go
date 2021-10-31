@@ -8,6 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+
+	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
+
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
@@ -18,20 +22,110 @@ import (
 type userUsecase struct {
 	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
+	keyRepo     kmodels.KeyRepository
+	articleRepo amodels.ArticleRepository
 }
 
-func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umodels.UserUsecase {
+func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, kr kmodels.KeyRepository, ar amodels.ArticleRepository) umodels.UserUsecase {
 	return &userUsecase{
 		userRepo:    ur,
 		sessionRepo: sr,
+		keyRepo:     kr,
+		articleRepo: ar,
 	}
 }
 
-// TODO error handling
+func (uu *userUsecase) GetAuthorProfile(ctx context.Context, author string) (umodels.GetUserResponse, error) {
+	articles, err := uu.articleRepo.GetByAuthor(ctx, author)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
+	}
+
+	authorInDb, err1 := uu.userRepo.GetByName(ctx, author)
+	if err1 != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
+	}
+
+	responseData := umodels.GetUserData{
+		Login:    authorInDb.Login,
+		Name:     authorInDb.Name,
+		Surname:  authorInDb.Surname,
+		Score:    authorInDb.Score,
+		Articles: articles,
+	}
+	response := umodels.GetUserResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "ok",
+	}
+
+	return response, nil
+}
+
+func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (umodels.GetUserResponse, error) {
+	userLogin, err := uu.sessionRepo.GetSessionLogin(ctx, sessionID)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	userInDb, err := uu.userRepo.GetByLogin(ctx, userLogin)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	articles, err := uu.articleRepo.GetByAuthor(ctx, userInDb.Name)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	responseData := umodels.GetUserData{
+		Login:    userInDb.Login,
+		Name:     userInDb.Name,
+		Surname:  userInDb.Surname,
+		Score:    userInDb.Score,
+		Articles: articles,
+	}
+	response := umodels.GetUserResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "ok",
+	}
+
+	return response, nil
+}
+
+func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, sessionID string) (umodels.UpdateProfileResponse, error) {
+	var response umodels.UpdateProfileResponse
+
+	login, err := uu.sessionRepo.GetSessionLogin(ctx, sessionID)
+	if err != nil {
+		return response, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	user.Login = login
+
+	updatedUser, err := uu.userRepo.UpdateUser(ctx, user)
+	if err != nil {
+		return response, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	responseData := umodels.UpdateProfileData{
+		Name:    updatedUser.Name,
+		Surname: updatedUser.Surname,
+	}
+	response = umodels.UpdateProfileResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "OK",
+	}
+
+	return response, nil
+}
+
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
 
-	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Login)
+	userInRepo, err := uu.userRepo.GetByLogin(ctx, user.Login)
 	if err != nil {
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
@@ -47,7 +141,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
 
-	d := umodels.LoginData{
+	responseData := umodels.LoginData{
 		Login:   userInRepo.Login,
 		Name:    userInRepo.Name,
 		Surname: userInRepo.Surname,
@@ -56,7 +150,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	}
 	response = umodels.LoginResponse{
 		Status: http.StatusOK,
-		Data:   d,
+		Data:   responseData,
 		Msg:    "OK",
 	}
 
@@ -118,7 +212,7 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 		return response, "", errors.Wrap(err, "userUsecase/Signup")
 	}
 
-	d := umodels.SignUpData{
+	responseData := umodels.SignUpData{
 		Login:   signedupUser.Login,
 		Name:    signedupUser.Name,
 		Surname: signedupUser.Surname,
@@ -127,7 +221,7 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 	}
 	response = umodels.SignupResponse{
 		Status: http.StatusOK,
-		Data:   d,
+		Data:   responseData,
 		Msg:    "OK",
 	}
 

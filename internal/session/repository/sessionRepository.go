@@ -18,10 +18,10 @@ func NewSessionRepository(conn *tarantool.Connection) smodels.SessionRepository 
 	return &sessionTarantoolRepo{conn: conn}
 }
 
-func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, email string) (string, error) {
+func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) (string, error) {
 	sessionID := uuid.NewV4().String()
 
-	_, err := r.conn.Insert("sessions", []interface{}{sessionID, email})
+	_, err := r.conn.Insert("sessions", []interface{}{sessionID, login})
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -36,21 +36,26 @@ func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID stri
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
-			Function: "sessionRepositiry/IsSession"}
+			Function: "sessionRepositiry/GetSessionLogin"}
 	}
 
 	return nil
 }
 
-func (r *sessionTarantoolRepo) IsSession(ctx context.Context, sessionID string) (string, error) {
+func (r *sessionTarantoolRepo) GetSessionLogin(ctx context.Context, sessionID string) (string, error) {
 	var user []smodels.Session
 
 	err := r.conn.SelectTyped("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
 	if err != nil {
-		return "", sbErr.ErrNoSession{
+		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
-			Function: "sessionRepositiry/IsSession"}
+			Function: "sessionRepositiry/GetSessionLogin"}
+	}
+	if len(user) == 0 {
+		return "", sbErr.ErrNoSession{
+			Reason:   "no session",
+			Function: "sessionRepositiry/GetSessionLogin"}
 	}
 
-	return user[0].UserEmail, nil
+	return user[0].UserLogin, nil
 }

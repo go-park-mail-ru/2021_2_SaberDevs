@@ -18,7 +18,7 @@ func NewKeyRepository(conn *tarantool.Connection) kmodels.KeyRepository {
 }
 
 func (r *keyTarantoolRepo) StoreSalt(ctx context.Context, key kmodels.Key) error {
-	_, err := r.conn.Insert("keys", []interface{}{key.Email, key.Salt})
+	_, err := r.conn.Insert("keys", []interface{}{key.Login, key.Salt})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
