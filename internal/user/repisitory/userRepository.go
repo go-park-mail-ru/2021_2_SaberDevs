@@ -36,12 +36,6 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	var login string
 
 	err := r.Db.Get(&login, "SELECT Email FROM author WHERE Email = $1", user.Login)
-	// if err != nil {
-	// 	return *user, sbErr.ErrInternal{
-	// 		Reason:   err.Error(),
-	// 		Function: "userRepository/Store",
-	// 	}
-	// }
 	if login != "" {
 		return *user, sbErr.ErrUserExists{
 			Reason:   "login already in use",
@@ -50,7 +44,7 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	}
 
 	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score) VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err = r.Db.Exec(schema,user.Login, user.Name, user.Surname, user.Email, user.Password, 0)
+	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0)
 	if err != nil {
 		return *user, sbErr.ErrInternal{
 			Reason:   err.Error(),

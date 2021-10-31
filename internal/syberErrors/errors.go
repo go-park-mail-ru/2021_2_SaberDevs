@@ -123,21 +123,22 @@ func (e ErrNoSession) Error() string {
 
 // -------------------------------------------------------------------------------
 
-
 type ErrDbError struct {
- 	Reason   string
+	Reason   string
 	Function string
 }
+
 func (e ErrDbError) Error() string {
 	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
- 
+
 // -------------------------------------------------------------------------------
 
 type ErrInternal struct {
 	Reason   string
 	Function string
 }
+
 func (e ErrInternal) Error() string {
 	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
