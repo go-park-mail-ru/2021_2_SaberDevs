@@ -117,6 +117,7 @@ func Run(address string) {
 
 	articles.GET("/feed", articlesAPI.GetFeed)
 	articles.GET("", articlesAPI.GetByID)
+	articles.GET("/author", articlesAPI.GetByID)
 	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
 	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
 	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)

@@ -87,6 +87,18 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
+	login := c.QueryParam("login")
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.GetByAuthor(ctx, login)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetFeed")
+	}
+	response := ChunkData
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func (api *ArticlesHandler) Update(c echo.Context) error {
 	newArticle := new(amodels.Article)
 	err := c.Bind(newArticle)
