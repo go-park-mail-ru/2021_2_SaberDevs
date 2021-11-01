@@ -1,9 +1,0 @@
-{
-    "postgres" : {
-      "user" : "postgres",
-      "dbname" : "postgres",
-      "password" : "yura11011",
-      "host" : "localhost",
-      "sslmode" : "disable"
-    }
-  }
