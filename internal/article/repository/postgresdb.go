@@ -15,7 +15,7 @@ type psqlArticleRepository struct {
 	Db *sqlx.DB
 }
 
-func NewpsqlArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
+func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	//TODO defer db.Close()
 	return &psqlArticleRepository{db}
 }

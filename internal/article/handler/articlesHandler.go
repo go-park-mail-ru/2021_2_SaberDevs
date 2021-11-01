@@ -24,20 +24,18 @@ func NewArticlesHandler(us amodels.ArticleUsecase) ArticlesHandler {
 	return *handler
 }
 
+const del = "DELETED"
+const up = "UPDATED"
 const chunkSize = 5
 
 func SanitizeArticle(a *amodels.Article) *amodels.Article {
-	// s := bluemonday.NewPolicy()
-	//s.AllowStandardURLs()
 	s := bluemonday.StrictPolicy()
 	l := bluemonday.UGCPolicy()
 	a.AuthorAvatar = s.Sanitize(a.AuthorAvatar)
 	a.AuthorName = s.Sanitize(a.AuthorName)
 	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
-	//a.Comments = s.Sanitize(a.Comments) //not a string
 	a.CommentsUrl = s.Sanitize(a.CommentsUrl)
 	a.Id = s.Sanitize(a.Id)
-	// a.Likes = s.Sanitize(a.Likes)//not a string
 	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
 	for i := range a.Tags {
 		a.Tags[i] = l.Sanitize(a.Tags[i])
@@ -138,7 +136,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
 
-	response := "UPDATED"
+	response := up
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -191,6 +189,6 @@ func (api *ArticlesHandler) Delete(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Delete")
 	}
 	// формируем ответ
-	response := "DELETED"
+	response := del
 	return c.JSON(http.StatusOK, response)
 }

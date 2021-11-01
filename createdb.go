@@ -216,7 +216,7 @@ func main() {
 		}
 	}
 	fmt.Println("!", count)
-	myRepo := repo.NewpsqlArticleRepository(db)
+	myRepo := repo.NewArticleRepository(db)
 	result, err := myRepo.GetByID(context.TODO(), 10)
 	if err != nil {
 		fmt.Println(err.Error())
