@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
@@ -15,8 +17,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
 
-	"net/http"
-
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 
@@ -24,7 +24,10 @@ import (
 )
 
 func DbConnect() (*sqlx.DB, error) {
-	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
+	connStr, err := DbConfig()
+	if err != nil {
+		return nil, err
+	}
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		return db, err
@@ -42,6 +45,56 @@ func DbClose(db *sqlx.DB) error {
 		return err
 	}
 	return err
+}
+
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup: "header:X-XSRF-TOKEN",
+	}))
+
+	userRepo := urepo.NewUserRepository(db)
+	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
+	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
+	articleRepo := arepo.NewArticleRepository(db)
+
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
+	userAPI := uhandler.NewUserHandler(userUsecase)
+
+	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
+	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
+
+	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
+	articlesAPI := ahandler.NewArticlesHandler(articlesUsecase)
+
+	articles := e.Group("/api/v1/articles")
+	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
+
+	// e.Use(syberMiddleware.ValidateRequestBody)
+
+	//Logger.SetOutput() //to file
+	e.Logger.SetLevel(log.INFO)
+	// e.Logger.SetLevel(log.ERROR)
+
+	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
+	e.Use(syberMiddleware.AccessLogger)
+	e.Use(syberMiddleware.AddId)
+
+	e.POST("api/v1/user/login", userAPI.Login)
+	e.POST("api/v1/user/signup", userAPI.Register)
+	e.POST("api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
+	e.POST("api/v1/", sessionAPI.CheckSession)
+	e.POST("api/v1/user/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
+	e.GET("api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
+	e.GET("api/v1/user", userAPI.AuthorProfile)
+
+	articles.GET("/feed", articlesAPI.GetFeed)
+	articles.GET("", articlesAPI.GetByID)
+	articles.GET("/author", articlesAPI.GetByAuthor)
+	articles.GET("/tags", articlesAPI.GetByTag)
+	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
+	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
+	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
 }
 
 func Run(address string) {
@@ -72,54 +125,9 @@ func Run(address string) {
 		panic("error pinging session DB: " + err.Error())
 	}
 
-	userRepo := urepo.NewUserRepository(db)
-	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
-	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
-	articleRepo := arepo.NewpsqlArticleRepository(db)
-
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
-	userAPI := uhandler.NewUserHandler(userUsecase)
-
-	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
-	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
-
-	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
-
-	articlesAPI := ahandler.NewArticlesHandler(e, articlesUsecase)
-
-	articles := e.Group("/api/v1/articles")
-	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
-	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
-
-	// e.Use(syberMiddleware.ValidateRequestBody)
-	e.Use(syberMiddleware.AddId)
-
-	//Logger.SetOutput() //to file
-	e.Logger.SetLevel(log.INFO)
-	// e.Logger.SetLevel(log.ERROR)
-	e.Use(syberMiddleware.AccessLogger)
-
-	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
-
-	e.POST("/api/v1/user/login", userAPI.Login)
-	e.POST("/api/v1/user/signup", userAPI.Register)
-	e.POST("/api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
-	e.POST("/api/v1/", sessionAPI.CheckSession)
-	e.POST("/api/v1/user/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
-	e.GET("/api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
-	e.GET("/api/v1/user", userAPI.AuthorProfile)
-
-	articles.GET("/feed", articlesAPI.GetFeed)
-	articles.GET("", articlesAPI.GetByID)
-	articles.GET("/author", articlesAPI.GetByAuthor)
-	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
-	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
-	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
 	defer DbClose(db)
 
-	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-	// 	TokenLookup: "header:X-XSRF-TOKEN",
-	// }))
+	router(e, db, sessionsDbConn)
 
 	e.Logger.Fatal(e.Start(address))
 }

@@ -20,15 +20,16 @@ func NewArticleUsecase(articleRepo amodels.ArticleRepository, sessionRepo smodel
 	return &articleUsecase{sessionRepo, articleRepo}
 }
 
-func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
-	if idLastLoaded == "" {
-		idLastLoaded = "0"
+func IdToString(id string) (int, error) {
+	if id == "" {
+		id = "0"
 	}
-	if idLastLoaded == "end" {
-		idLastLoaded = "12"
-	}
+	idInt, err := strconv.Atoi(id)
+	return idInt, err
+}
 
-	from, err := strconv.Atoi(idLastLoaded)
+func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
 	}
@@ -57,7 +58,6 @@ func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.A
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
 	newArticle.Title = a.Title
-	newArticle.Id = "0"
 
 	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Value)
 	if err != nil {
@@ -69,14 +69,7 @@ func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.A
 }
 
 func (m *articleUsecase) Delete(ctx context.Context, id string) error {
-	if id == "" {
-		id = "0"
-	}
-	if id == "end" {
-		id = "12"
-	}
-
-	idInt, err := strconv.Atoi(id)
+	idInt, err := IdToString(id)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
@@ -84,15 +77,10 @@ func (m *articleUsecase) Delete(ctx context.Context, id string) error {
 	return errors.Wrap(err, "articleUsecase/Delete")
 }
 func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) error {
-
-	if a.Id == "" {
-		a.Id = "0"
+	idInt, err := IdToString(a.Id)
+	if err != nil {
+		return errors.Wrap(err, "articleUsecase/Delete")
 	}
-	if a.Id == "end" {
-		a.Id = "12"
-	}
-
-	idInt, err := strconv.Atoi(a.Id)
 	newArticle, err := m.GetByID(ctx, int64(idInt))
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
@@ -100,7 +88,6 @@ func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) e
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
 	newArticle.Title = a.Title
-	newArticle.Id = a.Id
 	err = m.articleRepo.Update(ctx, &newArticle)
 	return errors.Wrap(err, "articleUsecase/Update")
 }

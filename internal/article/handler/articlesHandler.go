@@ -17,28 +17,25 @@ type ArticlesHandler struct {
 }
 
 // NewArticleHandler will initialize the articles/ resources endpoint
-func NewArticlesHandler(e *echo.Echo, us amodels.ArticleUsecase) ArticlesHandler {
+func NewArticlesHandler(us amodels.ArticleUsecase) ArticlesHandler {
 	handler := &ArticlesHandler{
 		UseCase: us,
 	}
-	// e.GET("/articles", handler.GetFeed)
 	return *handler
 }
 
+const del = "DELETED"
+const up = "UPDATED"
 const chunkSize = 5
 
 func SanitizeArticle(a *amodels.Article) *amodels.Article {
-	// s := bluemonday.NewPolicy()
-	//s.AllowStandardURLs()
 	s := bluemonday.StrictPolicy()
 	l := bluemonday.UGCPolicy()
 	a.AuthorAvatar = s.Sanitize(a.AuthorAvatar)
 	a.AuthorName = s.Sanitize(a.AuthorName)
 	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
-	//a.Comments = s.Sanitize(a.Comments) //not a string
 	a.CommentsUrl = s.Sanitize(a.CommentsUrl)
 	a.Id = s.Sanitize(a.Id)
-	// a.Likes = s.Sanitize(a.Likes)//not a string
 	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
 	for i := range a.Tags {
 		a.Tags[i] = l.Sanitize(a.Tags[i])
@@ -116,8 +113,10 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
 	}
-	response := ChunkData
-
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -137,7 +136,21 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
 
-	response := "UPDATED"
+	response := up
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *ArticlesHandler) GetByTag(c echo.Context) error {
+	tag := c.QueryParam("tag")
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.GetByTag(ctx, tag)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -176,6 +189,6 @@ func (api *ArticlesHandler) Delete(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Delete")
 	}
 	// формируем ответ
-	response := "DELETED"
+	response := del
 	return c.JSON(http.StatusOK, response)
 }

@@ -15,14 +15,14 @@ type psqlArticleRepository struct {
 	Db *sqlx.DB
 }
 
-func NewpsqlArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
+func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	//TODO defer db.Close()
 	return &psqlArticleRepository{db}
 }
 
 const previewLen = 50
 
-func articleShortConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
+func articleConv(val amodels.DbArticle) amodels.Article {
 	var article amodels.Article
 	article.AuthorAvatar = val.AuthorAvatar
 	article.AuthorName = val.AuthorName
@@ -32,31 +32,22 @@ func articleShortConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, erro
 	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
+	article.Title = val.Title
+	return article
+}
+
+func articleShortConv(val amodels.DbArticle) (amodels.Article, error) {
+	article := articleConv(val)
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
 	} else {
 		article.Text = val.Text[:50]
 	}
-	article.Title = val.Title
 	return article, nil
 }
 func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
-	var article amodels.Article
-	article.AuthorAvatar = val.AuthorAvatar
-	article.AuthorName = val.AuthorName
-	article.AuthorUrl = val.AuthorUrl
-	article.Comments = val.Comments
-	article.CommentsUrl = val.CommentsUrl
-	article.Id = fmt.Sprint(val.Id)
-	article.Likes = val.Likes
-	article.PreviewUrl = val.PreviewUrl
-	if len(val.Text) <= previewLen {
-		article.Text = val.Text
-	} else {
-		article.Text = val.Text
-	}
-	article.Title = val.Title
-	article.Tags = append(article.Tags, "FUBAR")
+	article := articleConv(val)
+	article.Text = val.Text
 	rows, err := Db.Queryx(`select c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
@@ -77,7 +68,6 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 			}
 		}
 		article.Tags = append(article.Tags, mytag)
-		//fmt.Printf("%s\n", mytag)
 	}
 	return article, nil
 }
@@ -104,7 +94,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	}
 	// fmt.Println(count)
 	if count <= from+chunkSize {
-		from = count - chunkSize - 1
+		from = count - chunkSize
 	}
 
 	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
@@ -125,7 +115,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 				Function: "articleRepository/Fetch",
 			}
 		}
-		outArticle, err = articleShortConv(newArticle, m.Db)
+		outArticle, err = articleShortConv(newArticle)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
@@ -291,47 +281,9 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 			}
 		}
 	}
-	var tags []interface{}
-	exTags := make(map[string]int)
-	//find existing tags
-	schema := `SELECT tag FROM categories WHERE tag IN (`
-	for i, tag := range a.Tags {
-		exTags[tag] = 0
-		tags = append(tags, tag)
-		schema = schema + `$` + fmt.Sprint(i+1)
-		if i < len(a.Tags)-1 {
-			schema = schema + `,`
-		}
-	}
-	schema = schema + `)`
-	newrows, err := m.Db.Queryx(schema, tags...)
-	if err != nil {
-		return Id, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/Store",
-		}
-	}
-	var tag string
-	for newrows.Next() {
-		err = newrows.Scan(&tag)
-		if err != nil {
-			return Id, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Store",
-			}
-		}
-		exTags[tag] = 1
-	}
-	//create new tags
-	var newtags []interface{}
-	for _, v := range a.Tags {
-		if exTags[v] == 0 {
-			newtags = append(newtags, v)
-		}
-	}
 
-	insertCat := `INSERT INTO categories (tag) VALUES ($1);`
-	for _, data := range newtags {
+	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
 			return Id, sbErr.ErrDbError{
@@ -342,7 +294,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 	}
 	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
 	((SELECT Id FROM articles WHERE Id = $1) ,    
-	(SELECT Id FROM categories WHERE tag = $2));`
+	(SELECT Id FROM categories WHERE tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, Id, v)
 		if err != nil {
@@ -366,32 +318,41 @@ func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
-	if a.Id == "" {
-		a.Id = "0"
-	}
-	if a.Id == "end" {
-		a.Id = "12"
-	}
-
 	uniqId, err := strconv.Atoi(a.Id)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Delete",
+			Function: "articleRepository/Update",
 		}
 	}
-	err = m.Delete(ctx, int64(uniqId))
+	updateArticle := `UPDATE articles SET Title = $1, Text = $2 WHERE articles.Id  = $3`
+	_, err = m.Db.Query(updateArticle, a.Title, a.Text, uniqId)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Delete",
+			Function: "articleRepository/Update",
 		}
 	}
-	_, err = m.Store(ctx, a)
-	if err != nil {
-		return sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/Delete",
+	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	for _, data := range a.Tags {
+		_, err = m.Db.Exec(insertCat, data)
+		if err != nil {
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
+		}
+	}
+	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES
+	((SELECT articles.Id FROM articles WHERE articles.Id = $1) ,
+	(SELECT categories.Id FROM categories WHERE categories.tag = $2)) ON CONFLICT DO NOTHING;`
+	for _, v := range a.Tags {
+		_, err = m.Db.Exec(insert_junc, uniqId, v)
+		if err != nil {
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
 		}
 	}
 	return nil

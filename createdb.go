@@ -6,16 +6,19 @@ import (
 	"log"
 	"math/rand"
 
+	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	repo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
-// func remain() {
-
 func main() {
-	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
+	connStr, err := server.DbConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -26,34 +29,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	type dbArticle struct {
-		Id           int
-		StringId     string `json:"id"`
-		PreviewUrl   string `json:"previewUrl"`
-		Title        string `json:"title"`
-		Text         string `json:"text"`
-		AuthorUrl    string `json:"authorUrl"`
-		AuthorName   string `json:"authorName"`
-		AuthorAvatar string `json:"authorAvatar"`
-		CommentsUrl  string `json:"commentsUrl"`
-		Comments     uint   `json:"comments"`
-		Likes        uint   `json:"likes"`
-	}
-
-	type categories_articles struct {
-		articles_id   uint
-		categories_id uint
-	}
-
-	type Author struct {
-		Id       int
-		Login    string `json:"login"`
-		Name     string `json:"name"`
-		Surname  string `json:"surname"`
-		Email    string `json:"email" valid:"email,optional"`
-		Password string `json:"password"`
-		Score    int    `json:"score"`
-	}
 	schema := `DROP TABLE IF EXISTS articles CASCADE;
 		DROP TABLE IF EXISTS author CASCADE;
 		DROP TABLE IF EXISTS categories CASCADE;
@@ -71,7 +46,7 @@ func main() {
 
 	schema2 := `CREATE TABLE categories (
 		Id   SERIAL PRIMARY KEY NOT NULL,
-		tag  VARCHAR(45)
+		tag  VARCHAR(45) UNIQUE
 		);`
 
 	schema3 := `CREATE TABLE articles (
@@ -128,7 +103,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	var names []string
-	var author Author
+	var author amodels.Author
 	for rows.Next() {
 		err = rows.StructScan(&author)
 		if err != nil {
@@ -150,13 +125,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var newArticle dbArticle
+	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Print(newArticle.Id, "  ", newArticle.StringId, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
+		fmt.Print(newArticle.Id, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
 	}
 
 	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
@@ -204,13 +179,13 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var tag categories_articles
+	var tag amodels.СategoriesArticles
 	for rows.Next() {
-		err = rows.Scan(&tag.articles_id, &tag.categories_id)
+		err = rows.Scan(&tag.Articles_id, &tag.Categories_id)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fmt.Print(tag.articles_id, "  ", tag.categories_id, "\n")
+		fmt.Print(tag.Articles_id, "  ", tag.Categories_id, "\n")
 	}
 
 	rows, err = db.Queryx(`select c.tag from categories c
@@ -241,7 +216,7 @@ func main() {
 		}
 	}
 	fmt.Println("!", count)
-	myRepo := repo.NewpsqlArticleRepository(db)
+	myRepo := repo.NewArticleRepository(db)
 	result, err := myRepo.GetByID(context.TODO(), 10)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -269,7 +244,9 @@ func main() {
 	ar.Id = "13"
 	ar.AuthorName = "dar"
 	ar.Tags = append(ar.Tags, "finance")
-	_, err = myRepo.Store(context.TODO(), &ar)
+	Id, err := myRepo.Store(context.TODO(), &ar)
+	ar.Id = fmt.Sprint(Id)
+	fmt.Println("IDDDDD=", Id)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -307,7 +284,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	result, err = myRepo.GetByID(context.TODO(), 12)
+	result, err = myRepo.GetByID(context.TODO(), int64(Id))
 	if err != nil {
 		fmt.Println(err.Error())
 	}
