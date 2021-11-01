@@ -47,7 +47,7 @@ func DbClose(db *sqlx.DB) error {
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080"},
+		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
@@ -104,7 +104,7 @@ func Run(address string) {
 	e.POST("/api/v1/user/login", userAPI.Login)
 	e.POST("/api/v1/user/signup", userAPI.Register)
 	e.POST("/api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
-	e.POST("/", sessionAPI.CheckSession)
+	e.POST("/api/v1/", sessionAPI.CheckSession)
 	e.POST("/api/v1/user/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
 	e.GET("/api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
 	e.GET("/api/v1/user", userAPI.AuthorProfile)
