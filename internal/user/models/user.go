@@ -2,8 +2,6 @@ package models
 
 import (
 	"context"
-
-	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 )
 
 type User struct {
@@ -22,8 +20,8 @@ type RequestUser struct {
 
 type LoginData struct {
 	Login   string `json:"login"`
-	Surname string `json:"surname"`
-	Name    string `json:"name"`
+	Surname string `json:"lastName"`
+	Name    string `json:"firstName"`
 	Email   string `json:"email"`
 	Score   int    `json:"score"`
 }
@@ -37,8 +35,8 @@ type LoginResponse struct {
 // -----------------------------------------------
 
 type UpdateProfileData struct {
-	Surname string `json:"surname"`
-	Name    string `json:"name"`
+	Surname string `json:"lastName"`
+	Name    string `json:"firstName"`
 }
 
 type UpdateProfileResponse struct {
@@ -57,11 +55,10 @@ type LogoutResponse struct {
 // -----------------------------------------------
 
 type GetUserData struct {
-	Login    string            `json:"login"`
-	Surname  string            `json:"surname"`
-	Name     string            `json:"name"`
-	Score    int               `json:"score"`
-	Articles []amodels.Article `json:"articles"`
+	Login   string `json:"login"`
+	Surname string `json:"lastName"`
+	Name    string `json:"firstName"`
+	Score   int    `json:"score"`
 }
 
 type GetUserResponse struct {
@@ -74,8 +71,8 @@ type GetUserResponse struct {
 
 type SignUpData struct {
 	Login   string `json:"login"`
-	Surname string `json:"surname"`
-	Name    string `json:"name"`
+	Surname string `json:"lastName"`
+	Name    string `json:"firstName"`
 	Email   string `json:"email"`
 	Score   int    `json:"score"`
 }
@@ -84,8 +81,8 @@ type RequestSignup struct {
 	Login    string `json:"login"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Name     string `json:"name"`
-	Surname  string `json:"surname"`
+	Name     string `json:"firstName"`
+	Surname  string `json:"lastName"`
 }
 
 type SignupResponse struct {

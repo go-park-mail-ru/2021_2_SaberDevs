@@ -44,13 +44,6 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo) {
-
-	// us := ausecase.NewArticleUsecase()
-	// articlesAPI := ahandler.NewArticlesHandler(e, us)
-
-}
-
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -91,6 +84,7 @@ func Run(address string) {
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
+
 	articlesAPI := ahandler.NewArticlesHandler(e, articlesUsecase)
 
 	articles := e.Group("/api/v1/articles")
@@ -107,13 +101,13 @@ func Run(address string) {
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
 
-	e.POST("/login", userAPI.Login)
-	e.POST("/signup", userAPI.Register)
-	e.POST("/logout", userAPI.Logout, authMiddleware.CheckAuth)
+	e.POST("/api/v1/user/login", userAPI.Login)
+	e.POST("/api/v1/user/signup", userAPI.Register)
+	e.POST("/api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
 	e.POST("/", sessionAPI.CheckSession)
-	e.POST("/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
-	e.GET("/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
-	e.GET("/user", userAPI.AuthorProfile)
+	e.POST("/api/v1/user/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
+	e.GET("/api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
+	e.GET("/api/v1/user", userAPI.AuthorProfile)
 
 	articles.GET("/feed", articlesAPI.GetFeed)
 	articles.GET("", articlesAPI.GetByID)
@@ -126,8 +120,6 @@ func Run(address string) {
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))
-
-	// router(e)
 
 	e.Logger.Fatal(e.Start(address))
 }
