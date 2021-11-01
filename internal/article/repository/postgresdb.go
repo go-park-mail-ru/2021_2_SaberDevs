@@ -366,32 +366,19 @@ func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
-	if a.Id == "" {
-		a.Id = "0"
-	}
-	if a.Id == "end" {
-		a.Id = "12"
-	}
-
 	uniqId, err := strconv.Atoi(a.Id)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Delete",
+			Function: "articleRepository/Update",
 		}
 	}
-	err = m.Delete(ctx, int64(uniqId))
+	updateArticle := `UPDATE articles SET Title = $1, Text = $2 WHERE articles.Id  = $3`
+	_, err = m.Db.Query(updateArticle, a.Title, a.Text, uniqId)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Delete",
-		}
-	}
-	_, err = m.Store(ctx, a)
-	if err != nil {
-		return sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/Delete",
+			Function: "articleRepository/Update",
 		}
 	}
 	return nil

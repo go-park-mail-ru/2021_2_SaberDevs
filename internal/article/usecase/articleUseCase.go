@@ -93,6 +93,9 @@ func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) e
 	}
 
 	idInt, err := strconv.Atoi(a.Id)
+	if err != nil {
+		return errors.Wrap(err, "articleUsecase/Delete")
+	}
 	newArticle, err := m.GetByID(ctx, int64(idInt))
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
@@ -100,7 +103,6 @@ func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) e
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
 	newArticle.Title = a.Title
-	newArticle.Id = a.Id
 	err = m.articleRepo.Update(ctx, &newArticle)
 	return errors.Wrap(err, "articleUsecase/Update")
 }

@@ -269,7 +269,9 @@ func main() {
 	ar.Id = "13"
 	ar.AuthorName = "dar"
 	ar.Tags = append(ar.Tags, "finance")
-	_, err = myRepo.Store(context.TODO(), &ar)
+	Id, err := myRepo.Store(context.TODO(), &ar)
+	ar.Id = fmt.Sprint(Id)
+	fmt.Println("IDDDDD=", Id)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -307,7 +309,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	result, err = myRepo.GetByID(context.TODO(), 12)
+	result, err = myRepo.GetByID(context.TODO(), int64(Id))
 	if err != nil {
 		fmt.Println(err.Error())
 	}
