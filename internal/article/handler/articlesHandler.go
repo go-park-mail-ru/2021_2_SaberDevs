@@ -46,6 +46,27 @@ func SanitizeArticle(a *amodels.Article) *amodels.Article {
 	a.Title = s.Sanitize(a.Title)
 	return a
 }
+func SanitizeCreate(a *amodels.ArticleCreate) *amodels.ArticleCreate {
+	s := bluemonday.StrictPolicy()
+	l := bluemonday.UGCPolicy()
+	for i := range a.Tags {
+		a.Tags[i] = l.Sanitize(a.Tags[i])
+	}
+	a.Text = s.Sanitize(a.Text)
+	a.Title = s.Sanitize(a.Title)
+	return a
+}
+func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
+	s := bluemonday.StrictPolicy()
+	l := bluemonday.UGCPolicy()
+	a.Id = s.Sanitize(a.Id)
+	for i := range a.Tags {
+		a.Tags[i] = l.Sanitize(a.Tags[i])
+	}
+	a.Text = s.Sanitize(a.Text)
+	a.Title = s.Sanitize(a.Title)
+	return a
+}
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	rec := c.QueryParam("idLastLoaded")
@@ -80,7 +101,7 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	}
 	Data, err := api.UseCase.GetByID(ctx, int64(id))
 	if err != nil {
-		return errors.Wrap(err, "articlesHandler/GetFeed")
+		return errors.Wrap(err, "articlesHandler/GetbyID")
 	}
 	response := Data
 
@@ -92,7 +113,7 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.GetByAuthor(ctx, login)
 	if err != nil {
-		return errors.Wrap(err, "articlesHandler/GetFeed")
+		return errors.Wrap(err, "articlesHandler/GetByAuthor")
 	}
 	response := ChunkData
 
@@ -100,7 +121,7 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 }
 
 func (api *ArticlesHandler) Update(c echo.Context) error {
-	newArticle := new(amodels.Article)
+	newArticle := new(amodels.ArticleUpdate)
 	err := c.Bind(newArticle)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
@@ -108,7 +129,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 			Function: "articlesHandler/Update",
 		}
 	}
-	newArticle = SanitizeArticle(newArticle)
+	newArticle = SanitizeUpdate(newArticle)
 	ctx := c.Request().Context()
 	err = api.UseCase.Update(ctx, newArticle)
 	if err != nil {
@@ -120,22 +141,22 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 }
 
 func (api *ArticlesHandler) Create(c echo.Context) error {
-	newArticle := new(amodels.Article)
-	err := c.Bind(newArticle)
+	tempArticle := new(amodels.ArticleCreate)
+	err := c.Bind(tempArticle)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
 			Function: "articlesHandler/Create",
 		}
 	}
-	newArticle = SanitizeArticle(newArticle)
+	tempArticle = SanitizeCreate(tempArticle)
 	ctx := c.Request().Context()
-	err = api.UseCase.Store(ctx, newArticle)
+	id, err := api.UseCase.Store(ctx, tempArticle)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
 
-	response := "CREATED"
+	response := id
 	return c.JSON(http.StatusOK, response)
 }
 

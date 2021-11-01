@@ -2,13 +2,14 @@ package models
 
 import (
 	"context"
+
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 )
 
 type User struct {
 	Login    string `json:"login" db:"login"`
-	Name     string `json:"name" db:"name"`
-	Surname  string `json:"surname" db:"surname"`
+	Name     string `json:"firstName" db:"name"`
+	Surname  string `json:"lastName" db:"surname"`
 	Email    string `json:"email" db:"email" valid:"email,optional" `
 	Password string `json:"password" db:"password"`
 	Score    int    `json:"score" db:"score"`

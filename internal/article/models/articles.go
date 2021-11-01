@@ -47,6 +47,19 @@ type ArticleResponse struct {
 	Status uint    `json:"status"`
 	Data   Article `json:"data"`
 }
+type ArticleCreate struct {
+	Title string   `json:"title" db:"title"`
+	Text  string   `json:"text" db:"text"`
+	Tags  []string `json:"tags"`
+	//	AuthorName string   `json:"authorName" db:"authorname"`
+}
+
+type ArticleUpdate struct {
+	Id    string   `json:"id"  db:"id"`
+	Title string   `json:"title" db:"title"`
+	Text  string   `json:"text" db:"text"`
+	Tags  []string `json:"tags"`
+}
 
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
@@ -54,8 +67,8 @@ type ArticleUsecase interface {
 	GetByID(ctx context.Context, id int64) (Article, error)
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
-	Update(ctx context.Context, a *Article) error
-	Store(ctx context.Context, a *Article) error
+	Update(ctx context.Context, a *ArticleUpdate) error
+	Store(ctx context.Context, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
 }
 
@@ -66,6 +79,6 @@ type ArticleRepository interface {
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
 	Update(ctx context.Context, a *Article) error
-	Store(ctx context.Context, a *Article) error
+	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error
 }
