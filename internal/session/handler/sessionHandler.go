@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 )
@@ -22,8 +22,11 @@ func (api *SessionHandler) CheckSession(c echo.Context) error {
 
 	cookie, err := c.Cookie("session")
 	if err != nil {
-		// TODO middleware
-		return c.JSON(http.StatusNotAcceptable, errResp.ErrNoSession)
+
+		return sbErr.ErrNoSession{
+			Reason: err.Error(),
+			Function: "sessionHandler/CheckSession",
+		}
 	}
 
 	response, err := api.SessionUsecase.IsSession(ctx, cookie.Value)

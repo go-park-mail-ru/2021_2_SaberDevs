@@ -50,7 +50,7 @@ var TestData = [...]amodels.Article{
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1010,
 	},
-	{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
+	{"12", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
 		"А всё, а раньше надо было", "А всё, а раньше надо было", "#", "Tester-ender",
 		"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0,
 	},

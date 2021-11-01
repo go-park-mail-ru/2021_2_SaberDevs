@@ -2,13 +2,8 @@ package usecases
 
 import (
 	"context"
-	"net/http"
-	"net/mail"
-	"regexp"
-	"strconv"
-	"strings"
-
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+	"net/http"
 
 	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
 
@@ -16,7 +11,6 @@ import (
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/pkg/errors"
-	emoji "github.com/tmdvs/Go-Emoji-Utils"
 )
 
 type userUsecase struct {
@@ -36,22 +30,16 @@ func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, kr 
 }
 
 func (uu *userUsecase) GetAuthorProfile(ctx context.Context, author string) (umodels.GetUserResponse, error) {
-	articles, err := uu.articleRepo.GetByAuthor(ctx, author)
+	authorInDb, err := uu.userRepo.GetByLogin(ctx, author)
 	if err != nil {
 		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
 	}
 
-	authorInDb, err1 := uu.userRepo.GetByName(ctx, author)
-	if err1 != nil {
-		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
-	}
-
 	responseData := umodels.GetUserData{
-		Login:    authorInDb.Login,
-		Name:     authorInDb.Name,
-		Surname:  authorInDb.Surname,
-		Score:    authorInDb.Score,
-		Articles: articles,
+		Login:   authorInDb.Login,
+		Name:    authorInDb.Name,
+		Surname: authorInDb.Surname,
+		Score:   authorInDb.Score,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
@@ -73,17 +61,11 @@ func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (um
 		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
 	}
 
-	articles, err := uu.articleRepo.GetByAuthor(ctx, userInDb.Name)
-	if err != nil {
-		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
-	}
-
 	responseData := umodels.GetUserData{
 		Login:    userInDb.Login,
 		Name:     userInDb.Name,
 		Surname:  userInDb.Surname,
 		Score:    userInDb.Score,
-		Articles: articles,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
@@ -155,48 +137,6 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	}
 
 	return response, sessionID, nil
-}
-
-func isValidEmail(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err != nil
-}
-
-func isLoginValid(input string) bool {
-	validator := regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
-	return !validator.MatchString(input)
-}
-
-func removeAllAndCount(input string) (string, int) {
-	matches := emoji.FindAll(input)
-	emoCount := 0
-
-	for _, item := range matches {
-		emoCount += item.Occurrences
-		emo := item.Match.(emoji.Emoji)
-		rs := []rune(emo.Value)
-		for _, r := range rs {
-			input = strings.ReplaceAll(input, string([]rune{r}), "")
-		}
-	}
-
-	return input, emoCount
-}
-
-func minPasswordLength(emoCount int) int {
-	minLength := 8
-	if minLength-emoCount < 0 {
-		return 0
-	}
-	return minLength - emoCount
-}
-
-func isPasswordValid(input string) bool {
-	inputWithoutEmoji, emoCount := removeAllAndCount(input)
-	var validator *regexp.Regexp
-	minPasswordLength := minPasswordLength(emoCount)
-	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{" + strconv.Itoa(minPasswordLength) + ",20}$")
-	return !validator.MatchString(inputWithoutEmoji)
 }
 
 func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.SignupResponse, string, error) {

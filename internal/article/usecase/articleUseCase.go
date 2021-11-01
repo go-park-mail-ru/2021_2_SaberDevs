@@ -2,30 +2,34 @@ package article
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 
+	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	"github.com/pkg/errors"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 )
 
 type articleUsecase struct {
+	sessionRepo smodels.SessionRepository
 	articleRepo amodels.ArticleRepository
 }
 
-func NewArticleUsecase(articleRepo amodels.ArticleRepository) amodels.ArticleUsecase {
-	return &articleUsecase{articleRepo}
+func NewArticleUsecase(articleRepo amodels.ArticleRepository, sessionRepo smodels.SessionRepository) amodels.ArticleUsecase {
+	return &articleUsecase{sessionRepo, articleRepo}
+}
+
+func IdToString(id string) (int, error) {
+	if id == "" {
+		id = "0"
+	}
+	idInt, err := strconv.Atoi(id)
+	return idInt, err
 }
 
 func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
-	if idLastLoaded == "" {
-		idLastLoaded = "0"
-	}
-	if idLastLoaded == "end" {
-		idLastLoaded = "12"
-	}
-
-	from, err := strconv.Atoi(idLastLoaded)
+	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
 	}
@@ -49,27 +53,41 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, author string) (result
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
-func (m *articleUsecase) Store(ctx context.Context, a *amodels.Article) error {
-	err := m.articleRepo.Store(ctx, a)
-	return errors.Wrap(err, "articleUsecase/Store")
+func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) (int, error) {
+	newArticle := amodels.Article{}
+	newArticle.Text = a.Text
+	newArticle.Tags = a.Tags
+	newArticle.Title = a.Title
+
+	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Value)
+	if err != nil {
+		return 0, errors.Wrap(err, "articleUsecase/Delete")
+	}
+	newArticle.AuthorName = AuthorName
+	Id, err := m.articleRepo.Store(ctx, &newArticle)
+	return Id, errors.Wrap(err, "articleUsecase/Store")
 }
 
 func (m *articleUsecase) Delete(ctx context.Context, id string) error {
-	if id == "" {
-		id = "0"
-	}
-	if id == "end" {
-		id = "12"
-	}
-
-	idInt, err := strconv.Atoi(id)
+	idInt, err := IdToString(id)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
 	err = m.articleRepo.Delete(ctx, int64(idInt))
 	return errors.Wrap(err, "articleUsecase/Delete")
 }
-func (m *articleUsecase) Update(ctx context.Context, a *amodels.Article) error {
-	err := m.articleRepo.Update(ctx, a)
+func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) error {
+	idInt, err := IdToString(a.Id)
+	if err != nil {
+		return errors.Wrap(err, "articleUsecase/Delete")
+	}
+	newArticle, err := m.GetByID(ctx, int64(idInt))
+	if err != nil {
+		return errors.Wrap(err, "articleUsecase/Delete")
+	}
+	newArticle.Text = a.Text
+	newArticle.Tags = a.Tags
+	newArticle.Title = a.Title
+	err = m.articleRepo.Update(ctx, &newArticle)
 	return errors.Wrap(err, "articleUsecase/Update")
 }
