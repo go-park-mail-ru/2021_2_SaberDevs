@@ -17,11 +17,10 @@ type ArticlesHandler struct {
 }
 
 // NewArticleHandler will initialize the articles/ resources endpoint
-func NewArticlesHandler(e *echo.Echo, us amodels.ArticleUsecase) ArticlesHandler {
+func NewArticlesHandler(us amodels.ArticleUsecase) ArticlesHandler {
 	handler := &ArticlesHandler{
 		UseCase: us,
 	}
-	// e.GET("/articles", handler.GetFeed)
 	return *handler
 }
 
