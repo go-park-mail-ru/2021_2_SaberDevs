@@ -291,47 +291,9 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 			}
 		}
 	}
-	var tags []interface{}
-	exTags := make(map[string]int)
-	//find existing tags
-	schema := `SELECT tag FROM categories WHERE tag IN (`
-	for i, tag := range a.Tags {
-		exTags[tag] = 0
-		tags = append(tags, tag)
-		schema = schema + `$` + fmt.Sprint(i+1)
-		if i < len(a.Tags)-1 {
-			schema = schema + `,`
-		}
-	}
-	schema = schema + `)`
-	newrows, err := m.Db.Queryx(schema, tags...)
-	if err != nil {
-		return Id, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/Store",
-		}
-	}
-	var tag string
-	for newrows.Next() {
-		err = newrows.Scan(&tag)
-		if err != nil {
-			return Id, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Store",
-			}
-		}
-		exTags[tag] = 1
-	}
-	//create new tags
-	var newtags []interface{}
-	for _, v := range a.Tags {
-		if exTags[v] == 0 {
-			newtags = append(newtags, v)
-		}
-	}
 
-	insertCat := `INSERT INTO categories (tag) VALUES ($1);`
-	for _, data := range newtags {
+	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;;`
+	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
 			return Id, sbErr.ErrDbError{
@@ -342,7 +304,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 	}
 	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
 	((SELECT Id FROM articles WHERE Id = $1) ,    
-	(SELECT Id FROM categories WHERE tag = $2));`
+	(SELECT Id FROM categories WHERE tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, Id, v)
 		if err != nil {
