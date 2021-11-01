@@ -7,6 +7,7 @@ import (
 	"math/rand"
 
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	repo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
@@ -28,34 +29,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	type dbArticle struct {
-		Id           int
-		StringId     string `json:"id"`
-		PreviewUrl   string `json:"previewUrl"`
-		Title        string `json:"title"`
-		Text         string `json:"text"`
-		AuthorUrl    string `json:"authorUrl"`
-		AuthorName   string `json:"authorName"`
-		AuthorAvatar string `json:"authorAvatar"`
-		CommentsUrl  string `json:"commentsUrl"`
-		Comments     uint   `json:"comments"`
-		Likes        uint   `json:"likes"`
-	}
-
-	type categories_articles struct {
-		articles_id   uint
-		categories_id uint
-	}
-
-	type Author struct {
-		Id       int
-		Login    string `json:"login"`
-		Name     string `json:"name"`
-		Surname  string `json:"surname"`
-		Email    string `json:"email" valid:"email,optional"`
-		Password string `json:"password"`
-		Score    int    `json:"score"`
-	}
 	schema := `DROP TABLE IF EXISTS articles CASCADE;
 		DROP TABLE IF EXISTS author CASCADE;
 		DROP TABLE IF EXISTS categories CASCADE;
@@ -130,7 +103,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	var names []string
-	var author Author
+	var author amodels.Author
 	for rows.Next() {
 		err = rows.StructScan(&author)
 		if err != nil {
@@ -152,13 +125,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var newArticle dbArticle
+	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Print(newArticle.Id, "  ", newArticle.StringId, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
+		fmt.Print(newArticle.Id, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
 	}
 
 	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
@@ -206,13 +179,13 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var tag categories_articles
+	var tag amodels.СategoriesArticles
 	for rows.Next() {
-		err = rows.Scan(&tag.articles_id, &tag.categories_id)
+		err = rows.Scan(&tag.Articles_id, &tag.Categories_id)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fmt.Print(tag.articles_id, "  ", tag.categories_id, "\n")
+		fmt.Print(tag.Articles_id, "  ", tag.Categories_id, "\n")
 	}
 
 	rows, err = db.Queryx(`select c.tag from categories c

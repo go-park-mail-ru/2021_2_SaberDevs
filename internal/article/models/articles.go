@@ -63,6 +63,21 @@ type ArticleUpdate struct {
 	Tags  []string `json:"tags"`
 }
 
+type СategoriesArticles struct {
+	Articles_id   uint
+	Categories_id uint
+}
+
+type Author struct {
+	Id       int
+	Login    string `json:"login"`
+	Name     string `json:"name"`
+	Surname  string `json:"surname"`
+	Email    string `json:"email" valid:"email,optional"`
+	Password string `json:"password"`
+	Score    int    `json:"score"`
+}
+
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
 	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
