@@ -44,13 +44,6 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo) {
-
-	// us := ausecase.NewArticleUsecase()
-	// articlesAPI := ahandler.NewArticlesHandler(e, us)
-
-}
-
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -90,7 +83,6 @@ func Run(address string) {
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
-
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo)
 	articlesAPI := ahandler.NewArticlesHandler(e, articlesUsecase)
 
@@ -99,7 +91,6 @@ func Run(address string) {
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
-
 
 	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)
@@ -127,8 +118,6 @@ func Run(address string) {
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	// 	TokenLookup: "header:X-XSRF-TOKEN",
 	// }))
-
-	// router(e)
 
 	e.Logger.Fatal(e.Start(address))
 }
