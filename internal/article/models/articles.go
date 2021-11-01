@@ -43,6 +43,11 @@ type ChunkResponse struct {
 	ChunkData []Article `json:"data"`
 }
 
+type ArticleResponse struct {
+	Status uint    `json:"status"`
+	Data   Article `json:"data"`
+}
+
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
 	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)

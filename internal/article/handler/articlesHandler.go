@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -60,6 +61,29 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 		Status:    http.StatusOK,
 		ChunkData: ChunkData,
 	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *ArticlesHandler) GetByID(c echo.Context) error {
+	strId := c.QueryParam("id")
+	ctx := c.Request().Context()
+	if strId == "" {
+		strId = "0"
+	}
+	if strId == "end" {
+		strId = "12"
+	}
+
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return errors.Wrap(err, "articleHandler/getbyid")
+	}
+	Data, err := api.UseCase.GetByID(ctx, int64(id))
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetFeed")
+	}
+	response := Data
+
 	return c.JSON(http.StatusOK, response)
 }
 

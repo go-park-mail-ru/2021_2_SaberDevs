@@ -34,7 +34,7 @@ func TestGetByID(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockArticleRepo.EXPECT().GetByID(gomock.Eq(context.TODO()), gomock.Eq(int64(1))).Return(mockArticle, nil).AnyTimes()
 
-		u := repo.NewArticleUseCase(mockArticleRepo)
+		u := repo.NewArticleUsecase(mockArticleRepo)
 		a, err := u.GetByID(context.TODO(), 1)
 		assert.NoError(t, err)
 		assert.NotNil(t, a)
