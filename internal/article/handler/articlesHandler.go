@@ -116,8 +116,10 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
 	}
-	response := ChunkData
-
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 

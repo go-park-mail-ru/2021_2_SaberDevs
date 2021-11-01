@@ -292,7 +292,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 		}
 	}
 
-	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;;`
+	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
