@@ -71,7 +71,7 @@ func main() {
 
 	schema2 := `CREATE TABLE categories (
 		Id   SERIAL PRIMARY KEY NOT NULL,
-		tag  VARCHAR(45)
+		tag  VARCHAR(45) UNIQUE
 		);`
 
 	schema3 := `CREATE TABLE articles (

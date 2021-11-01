@@ -381,5 +381,27 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
+	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	for _, data := range a.Tags {
+		_, err = m.Db.Exec(insertCat, data)
+		if err != nil {
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
+		}
+	}
+	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES
+	((SELECT articles.Id FROM articles WHERE articles.Id = $1) ,
+	(SELECT categories.Id FROM categories WHERE categories.tag = $2)) ON CONFLICT DO NOTHING;`
+	for _, v := range a.Tags {
+		_, err = m.Db.Exec(insert_junc, uniqId, v)
+		if err != nil {
+			return sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
+		}
+	}
 	return nil
 }
