@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
@@ -15,8 +17,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
 
-	"net/http"
-
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 
@@ -24,7 +24,10 @@ import (
 )
 
 func DbConnect() (*sqlx.DB, error) {
-	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
+	connStr, err := DbConfig()
+	if err != nil {
+		return nil, err
+	}
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		return db, err

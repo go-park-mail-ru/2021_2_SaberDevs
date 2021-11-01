@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 
+	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 	repo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
@@ -13,7 +14,10 @@ import (
 )
 
 func main() {
-	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
+	connStr, err := server.DbConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	db, err := sqlx.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)

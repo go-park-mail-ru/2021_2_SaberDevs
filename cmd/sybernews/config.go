@@ -16,3 +16,22 @@ func Config() (string, error) {
 	port := viper.GetString("server.port")
 	return address + ":" + port, nil
 }
+
+func DbConfig() (string, error) {
+	viper.SetConfigName("dbfig")
+	viper.AddConfigPath("./configs")
+	viper.SetConfigType("json")
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return "", err
+	}
+
+	user := viper.GetString("postgres.user")
+	dbname := viper.GetString("postgres.dbname")
+	password := viper.GetString("postgres.password")
+	host := viper.GetString("postgres.host")
+	sslmode := viper.GetString("postgres.sslmode")
+
+	return "user=" + user + " dbname=" + dbname + " password=" + password + " host=" + host + " sslmode=" + sslmode, nil
+}
