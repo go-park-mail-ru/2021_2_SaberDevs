@@ -104,7 +104,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	}
 	// fmt.Println(count)
 	if count <= from+chunkSize {
-		from = count - chunkSize - 1
+		from = count - chunkSize
 	}
 
 	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
