@@ -29,7 +29,7 @@ func articleShortConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, erro
 	article.AuthorUrl = val.AuthorUrl
 	article.Comments = val.Comments
 	article.CommentsUrl = val.CommentsUrl
-	article.Id = val.StringId
+	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
 	if len(val.Text) <= previewLen {
@@ -47,7 +47,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	article.AuthorUrl = val.AuthorUrl
 	article.Comments = val.Comments
 	article.CommentsUrl = val.CommentsUrl
-	article.Id = val.StringId
+	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
 	if len(val.Text) <= previewLen {
@@ -60,7 +60,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	rows, err := Db.Queryx(`select c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
-	where a.StringId = $1;`, val.StringId)
+	where a.Id = $1;`, val.Id)
 	if err != nil {
 		return article, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -134,12 +134,13 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		}
 		ChunkData = append(ChunkData, outArticle)
 	}
-	schema := `select a.StringId, a.Id, c.tag from categories c
+	schema := `select a.Id, c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
-	where a.StringId in (`
+	where a.Id in (`
 	var ids []interface{}
 	for i, data := range ChunkData {
+		//id, _ := strconv.Atoi(data.Id)
 		ids = append(ids, data.Id)
 		schema = schema + `$` + fmt.Sprint(i+1)
 		if i < len(ChunkData)-1 {
@@ -156,18 +157,18 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		}
 	}
 	var newtag string
-	var strid string
 	var id int
 	i := 0
 	for rows.Next() {
-		err = rows.Scan(&strid, &id, &newtag)
+		err = rows.Scan(&id, &newtag)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/Fetch",
 			}
 		}
-		if ChunkData[i].Id == strid {
+		myid, _ := strconv.Atoi(ChunkData[i].Id)
+		if myid == id {
 			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
 		} else {
 			i++
@@ -178,7 +179,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 }
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
-	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.StringId = $1", id)
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.Id = $1", id)
 	var outArticle amodels.Article
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -271,13 +272,23 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 	return articles, nil
 }
 
-func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) error {
-	insertArticle := `INSERT INTO articles (PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
-	_, err := m.Db.Exec(insertArticle, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
+func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (int, error) {
+	insertArticle := `INSERT INTO articles (PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;`
+	rows, err := m.Db.Query(insertArticle, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
 	if err != nil {
-		return sbErr.ErrDbError{
+		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/Store",
+		}
+	}
+	var Id int
+	for rows.Next() {
+		err = rows.Scan(&Id)
+		if err != nil {
+			return Id, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Store",
+			}
 		}
 	}
 	var tags []interface{}
@@ -293,18 +304,18 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 		}
 	}
 	schema = schema + `)`
-	rows, err := m.Db.Queryx(schema, tags...)
+	newrows, err := m.Db.Queryx(schema, tags...)
 	if err != nil {
-		return sbErr.ErrDbError{
+		return Id, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/Store",
 		}
 	}
 	var tag string
-	for rows.Next() {
-		err = rows.Scan(&tag)
+	for newrows.Next() {
+		err = newrows.Scan(&tag)
 		if err != nil {
-			return sbErr.ErrDbError{
+			return Id, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/Store",
 			}
@@ -323,29 +334,29 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) e
 	for _, data := range newtags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
-			return sbErr.ErrDbError{
+			return Id, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/Store",
 			}
 		}
 	}
 	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
-	((SELECT Id FROM articles WHERE StringId = $1) ,    
+	((SELECT Id FROM articles WHERE Id = $1) ,    
 	(SELECT Id FROM categories WHERE tag = $2));`
 	for _, v := range a.Tags {
-		_, err = m.Db.Exec(insert_junc, a.Id, v)
+		_, err = m.Db.Exec(insert_junc, Id, v)
 		if err != nil {
-			return sbErr.ErrDbError{
+			return Id, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/Store",
 			}
 		}
 	}
-	return nil
+	return Id, nil
 }
 
 func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
-	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.StringId = $1", id)
+	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.Id = $1", id)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -376,7 +387,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Delete",
 		}
 	}
-	err = m.Store(ctx, a)
+	_, err = m.Store(ctx, a)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),

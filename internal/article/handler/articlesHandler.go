@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -143,21 +144,27 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 func (api *ArticlesHandler) Create(c echo.Context) error {
 	tempArticle := new(amodels.ArticleCreate)
 	err := c.Bind(tempArticle)
-	cookie, err := c.Cookie("session")
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
 			Function: "articlesHandler/Create",
 		}
 	}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Create",
+		}
+	}
 	tempArticle = SanitizeCreate(tempArticle)
 	ctx := c.Request().Context()
-	err = api.UseCase.Store(ctx, cookie, tempArticle)
+	Id, err := api.UseCase.Store(ctx, cookie, tempArticle)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
 
-	response := "CREATED"
+	response := fmt.Sprint(Id)
 	return c.JSON(http.StatusOK, response)
 }
 

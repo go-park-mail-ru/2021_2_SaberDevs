@@ -52,7 +52,7 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, author string) (result
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
-func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) error {
+func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) (int, error) {
 	newArticle := amodels.Article{}
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
@@ -61,11 +61,11 @@ func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.A
 
 	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Name)
 	if err != nil {
-		return errors.Wrap(err, "articleUsecase/Delete")
+		return 0, errors.Wrap(err, "articleUsecase/Delete")
 	}
 	newArticle.AuthorName = AuthorName
-	err = m.articleRepo.Store(ctx, &newArticle)
-	return errors.Wrap(err, "articleUsecase/Store")
+	Id, err := m.articleRepo.Store(ctx, &newArticle)
+	return Id, errors.Wrap(err, "articleUsecase/Store")
 }
 
 func (m *articleUsecase) Delete(ctx context.Context, id string) error {

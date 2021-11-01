@@ -76,7 +76,6 @@ func main() {
 
 	schema3 := `CREATE TABLE articles (
 		Id           SERIAL PRIMARY KEY,
-		StringId     VARCHAR(45),
 		PreviewUrl   VARCHAR(45),
 		Title        VARCHAR(45),
 		Text         TEXT,
@@ -139,9 +138,9 @@ func main() {
 		fmt.Println(author.Name)
 	}
 
-	insert_article := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+	insert_article := `INSERT INTO articles (PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
 	for i, data := range data.TestData {
-		_, err = db.Exec(insert_article, data.Id, data.PreviewUrl, data.Title, data.Text, data.AuthorUrl, names[i/4], data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
+		_, err = db.Exec(insert_article, data.PreviewUrl, data.Title, data.Text, data.AuthorUrl, names[i/4], data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -217,7 +216,7 @@ func main() {
 	rows, err = db.Queryx(`select c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
-	where a.StringId = $1;`, "11")
+	where a.Id = $1;`, 11)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -270,7 +269,7 @@ func main() {
 	ar.Id = "13"
 	ar.AuthorName = "dar"
 	ar.Tags = append(ar.Tags, "finance")
-	err = myRepo.Store(context.TODO(), &ar)
+	_, err = myRepo.Store(context.TODO(), &ar)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
