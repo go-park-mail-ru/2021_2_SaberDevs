@@ -44,40 +44,10 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo) {
-
-	// us := ausecase.NewArticleUsecase()
-	// articlesAPI := ahandler.NewArticlesHandler(e, us)
-
-}
-
-func Run(address string) {
-	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost},
-		AllowCredentials: true,
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup: "header:X-XSRF-TOKEN",
 	}))
-
-	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
-		StackSize: 1 << 10, // 1 KB
-		LogLevel:  log.ERROR,
-	}))
-
-	db, err := DbConnect()
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-	opts := tarantool.Opts{User: "admin", Pass: "pass"}
-	sessionsDbConn, err := tarantool.Connect(":3302", opts)
-	if err != nil {
-		panic("error connetcting to session DB: " + err.Error())
-	}
-
-	_, err = sessionsDbConn.Ping()
-	if err != nil {
-		panic("error pinging session DB: " + err.Error())
-	}
 
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
@@ -122,13 +92,39 @@ func Run(address string) {
 	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
 	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
 	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
+}
+
+func Run(address string) {
+	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost},
+		AllowCredentials: true,
+	}))
+
+	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+		StackSize: 1 << 10, // 1 KB
+		LogLevel:  log.ERROR,
+	}))
+
+	db, err := DbConnect()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	opts := tarantool.Opts{User: "admin", Pass: "pass"}
+	sessionsDbConn, err := tarantool.Connect(":3302", opts)
+	if err != nil {
+		panic("error connetcting to session DB: " + err.Error())
+	}
+
+	_, err = sessionsDbConn.Ping()
+	if err != nil {
+		panic("error pinging session DB: " + err.Error())
+	}
+
 	defer DbClose(db)
 
-	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-	// 	TokenLookup: "header:X-XSRF-TOKEN",
-	// }))
-
-	// router(e)
+	router(e, db, sessionsDbConn)
 
 	e.Logger.Fatal(e.Start(address))
 }

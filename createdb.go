@@ -12,8 +12,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// func remain() {
-
 func main() {
 	connStr := "user=postgres dbname=postgres password=yura11011 host=localhost sslmode=disable"
 	db, err := sqlx.Open("postgres", connStr)
