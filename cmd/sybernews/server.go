@@ -92,19 +92,19 @@ func Run(address string) {
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	// e.Use(syberMiddleware.ValidateRequestBody)
+	e.Use(syberMiddleware.AddId)
 
 	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)
 	// e.Logger.SetLevel(log.ERROR)
+	e.Use(syberMiddleware.AccessLogger)
 
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
-	e.Use(syberMiddleware.AccessLogger)
-	e.Use(syberMiddleware.AddId)
 
 	e.POST("/api/v1/user/login", userAPI.Login)
 	e.POST("/api/v1/user/signup", userAPI.Register)
 	e.POST("/api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
-	e.POST("/api/v1/", sessionAPI.CheckSession)
+	e.POST("/api/v1", sessionAPI.CheckSession)
 	e.POST("/api/v1/user/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
 	e.GET("/api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
 	e.GET("/api/v1/user", userAPI.AuthorProfile)
