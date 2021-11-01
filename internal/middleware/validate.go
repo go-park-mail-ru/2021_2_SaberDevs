@@ -1,12 +1,15 @@
 package middleware
 
 import (
-	"github.com/labstack/echo/v4"
-	emoji "github.com/tmdvs/Go-Emoji-Utils"
-	"net/mail"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	valid "github.com/asaskevich/govalidator"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
+	"github.com/labstack/echo/v4"
+	emoji "github.com/tmdvs/Go-Emoji-Utils"
 )
 
 func ValidateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
@@ -14,23 +17,18 @@ func ValidateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
 		switch c.Path() {
 		case "/login":
 		case "/signup":
-			// user := new(models.User)
-			// err := c.Bind(user)
-			// ok, err := valid.ValidateStruct(user)
-			// if err != nil {
-			//
-			// }
-			// if !ok {
-			// 	return c.String(http.StatusBadRequest, "ok")
-			// }
+			var user models.User
+			err := c.Bind(user)
+			ok, err := valid.ValidateStruct(user)
+			if err != nil {
+
+			}
+			if !ok {
+				return c.String(http.StatusBadRequest, "ok")
+			}
 		}
 		return next(c)
 	}
-}
-
-func isValidEmail(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err != nil
 }
 
 func isLoginValid(input string) bool {
