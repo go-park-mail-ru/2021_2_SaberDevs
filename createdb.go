@@ -307,7 +307,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	result, err = myRepo.GetByID(context.TODO(), 13)
+	result, err = myRepo.GetByID(context.TODO(), 12)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

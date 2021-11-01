@@ -59,7 +59,7 @@ func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.A
 	newArticle.Title = a.Title
 	newArticle.Id = "0"
 
-	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Name)
+	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Value)
 	if err != nil {
 		return 0, errors.Wrap(err, "articleUsecase/Delete")
 	}
