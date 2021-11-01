@@ -54,7 +54,7 @@ func router(e *echo.Echo) {
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080"},
+		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://192.168.0.31:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
