@@ -22,7 +22,7 @@ func NewpsqlArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 
 const previewLen = 50
 
-func articleShortConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
+func articleConv(val amodels.DbArticle) amodels.Article {
 	var article amodels.Article
 	article.AuthorAvatar = val.AuthorAvatar
 	article.AuthorName = val.AuthorName
@@ -32,31 +32,22 @@ func articleShortConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, erro
 	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
+	article.Title = val.Title
+	return article
+}
+
+func articleShortConv(val amodels.DbArticle) (amodels.Article, error) {
+	article := articleConv(val)
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
 	} else {
 		article.Text = val.Text[:50]
 	}
-	article.Title = val.Title
 	return article, nil
 }
 func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
-	var article amodels.Article
-	article.AuthorAvatar = val.AuthorAvatar
-	article.AuthorName = val.AuthorName
-	article.AuthorUrl = val.AuthorUrl
-	article.Comments = val.Comments
-	article.CommentsUrl = val.CommentsUrl
-	article.Id = fmt.Sprint(val.Id)
-	article.Likes = val.Likes
-	article.PreviewUrl = val.PreviewUrl
-	if len(val.Text) <= previewLen {
-		article.Text = val.Text
-	} else {
-		article.Text = val.Text
-	}
-	article.Title = val.Title
-	article.Tags = append(article.Tags, "FUBAR")
+	article := articleConv(val)
+	article.Text = val.Text
 	rows, err := Db.Queryx(`select c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
@@ -77,7 +68,6 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 			}
 		}
 		article.Tags = append(article.Tags, mytag)
-		//fmt.Printf("%s\n", mytag)
 	}
 	return article, nil
 }
@@ -125,7 +115,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 				Function: "articleRepository/Fetch",
 			}
 		}
-		outArticle, err = articleShortConv(newArticle, m.Db)
+		outArticle, err = articleShortConv(newArticle)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
