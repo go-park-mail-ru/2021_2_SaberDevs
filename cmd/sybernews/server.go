@@ -83,10 +83,11 @@ func Run(address string) {
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
-	articlesUsecase := ausecase.NewArticleUsecase(articleRepo)
+	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
+
 	articlesAPI := ahandler.NewArticlesHandler(e, articlesUsecase)
 
-	articles := e.Group("/feed")
+	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
@@ -99,7 +100,6 @@ func Run(address string) {
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
-	articles.Use(syberMiddleware.AddId)
 
 	e.POST("/api/v1/user/login", userAPI.Login)
 	e.POST("/api/v1/user/signup", userAPI.Register)
@@ -109,10 +109,12 @@ func Run(address string) {
 	e.GET("/api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
 	e.GET("/api/v1/user", userAPI.AuthorProfile)
 
-	articles.GET("", articlesAPI.GetFeed)
+	articles.GET("/feed", articlesAPI.GetFeed)
+	articles.GET("", articlesAPI.GetByID)
+	articles.GET("/author", articlesAPI.GetByAuthor)
 	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
 	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
-	articles.DELETE("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
+	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
 	defer DbClose(db)
 
 	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{

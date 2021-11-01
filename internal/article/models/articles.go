@@ -1,6 +1,9 @@
 package models
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
 
 //Представление записи
 type Article struct {
@@ -19,7 +22,6 @@ type Article struct {
 
 type DbArticle struct {
 	Id           int    `json:"Id"  db:"id"`
-	StringId     string `json:"StringId"  db:"stringid"`
 	PreviewUrl   string `json:"PreviewUrl" db:"previewurl"`
 	Title        string `json:"title" db:"title"`
 	Text         string `json:"text" db:"text"`
@@ -43,14 +45,32 @@ type ChunkResponse struct {
 	ChunkData []Article `json:"data"`
 }
 
+type ArticleResponse struct {
+	Status uint    `json:"status"`
+	Data   Article `json:"data"`
+}
+type ArticleCreate struct {
+	Title string   `json:"title" db:"title"`
+	Text  string   `json:"text" db:"text"`
+	Tags  []string `json:"tags"`
+	//	AuthorName string   `json:"authorName" db:"authorname"`
+}
+
+type ArticleUpdate struct {
+	Id    string   `json:"id"  db:"id"`
+	Title string   `json:"title" db:"title"`
+	Text  string   `json:"text" db:"text"`
+	Tags  []string `json:"tags"`
+}
+
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
 	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
 	GetByID(ctx context.Context, id int64) (Article, error)
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
-	Update(ctx context.Context, a *Article) error
-	Store(ctx context.Context, a *Article) error
+	Update(ctx context.Context, a *ArticleUpdate) error
+	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
 }
 
@@ -61,6 +81,6 @@ type ArticleRepository interface {
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
 	Update(ctx context.Context, a *Article) error
-	Store(ctx context.Context, a *Article) error
+	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error
 }
