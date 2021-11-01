@@ -2,6 +2,7 @@ package article
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
@@ -16,7 +17,7 @@ type articleUsecase struct {
 }
 
 func NewArticleUsecase(articleRepo amodels.ArticleRepository, sessionRepo smodels.SessionRepository) amodels.ArticleUsecase {
-	return &articleUsecase{articleRepo, sessionRepo}
+	return &articleUsecase{sessionRepo, articleRepo}
 }
 
 func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
@@ -51,19 +52,20 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, author string) (result
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
-func (m *articleUsecase) Store(ctx context.Context, a *amodels.ArticleCreate) (int, error) {
+func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) error {
 	newArticle := amodels.Article{}
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
 	newArticle.Title = a.Title
 	newArticle.Id = "0"
-	newArticle.AuthorName = session
 
-	err := m.articleRepo.Store(ctx, newArticle)
+	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Name)
 	if err != nil {
-		return 0, errors.Wrap(err, "articleUsecase/Store")
+		return errors.Wrap(err, "articleUsecase/Delete")
 	}
-
+	newArticle.AuthorName = AuthorName
+	err = m.articleRepo.Store(ctx, &newArticle)
+	return errors.Wrap(err, "articleUsecase/Store")
 }
 
 func (m *articleUsecase) Delete(ctx context.Context, id string) error {

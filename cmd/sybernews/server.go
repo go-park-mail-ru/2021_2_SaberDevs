@@ -90,7 +90,7 @@ func Run(address string) {
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
-	articlesUsecase := ausecase.NewArticleUsecase(articleRepo)
+	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	articlesAPI := ahandler.NewArticlesHandler(e, articlesUsecase)
 
 	articles := e.Group("/api/v1/articles")
@@ -117,7 +117,7 @@ func Run(address string) {
 
 	articles.GET("/feed", articlesAPI.GetFeed)
 	articles.GET("", articlesAPI.GetByID)
-	articles.GET("/author", articlesAPI.GetByID)
+	articles.GET("/author", articlesAPI.GetByAuthor)
 	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
 	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
 	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)

@@ -272,8 +272,8 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 }
 
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) error {
-	insertArticle := `INSERT INTO articles (StringId, PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
-	_, err := m.Db.Exec(insertArticle, a.Id, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
+	insertArticle := `INSERT INTO articles (PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
+	_, err := m.Db.Exec(insertArticle, a.PreviewUrl, a.Title, a.Text, a.AuthorUrl, a.AuthorName, a.AuthorAvatar, a.CommentsUrl, a.Comments, a.Likes)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),

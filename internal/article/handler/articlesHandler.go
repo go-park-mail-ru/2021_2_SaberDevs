@@ -143,6 +143,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 func (api *ArticlesHandler) Create(c echo.Context) error {
 	tempArticle := new(amodels.ArticleCreate)
 	err := c.Bind(tempArticle)
+	cookie, err := c.Cookie("session")
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
@@ -151,12 +152,12 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	}
 	tempArticle = SanitizeCreate(tempArticle)
 	ctx := c.Request().Context()
-	id, err := api.UseCase.Store(ctx, tempArticle)
+	err = api.UseCase.Store(ctx, cookie, tempArticle)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
 
-	response := id
+	response := "CREATED"
 	return c.JSON(http.StatusOK, response)
 }
 

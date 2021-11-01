@@ -1,6 +1,9 @@
 package models
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
 
 //Представление записи
 type Article struct {
@@ -68,7 +71,7 @@ type ArticleUsecase interface {
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
-	Store(ctx context.Context, a *ArticleCreate) (int, error)
+	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) error
 	Delete(ctx context.Context, id string) error
 }
 
@@ -79,6 +82,6 @@ type ArticleRepository interface {
 	GetByTag(ctx context.Context, tag string) ([]Article, error)
 	GetByAuthor(ctx context.Context, author string) ([]Article, error)
 	Update(ctx context.Context, a *Article) error
-	Store(ctx context.Context, a *Article) (int, error)
+	Store(ctx context.Context, a *Article) error
 	Delete(ctx context.Context, id int64) error
 }
