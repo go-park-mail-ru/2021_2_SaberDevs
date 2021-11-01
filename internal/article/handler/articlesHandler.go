@@ -143,6 +143,20 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func (api *ArticlesHandler) GetByTag(c echo.Context) error {
+	tag := c.QueryParam("tag")
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.GetByTag(ctx, tag)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
 func (api *ArticlesHandler) Create(c echo.Context) error {
 	tempArticle := new(amodels.ArticleCreate)
 	err := c.Bind(tempArticle)
