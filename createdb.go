@@ -61,8 +61,8 @@ func main() {
 
 	schema1 := `CREATE TABLE author(
 		Id       SERIAL PRIMARY KEY NOT NULL,
-		Login    VARCHAR(45),
-		Name     VARCHAR(45) NOT NULL UNIQUE,
+		Login    VARCHAR(45) NOT NULL UNIQUE,
+		Name     VARCHAR(45),
 		Surname  VARCHAR(45),
 		Email    VARCHAR(45),
 		Password VARCHAR(45),
@@ -81,7 +81,7 @@ func main() {
 		Title        VARCHAR(45),
 		Text         TEXT,
 		AuthorUrl    VARCHAR(45),
-		AuthorName   VARCHAR(45) REFERENCES author(Name) ON DELETE CASCADE,
+		AuthorName   VARCHAR(45) REFERENCES author(Login) ON DELETE CASCADE,
 		AuthorAvatar VARCHAR(45),
 		CommentsUrl  VARCHAR(45),
 		Comments     INT,
@@ -135,7 +135,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		names = append(names, author.Name)
+		names = append(names, author.Login)
 		fmt.Println(author.Name)
 	}
 
@@ -249,7 +249,7 @@ func main() {
 	}
 	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
-	results, err := myRepo.GetByAuthor(context.TODO(), "dar@exp.ru")
+	results, err := myRepo.GetByAuthor(context.TODO(), "dar")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -268,7 +268,7 @@ func main() {
 	fmt.Println()
 	ar := data.TestData[3]
 	ar.Id = "13"
-	ar.AuthorName = "dar@exp.ru"
+	ar.AuthorName = "dar"
 	ar.Tags = append(ar.Tags, "finance")
 	err = myRepo.Store(context.TODO(), &ar)
 	if err != nil {
