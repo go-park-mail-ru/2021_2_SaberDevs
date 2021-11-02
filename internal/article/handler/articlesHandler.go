@@ -28,6 +28,14 @@ const del = "DELETED"
 const up = "UPDATED"
 const chunkSize = 5
 
+func IdToStr(strId string) (int, error) {
+	if strId == "" {
+		strId = "0"
+	}
+	id, err := strconv.Atoi(strId)
+	return id, err
+}
+
 func SanitizeArticle(a *amodels.Article) *amodels.Article {
 	s := bluemonday.StrictPolicy()
 	l := bluemonday.UGCPolicy()
@@ -86,14 +94,7 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
 	ctx := c.Request().Context()
-	if strId == "" {
-		strId = "0"
-	}
-	if strId == "end" {
-		strId = "12"
-	}
-
-	id, err := strconv.Atoi(strId)
+	id, err := IdToStr(strId)
 	if err != nil {
 		return errors.Wrap(err, "articleHandler/getbyid")
 	}
