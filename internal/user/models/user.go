@@ -8,14 +8,16 @@ type User struct {
 	Login    string `json:"login" db:"login"`
 	Name     string `json:"firstName" db:"name"`
 	Surname  string `json:"lastName" db:"surname"`
-	Email    string `json:"email" db:"email" valid:"email,optional" `
+	Email    string `json:"email" db:"email"`
 	Password string `json:"password" db:"password"`
 	Score    int    `json:"score" db:"score"`
 }
 
-type RequestUser struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+// -----------------------------------------------
+
+type LoginRequestUser struct {
+	Login    string `json:"login" valid:"login"`
+	Password string `json:"password" valid:"pass"`
 }
 
 type LoginData struct {
@@ -33,6 +35,12 @@ type LoginResponse struct {
 }
 
 // -----------------------------------------------
+
+type UpdateRequestUser struct {
+	Surname  string `json:"lastName"`
+	Name     string `json:"firstName"`
+	Password string `json:"password" valid:"pass"`
+}
 
 type UpdateProfileData struct {
 	Surname string `json:"lastName"`
@@ -69,20 +77,18 @@ type GetUserResponse struct {
 
 // -----------------------------------------------
 
+type SignupRequestUser struct {
+	Login    string `json:"login" valid:"login"`
+	Email    string `json:"email" valid:"email"`
+	Password string `json:"password" valid:"pass"`
+}
+
 type SignUpData struct {
 	Login   string `json:"login"`
 	Surname string `json:"lastName"`
 	Name    string `json:"firstName"`
 	Email   string `json:"email"`
 	Score   int    `json:"score"`
-}
-
-type RequestSignup struct {
-	Login    string `json:"login"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"firstName"`
-	Surname  string `json:"lastName"`
 }
 
 type SignupResponse struct {

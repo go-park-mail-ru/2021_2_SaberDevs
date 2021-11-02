@@ -62,10 +62,10 @@ func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (um
 	}
 
 	responseData := umodels.GetUserData{
-		Login:    userInDb.Login,
-		Name:     userInDb.Name,
-		Surname:  userInDb.Surname,
-		Score:    userInDb.Score,
+		Login:   userInDb.Login,
+		Name:    userInDb.Name,
+		Surname: userInDb.Surname,
+		Score:   userInDb.Score,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
