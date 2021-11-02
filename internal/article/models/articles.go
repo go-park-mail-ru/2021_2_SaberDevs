@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+//Представление записи
 type Article struct {
 	Id           string   `json:"id"`
 	PreviewUrl   string   `json:"previewUrl"`
@@ -32,6 +33,13 @@ type DbArticle struct {
 	Likes        uint   `json:"likes" db:"likes"`
 }
 
+//Тело ответа на API-call /getfeed
+
+// type RequestChunk struct {
+// 	idLastLoaded string
+// 	login        string
+// }
+
 type ChunkResponse struct {
 	Status    uint      `json:"status"`
 	ChunkData []Article `json:"data"`
@@ -45,6 +53,7 @@ type ArticleCreate struct {
 	Title string   `json:"title" db:"title"`
 	Text  string   `json:"text" db:"text"`
 	Tags  []string `json:"tags"`
+	//	AuthorName string   `json:"authorName" db:"authorname"`
 }
 
 type ArticleUpdate struct {
