@@ -62,3 +62,22 @@ var TestUsers = []umodels.User{
 	{"viphania", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
 	{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 }
+curl -X 'POST' \
+'http://89.208.197.247:8081/api/v1/user/login' \
+-H 'accept: application/json' \
+-H 'Content-Type: application/json' \
+-d '{
+"login": "string",
+"password": "string"
+}'
+
+curl -X 'POST' \
+  'http://89.208.197.247:8081/api/v1/user/profile/update' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  --cookie "session=382e740f-c0b7-40df-acb7-7177dafc8a18" \
+  -d '{
+  "password": "string",
+  "firstName": "string",
+  "lastName": "string"
+}'
