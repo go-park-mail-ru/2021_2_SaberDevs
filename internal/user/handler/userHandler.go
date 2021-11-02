@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberValidation"
 	"net/http"
 	"sync"
 	"time"
@@ -96,6 +97,14 @@ func (api *UserHandler) UpdateProfile(c echo.Context) error {
 		}
 	}
 
+	err = syberValidation.ValidateUpdate(*requestUser)
+	if err != nil {
+		return sbErr.ErrValidate{
+			Reason:   err.Error(),
+			Function: "userHandler/UpdateProfile",
+		}
+	}
+
 	ctx := c.Request().Context()
 	response, err := api.UserUsecase.UpdateProfile(ctx, requestUser, sessionID.Value)
 	if err != nil {
@@ -136,6 +145,15 @@ func (api *UserHandler) Register(c echo.Context) error {
 			Function: "userHandler.Register",
 		}
 	}
+
+	err = syberValidation.ValidateSignUp(*newUser)
+	if err != nil {
+		return sbErr.ErrValidate{
+			Reason:   err.Error(),
+			Function: "userHandler/register",
+		}
+	}
+
 	newUser = SanitizeUser(newUser)
 	ctx := c.Request().Context()
 	response, sessionID, err := api.UserUsecase.Signup(ctx, newUser)

@@ -71,3 +71,7 @@ var ErrNoSession = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "Session doesnt exist",
 }
+
+var ErrValidation = ErrorResponse{
+	Status: http.StatusFailedDependency,
+}
