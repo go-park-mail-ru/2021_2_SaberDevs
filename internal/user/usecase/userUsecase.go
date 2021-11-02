@@ -5,6 +5,11 @@ import (
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"net/http"
 
+	"bytes"
+	"crypto/rand"
+
+	"golang.org/x/crypto/argon2"
+
 	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
 
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
@@ -104,6 +109,11 @@ func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, se
 	return response, nil
 }
 
+func checkPass(saltedPass []byte, plainPass string, salt string) bool {
+	saltedPlainPass := saltPass([]byte(salt), plainPass)
+	return bytes.Equal(saltedPlainPass, saltedPass)
+}
+
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
 
@@ -112,7 +122,12 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
 
-	if userInRepo.Password != user.Password {
+	salt, err := uu.keyRepo.GetSalt(ctx, user.Login)
+	if err != nil {
+		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
+	}
+
+	if !checkPass([]byte(userInRepo.Password), user.Password, salt) {
 		return response, "", sbErr.ErrWrongPassword{
 			Reason:   "wrong password",
 			Function: "userUsecase/LoginUser"}
@@ -139,11 +154,46 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	return response, sessionID, nil
 }
 
+func saltPass(salt []byte, plainPassword string) []byte {
+	saltedPass := argon2.IDKey([]byte(plainPassword), salt, 1, 64*1024, 4, 32)
+	return saltedPass
+}
+
+func makeSalt() ([]byte, error) {
+	salt := make([]byte, 8)
+
+	_, err := rand.Read(salt)
+	if err != nil {
+		return nil, err
+	}
+
+	return salt, nil
+}
+
 func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.SignupResponse, string, error) {
 	var response umodels.SignupResponse
 
+	salt, err := makeSalt()
+	if err != nil {
+		return response, "", sbErr.ErrInternal{
+			Reason:  err.Error(),
+			Function: "userUsecase/Signup",
+		}
+	}
+
+	user.Password = string(saltPass(salt, user.Password))
+
+	err = uu.keyRepo.StoreSalt(ctx, kmodels.Key{
+		Salt: string(salt),
+		Login: user.Login,
+	})
+	if err != nil {
+		return response, "", errors.Wrap(err, "userUsecase/Signup")
+	}
+
 	signedupUser, err := uu.userRepo.Store(ctx, user)
 	if err != nil {
+		err := uu.keyRepo.DeleteSalt(ctx, user.Login)
 		return response, "", errors.Wrap(err, "userUsecase/Signup")
 	}
 

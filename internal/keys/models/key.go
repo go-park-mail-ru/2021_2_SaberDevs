@@ -12,5 +12,6 @@ type Key struct {
 
 type KeyRepository interface {
 	StoreSalt(ctx context.Context, key Key) error
+	DeleteSalt(ctx context.Context, login string) error
 	GetSalt(ctx context.Context, login string) (string, error)
 }

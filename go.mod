@@ -19,5 +19,6 @@ require (
 	github.com/tarantool/go-tarantool v0.0.0-20210330210617-56fe55c5fa5c
 	github.com/tmdvs/Go-Emoji-Utils v1.1.0
 	github.com/zhashkevych/go-sqlxmock v1.5.1
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 
 )

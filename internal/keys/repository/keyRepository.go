@@ -17,6 +17,17 @@ func NewKeyRepository(conn *tarantool.Connection) kmodels.KeyRepository {
 	return &keyTarantoolRepo{conn: conn}
 }
 
+func (r *keyTarantoolRepo) DeleteSalt(ctx context.Context, login string) error {
+	_, err := r.conn.Delete("keys", "primary", []interface{}{login})
+	if err != nil {
+		return sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "keyRepositiry/DeleteSalt"}
+	}
+
+	return nil
+}
+
 func (r *keyTarantoolRepo) StoreSalt(ctx context.Context, key kmodels.Key) error {
 	_, err := r.conn.Insert("keys", []interface{}{key.Login, key.Salt})
 	if err != nil {
@@ -35,6 +46,11 @@ func (r *keyTarantoolRepo) GetSalt(ctx context.Context, email string) (string, e
 	if err != nil {
 		return "", sbErr.ErrNoSession{
 			Reason:   err.Error(),
+			Function: "keyRepositiry/GetSalt"}
+	}
+	if len(key) == 0 {
+		return "", sbErr.ErrNoSession{
+			Reason:   "no key",
 			Function: "keyRepositiry/GetSalt"}
 	}
 
