@@ -68,8 +68,8 @@ func ErrorHandler(err error, c echo.Context) {
 	}
 	Id := c.Request().Header.Get(echo.HeaderXRequestID)
 	c.Logger().Error("Id = ", Id, "  ", err.Error())
-	_err := c.JSON(responseCode, responseBody)
-	if _err != nil {
+	jsonErr := c.JSON(responseCode, responseBody)
+	if jsonErr != nil {
 		return
 	}
 }
