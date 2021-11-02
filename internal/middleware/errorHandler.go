@@ -62,6 +62,13 @@ func ErrorHandler(err error, c echo.Context) {
 		responseCode = http.StatusFailedDependency
 		responseBody = errResp.ErrDbFailure
 
+	case errors.As(err, &sbErr.ErrValidate{}):
+		responseCode = http.StatusFailedDependency
+		responseBody = errResp.ErrorResponse{
+			Status:  http.StatusFailedDependency,
+			ErrorMsg: err.Error(),
+		}
+
 	default:
 		responseCode = http.StatusInternalServerError
 		responseBody = errResp.ErrInternal
