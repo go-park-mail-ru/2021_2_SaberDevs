@@ -21,7 +21,7 @@ func ValidateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		switch c.Path() {
 		case "/api/v1/user/signup":
-			var user models.SignupRequestUser
+			var user models.User
 
 			err := c.Bind(&user)
 			if err != nil {
@@ -44,7 +44,7 @@ func ValidateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
 			}
 
 		case "/api/v1/user/profile/update":
-			var user models.UpdateRequestUser
+			var user models.User
 
 			err := c.Bind(&user)
 			if err != nil {

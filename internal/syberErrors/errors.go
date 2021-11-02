@@ -142,3 +142,14 @@ type ErrInternal struct {
 func (e ErrInternal) Error() string {
 	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
+
+// -------------------------------------------------------------------------------
+
+type ErrValidate struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrValidate) Error() string {
+	return fmt.Sprintf(e.Reason)
+}

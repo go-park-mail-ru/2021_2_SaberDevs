@@ -89,8 +89,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
-	e.Use(syberMiddleware.ValidateRequestBody)
-
 	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)
 	// e.Logger.SetLevel(log.ERROR)
