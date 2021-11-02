@@ -12,7 +12,7 @@ import (
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
-	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
+	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
