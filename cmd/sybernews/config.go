@@ -17,6 +17,22 @@ func Config() (string, error) {
 	return address + ":" + port, nil
 }
 
+func TarantoolConfig() (string, string, string, error) {
+	viper.SetConfigName("config")
+	viper.AddConfigPath("./configs")
+	viper.SetConfigType("json")
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return "", "", "", err
+	}
+
+	user := viper.GetString("tarantool.user")
+	pass := viper.GetString("tarantool.pass")
+	addr := viper.GetString("tarantool.addr")
+	return user, pass, addr, nil
+}
+
 func DbConfig() (string, error) {
 	viper.SetConfigName("dbfig")
 	viper.AddConfigPath("./configs")

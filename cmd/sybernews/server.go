@@ -23,6 +23,25 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func TarantoolConnect() (*tarantool.Connection, error) {
+	user, pass, addr, err := TarantoolConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	opts := tarantool.Opts{User: user, Pass: pass}
+	conn, err := tarantool.Connect(addr, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = conn.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
+
 func DbConnect() (*sqlx.DB, error) {
 	connStr, err := DbConfig()
 	if err != nil {
@@ -114,20 +133,15 @@ func Run(address string) {
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
-	opts := tarantool.Opts{User: "admin", Pass: "pass"}
-	sessionsDbConn, err := tarantool.Connect(":3302", opts)
-	if err != nil {
-		panic("error connetcting to session DB: " + err.Error())
-	}
 
-	_, err = sessionsDbConn.Ping()
+	tarantoolConn, err := TarantoolConnect()
 	if err != nil {
-		panic("error pinging session DB: " + err.Error())
+		e.Logger.Fatal(err)
 	}
 
 	defer DbClose(db)
 
-	router(e, db, sessionsDbConn)
+	router(e, db, tarantoolConn)
 
 	e.Logger.Fatal(e.Start(address))
 }
