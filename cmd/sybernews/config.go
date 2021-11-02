@@ -34,7 +34,7 @@ func TarantoolConfig() (string, string, string, error) {
 }
 
 func DbConfig() (string, error) {
-	viper.SetConfigName("dbfig")
+	viper.SetConfigName("config")
 	viper.AddConfigPath("./configs")
 	viper.SetConfigType("json")
 
