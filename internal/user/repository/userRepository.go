@@ -40,25 +40,7 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 		}
 	}
 
-	switch {
-	case user.Name != "":
-		_, err := tx.Exec(`UPDATE author SET NAME = $1 WHERE Login = $2`, user.Name, user.Login)
-		if err != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return umodels.User{}, sbErr.ErrInternal{
-					Reason:   err.Error(),
-					Function: "userRepository/UpdateUser",
-				}
-			}
-			return umodels.User{}, sbErr.ErrInternal{
-				Reason:   err.Error(),
-				Function: "userRepository/UpdateUser",
-			}
-		}
-		fallthrough
-
-	case user.Surname != "":
+	if user.Surname != "" {
 		_, err := tx.Exec(`UPDATE author SET SURNAME = $1 WHERE Login = $2`, user.Surname, user.Login)
 		if err != nil {
 			err := tx.Rollback()
@@ -73,9 +55,8 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 				Function: "userRepository/UpdateUser",
 			}
 		}
-		fallthrough
-
-	case user.Password != "":
+	}
+	if user.Password != "" {
 		_, err := tx.Exec(`UPDATE author SET PASSWORD = $1 WHERE Login = $2`, user.Password, user.Login)
 		if err != nil {
 			err := tx.Rollback()
