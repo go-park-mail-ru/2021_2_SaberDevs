@@ -17,7 +17,7 @@ func TestGetByID(t *testing.T) {
 
 	defer ctrl.Finish()
 
-	mockArticleRepo := mocks.NewMockArticleRepository(ctrl)
+	mockArticleRepo := mocks.NewMockArticleRepository()(ctrl)
 	mockArticle := amodels.Article{
 		Id:           "1",
 		PreviewUrl:   "#",
