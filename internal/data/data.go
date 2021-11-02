@@ -70,7 +70,6 @@ curl -X 'POST' \
 "login": "string",
 "password": "string"
 }'
-
 curl -X 'POST' \
   'http://89.208.197.247:8081/api/v1/user/profile/update' \
   -H 'accept: application/json' \
