@@ -67,9 +67,9 @@ func DbClose(db *sqlx.DB) error {
 }
 
 func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
-	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		TokenLookup: "header:X-XSRF-TOKEN",
-	}))
+	//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+	//	TokenLookup: "header:X-XSRF-TOKEN",
+	//}))
 
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)

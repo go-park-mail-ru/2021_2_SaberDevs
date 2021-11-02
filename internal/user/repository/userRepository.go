@@ -56,6 +56,7 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 				Function: "userRepository/UpdateUser",
 			}
 		}
+		fallthrough
 
 	case user.Surname != "":
 		_, err := tx.Exec(`UPDATE author SET SURNAME = $1 WHERE Login = $2`, user.Surname, user.Login)
@@ -72,6 +73,7 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 				Function: "userRepository/UpdateUser",
 			}
 		}
+		fallthrough
 
 	case user.Password != "":
 		_, err := tx.Exec(`UPDATE author SET PASSWORD = $1 WHERE Login = $2`, user.Password, user.Login)
