@@ -29,10 +29,10 @@ func ValidateSignUp(user umodels.User) error {
 func ValidateUpdate(user umodels.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Name, validation.When(user.Name != "", validation.Length(4, 20),
-			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$"))).Else(validation.Nil)),
+			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")))),
 		validation.Field(&user.Surname, validation.When(user.Surname != "",validation.Length(4, 20),
-			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$"))).Else(validation.Nil)),
-		validation.Field(&user.Password, validation.When(user.Password != "", validation.By(isPasswordValid)).Else(validation.Nil)),
+			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")))),
+		validation.Field(&user.Password, validation.When(user.Password != "", validation.By(isPasswordValid))),
 	)
 	if err != nil {
 		return err
