@@ -1,6 +1,6 @@
 module github.com/go-park-mail-ru/2021_2_SaberDevs
 
-go 1.13
+go 1.17
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
