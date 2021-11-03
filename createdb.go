@@ -251,7 +251,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Println("!", count)
-	result, err = myRepo.GetByID(context.TODO(), 13)
+	result, err = myRepo.GetByID(context.TODO(), int64(Id))
 	if err != nil {
 		fmt.Println(err.Error())
 	}

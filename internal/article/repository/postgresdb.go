@@ -77,23 +77,15 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 
 	var ChunkData []amodels.Article
 	overCount := false
-	rows, err := m.Db.Queryx("SELECT count(*) FROM articles;")
+	var count int
+	err = m.Db.Get(&count, "SELECT count(*) FROM articles;")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/Fetch",
 		}
 	}
-	var count int
-	for rows.Next() {
-		err = rows.Scan(&count)
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
-			}
-		}
-	}
+
 	// fmt.Println(count)
 	if count <= from {
 		ChunkData = append(ChunkData, data.End)
@@ -105,7 +97,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		overCount = true
 	}
 
-	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
