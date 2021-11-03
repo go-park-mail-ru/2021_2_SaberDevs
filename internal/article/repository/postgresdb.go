@@ -73,30 +73,36 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	return article, nil
 }
 
-func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {
-
+func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize int) (int, []amodels.Article, bool, error) {
 	var ChunkData []amodels.Article
 	overCount := false
 	var count int
-	err = m.Db.Get(&count, "SELECT count(*) FROM articles;")
+	err := m.Db.Get(&count, schemaCount)
 	if err != nil {
-		return ChunkData, sbErr.ErrDbError{
+		return chunkSize, ChunkData, overCount, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/Fetch",
 		}
 	}
 
-	// fmt.Println(count)
 	if count <= from {
 		ChunkData = append(ChunkData, data.End)
-		return ChunkData, nil
-	}
-
-	if count < from+chunkSize {
-		chunkSize = count - from
 		overCount = true
 	}
 
+	if (count > from) && (count < from+chunkSize) {
+		chunkSize = count - from
+		overCount = true
+	}
+	return chunkSize, ChunkData, overCount, nil
+}
+
+func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {
+	schemaCount := "SELECT count(*) FROM articles;"
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
 	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
