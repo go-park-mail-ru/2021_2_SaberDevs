@@ -43,8 +43,12 @@ func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.
 	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
-func (m *articleUsecase) GetByTag(ctx context.Context, tag string) (result []amodels.Article, err error) {
-	result, err = m.articleRepo.GetByTag(ctx, tag)
+func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByTag")
+	}
+	result, err = m.articleRepo.GetByTag(ctx, tag, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 

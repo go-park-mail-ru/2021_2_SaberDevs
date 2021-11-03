@@ -75,9 +75,9 @@ func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
 }
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
-	rec := c.QueryParam("idLastLoaded")
+	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.Fetch(ctx, rec, chunkSize)
+	ChunkData, err := api.UseCase.Fetch(ctx, id, chunkSize)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
 	}
@@ -143,8 +143,9 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 
 func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	tag := c.QueryParam("tag")
+	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByTag(ctx, tag)
+	ChunkData, err := api.UseCase.GetByTag(ctx, tag, id, chunkSize)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
 	}

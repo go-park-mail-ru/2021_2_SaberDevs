@@ -73,15 +73,15 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	return article, nil
 }
 
-func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize int) (int, []amodels.Article, bool, error) {
+func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize int, args ...interface{}) (int, []amodels.Article, bool, error) {
 	var ChunkData []amodels.Article
 	overCount := false
 	var count int
-	err := m.Db.Get(&count, schemaCount)
+	err := m.Db.Get(&count, schemaCount, args...)
 	if err != nil {
 		return chunkSize, ChunkData, overCount, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
+			Function: "articleRepository/limitChecker",
 		}
 	}
 
@@ -205,11 +205,19 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 	return outArticle, nil
 }
 
-func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (result []amodels.Article, err error) {
+func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.Article, err error) {
+	schemaCount := `SELECT count(*) FROM  categories c
+	inner join categories_articles ca  on c.Id = ca.categories_id
+	inner join articles a on a.Id = ca.articles_id
+	where c.tag = $1;`
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, tag)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
 	rows, err := m.Db.Queryx(`select a.* from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag = $1;`, tag)
+	where c.tag = $1 LIMIT $2 OFFSET $3`, tag, chunkSize, from)
 	var articles []amodels.Article
 	if err != nil {
 		return articles, sbErr.ErrDbError{
@@ -235,6 +243,9 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string) (resul
 			}
 		}
 		articles = append(articles, outArticle)
+	}
+	if overCount {
+		ChunkData = append(ChunkData, data.End)
 	}
 	return articles, nil
 }

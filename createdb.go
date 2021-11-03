@@ -164,7 +164,7 @@ func main() {
 	(SELECT Id FROM categories WHERE Id = $2));`
 
 	rand.Seed(4)
-	for i := 1; i <= 12; i++ {
+	for i := 1; i <= 11; i++ {
 		_, err = db.Exec(insert_junc, i, rand.Int63n(4)+2)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -231,7 +231,7 @@ func main() {
 		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	fmt.Println()
-	results, err = myRepo.GetByTag(context.TODO(), "finance")
+	results, err = myRepo.GetByTag(context.TODO(), "finance", 0, 5)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
