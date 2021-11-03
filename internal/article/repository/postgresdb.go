@@ -218,9 +218,8 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
 	where c.tag = $1 LIMIT $2 OFFSET $3`, tag, chunkSize, from)
-	var articles []amodels.Article
 	if err != nil {
-		return articles, sbErr.ErrDbError{
+		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/GetByTag",
 		}
@@ -230,30 +229,34 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			return articles, sbErr.ErrDbError{
+			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/GetByTag",
 			}
 		}
 		outArticle, err = fullArticleConv(newArticle, m.Db)
 		if err != nil {
-			return articles, sbErr.ErrDbError{
+			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/GetByTag",
 			}
 		}
-		articles = append(articles, outArticle)
+		ChunkData = append(ChunkData, outArticle)
 	}
 	if overCount {
 		ChunkData = append(ChunkData, data.End)
 	}
-	return articles, nil
+	return ChunkData, nil
 }
-func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) (result []amodels.Article, err error) {
-	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1", author)
-	var articles []amodels.Article
+func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, from, chunkSize int) (result []amodels.Article, err error) {
+	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.AuthorName = $1`
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, author)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1 LIMIT $2 OFFSET $3", author, chunkSize, from)
 	if err != nil {
-		return articles, sbErr.ErrDbError{
+		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/GetByAuthor",
 		}
@@ -263,22 +266,25 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string) 
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
-			return articles, sbErr.ErrDbError{
+			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/GetByAuthor",
 			}
 		}
 		outArticle, err = fullArticleConv(newArticle, m.Db)
 		if err != nil {
-			return articles, sbErr.ErrDbError{
+			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: "articleRepository/GetByAuthor",
 			}
 		}
-		articles = append(articles, outArticle)
+		ChunkData = append(ChunkData, outArticle)
 
 	}
-	return articles, nil
+	if overCount {
+		ChunkData = append(ChunkData, data.End)
+	}
+	return ChunkData, nil
 }
 
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (int, error) {

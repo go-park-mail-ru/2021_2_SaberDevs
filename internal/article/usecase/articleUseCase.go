@@ -52,8 +52,12 @@ func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded 
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 
-func (m *articleUsecase) GetByAuthor(ctx context.Context, author string) (result []amodels.Article, err error) {
-	result, err = m.articleRepo.GetByAuthor(ctx, author)
+func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByAuthor")
+	}
+	result, err = m.articleRepo.GetByAuthor(ctx, author, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 

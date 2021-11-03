@@ -83,7 +83,7 @@ type ArticleUsecase interface {
 	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Article, error)
 	GetByID(ctx context.Context, id int64) (Article, error)
 	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]Article, error)
-	GetByAuthor(ctx context.Context, author string) ([]Article, error)
+	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]Article, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
 	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
@@ -94,7 +94,7 @@ type ArticleRepository interface {
 	Fetch(ctx context.Context, from, chunkSize int) ([]Article, error)
 	GetByID(ctx context.Context, id int64) (Article, error)
 	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]Article, error)
-	GetByAuthor(ctx context.Context, author string) ([]Article, error)
+	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]Article, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error

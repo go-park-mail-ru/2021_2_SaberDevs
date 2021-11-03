@@ -109,8 +109,9 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 
 func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	login := c.QueryParam("login")
+	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByAuthor(ctx, login)
+	ChunkData, err := api.UseCase.GetByAuthor(ctx, login, id, chunkSize)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
 	}

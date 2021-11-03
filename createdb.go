@@ -222,8 +222,8 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
-
-	results, err := myRepo.GetByAuthor(context.TODO(), "dar")
+	fmt.Println()
+	results, err := myRepo.GetByAuthor(context.TODO(), "dar", 0, 5)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
