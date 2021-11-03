@@ -262,14 +262,14 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Println()
-	newresult, err := myRepo.Fetch(context.TODO(), 0, 6)
+	newresult, err := myRepo.Fetch(context.TODO(), 0, 12)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
 		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
-	newresult, err = myRepo.Fetch(context.TODO(), 5, 6)
+	newresult, err = myRepo.Fetch(context.TODO(), 12, 7)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

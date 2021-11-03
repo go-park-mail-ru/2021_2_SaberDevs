@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -75,6 +76,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {
 
 	var ChunkData []amodels.Article
+	overCount := false
 	rows, err := m.Db.Queryx("SELECT count(*) FROM articles;")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
@@ -93,12 +95,17 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		}
 	}
 	// fmt.Println(count)
-	if count <= from+chunkSize {
-		from = count - chunkSize
+	if count <= from {
+		ChunkData = append(ChunkData, data.End)
+		return ChunkData, nil
+	}
+
+	if count < from+chunkSize {
+		chunkSize = count - from
+		overCount = true
 	}
 
 	rows, err = m.Db.Queryx("SELECT * FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
-	// rows, err = m.Db.Queryx("SELECT * FROM ARTICLES")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -164,6 +171,9 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 			i++
 			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
 		}
+	}
+	if overCount {
+		ChunkData = append(ChunkData, data.End)
 	}
 	return ChunkData, nil
 }
