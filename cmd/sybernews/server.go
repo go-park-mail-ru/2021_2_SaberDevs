@@ -1,17 +1,21 @@
 package server
 
 import (
-	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
-	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
-	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repisitory"
-	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
-	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
-	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
-  
-    "net/http"
+	"net/http"
 
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
+	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
+	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
+	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
+	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
+	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
+	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
+	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
+	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	"github.com/jmoiron/sqlx"
+	"github.com/tarantool/go-tarantool"
 
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -19,33 +23,103 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func router(e *echo.Echo) {
-	us := ausecase.NewArticleUsecase()
-	articlesApi := ahandler.NewArticlesHandler(e, us)
+func TarantoolConnect() (*tarantool.Connection, error) {
+	user, pass, addr, err := TarantoolConfig()
+	if err != nil {
+		return nil, err
+	}
 
-    userRepo := urepo.NewUserRepository()
-	sessionRepo := srepo.NewSessionRepository()
+	opts := tarantool.Opts{User: user, Pass: pass}
+	conn, err := tarantool.Connect(addr, opts)
+	if err != nil {
+		return nil, err
+	}
 
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo)
-	userApi := uhandler.NewUserHandler(userUsecase)
+	_, err = conn.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
+
+func DbConnect() (*sqlx.DB, error) {
+	connStr, err := DbConfig()
+	if err != nil {
+		return nil, err
+	}
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return db, err
+	}
+	err = db.Ping()
+	if err != nil {
+		return db, err
+	}
+	return db, err
+}
+
+func DbClose(db *sqlx.DB) error {
+	err := db.Close()
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
+	//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+	//	TokenLookup: "header:X-XSRF-TOKEN",
+	//}))
+
+	userRepo := urepo.NewUserRepository(db)
+	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
+	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
+	articleRepo := arepo.NewArticleRepository(db)
+
+	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
+	userAPI := uhandler.NewUserHandler(userUsecase)
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
-	sessionApi := shandler.NewSessionHandler(sessionUsecase)
+	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
-	e.GET("/feed", articlesApi.GetFeed)
+	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
+	articlesAPI := ahandler.NewArticlesHandler(articlesUsecase)
 
-	e.POST("/login", userApi.Login)
-	e.POST("/signup", userApi.Register)
-	e.POST("/logout", userApi.Logout)
+	articles := e.Group("/api/v1/articles")
+	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
-	e.POST("/", sessionApi.CheckSession)
+	e.Use(syberMiddleware.ValidateRequestBody)
 
+	//Logger.SetOutput() //to file
+	e.Logger.SetLevel(log.INFO)
+	// e.Logger.SetLevel(log.ERROR)
+
+	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
+	e.Use(syberMiddleware.AccessLogger)
+	e.Use(syberMiddleware.AddId)
+
+	e.POST("api/v1/user/login", userAPI.Login)
+	e.POST("api/v1/user/signup", userAPI.Register)
+	e.POST("api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
+	e.POST("api/v1/", sessionAPI.CheckSession)
+	e.POST("api/v1/user/profile/update", userAPI.UpdateProfile, authMiddleware.CheckAuth)
+	e.GET("api/v1/user/profile", userAPI.UserProfile, authMiddleware.CheckAuth)
+	e.GET("api/v1/user", userAPI.AuthorProfile)
+
+	articles.GET("/feed", articlesAPI.GetFeed)
+	articles.GET("", articlesAPI.GetByID)
+	articles.GET("/author", articlesAPI.GetByAuthor)
+	articles.GET("/tags", articlesAPI.GetByTag)
+	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
+	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
+	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
 }
 
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://87.228.2.178:8080"},
+		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
@@ -55,11 +129,19 @@ func Run(address string) {
 		LogLevel:  log.ERROR,
 	}))
 
-	// e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-	// 	TokenLookup: "header:X-XSRF-TOKEN",
-	// }))
+	db, err := DbConnect()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 
-	router(e)
+	tarantoolConn, err := TarantoolConnect()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	defer DbClose(db)
+
+	router(e, db, tarantoolConn)
 
 	e.Logger.Fatal(e.Start(address))
 }

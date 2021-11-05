@@ -2,36 +2,60 @@ package repository
 
 import (
 	"context"
+
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
+	"github.com/tarantool/go-tarantool"
+
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	uuid "github.com/satori/go.uuid"
-	"sync"
 )
 
-type sessionMemoryRepo struct {
-	sessions    sync.Map
+type sessionTarantoolRepo struct {
+	conn *tarantool.Connection
 }
 
-func NewSessionRepository() smodels.SessionRepository {
-	return &sessionMemoryRepo{}
+func NewSessionRepository(conn *tarantool.Connection) smodels.SessionRepository {
+	return &sessionTarantoolRepo{conn: conn}
 }
 
-// TODO чья обязанность создавать значение куки?
-func (r *sessionMemoryRepo) CreateSession(ctx context.Context, email string) (string, error) {
-	cookieValue := uuid.NewV4().String()
-	r.sessions.Store(cookieValue, email)
-	return cookieValue, nil
+func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) (string, error) {
+	sessionID := uuid.NewV4().String()
+
+	_, err := r.conn.Insert("sessions", []interface{}{sessionID, login})
+	if err != nil {
+		return "", sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "sessionRepositiry/CreateSession"}
+	}
+
+	return sessionID, nil
 }
 
-func (r *sessionMemoryRepo) DeleteSession(ctx context.Context, cookieValue string) error {
-	r.sessions.Delete(cookieValue)
+func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID string) error {
+	_, err := r.conn.Delete("sessions", "primary", []interface{}{sessionID})
+	if err != nil {
+		return sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "sessionRepositiry/GetSessionLogin"}
+	}
+
 	return nil
 }
 
-func (r *sessionMemoryRepo) IsSession(ctx context.Context, cookie string) (string, error) {
-	email, ok := r.sessions.Load(cookie)
-	if !ok {
-		// TODO return good error
-		return "" , nil
+func (r *sessionTarantoolRepo) GetSessionLogin(ctx context.Context, sessionID string) (string, error) {
+	var user []smodels.Session
+
+	err := r.conn.SelectTyped("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
+	if err != nil {
+		return "", sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "sessionRepositiry/GetSessionLogin"}
 	}
-	return email.(string), nil
+	if len(user) == 0 {
+		return "", sbErr.ErrNoSession{
+			Reason:   "no session",
+			Function: "sessionRepositiry/GetSessionLogin"}
+	}
+
+	return user[0].UserLogin, nil
 }

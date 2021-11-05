@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  tarantool:
+    image: syber_test:latest
+    expose:
+      - 3302
+    ports:
+      - 3302:3302
+    container_name: tarantool_syber

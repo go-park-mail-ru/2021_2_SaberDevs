@@ -7,6 +7,11 @@ type ErrorResponse struct {
 	ErrorMsg string `json:"msg"`
 }
 
+var ErrInternal = ErrorResponse{
+	Status:   http.StatusInternalServerError,
+	ErrorMsg: "Internal server error",
+}
+
 var ErrUnpackingJSON = ErrorResponse{
 	Status:   http.StatusUnprocessableEntity,
 	ErrorMsg: "Error unpacking JSON",
@@ -57,7 +62,16 @@ var ErrInvalidLogin = ErrorResponse{
 	ErrorMsg: "Invalid symbols in login",
 }
 
+var ErrDbFailure = ErrorResponse{
+	Status:   http.StatusFailedDependency,
+	ErrorMsg: "Invalid data in DB",
+}
+
 var ErrNoSession = ErrorResponse{
 	Status:   http.StatusFailedDependency,
 	ErrorMsg: "Session doesnt exist",
+}
+
+var ErrValidation = ErrorResponse{
+	Status: http.StatusFailedDependency,
 }

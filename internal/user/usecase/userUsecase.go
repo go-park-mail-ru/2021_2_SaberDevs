@@ -2,46 +2,128 @@ package usecases
 
 import (
 	"context"
-	"errors"
-	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
-	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
-	emoji "github.com/tmdvs/Go-Emoji-Utils"
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"net/http"
-	"net/mail"
-	"regexp"
-	"strconv"
-	"strings"
+
+	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
+
+	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
+	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
+	"github.com/pkg/errors"
 )
 
 type userUsecase struct {
-	userRepo umodels.UserRepository
+	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
+	keyRepo     kmodels.KeyRepository
+	articleRepo amodels.ArticleRepository
 }
 
-func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository) umodels.UserUsecase {
+func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, kr kmodels.KeyRepository, ar amodels.ArticleRepository) umodels.UserUsecase {
 	return &userUsecase{
-		userRepo: ur,
+		userRepo:    ur,
 		sessionRepo: sr,
+		keyRepo:     kr,
+		articleRepo: ar,
 	}
 }
 
-// TODO error handling
+func (uu *userUsecase) GetAuthorProfile(ctx context.Context, author string) (umodels.GetUserResponse, error) {
+	authorInDb, err := uu.userRepo.GetByLogin(ctx, author)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/GetAuthorProfile")
+	}
+
+	responseData := umodels.GetUserData{
+		Login:   authorInDb.Login,
+		Name:    authorInDb.Name,
+		Surname: authorInDb.Surname,
+		Score:   authorInDb.Score,
+	}
+	response := umodels.GetUserResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "ok",
+	}
+
+	return response, nil
+}
+
+func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (umodels.GetUserResponse, error) {
+	userLogin, err := uu.sessionRepo.GetSessionLogin(ctx, sessionID)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	userInDb, err := uu.userRepo.GetByLogin(ctx, userLogin)
+	if err != nil {
+		return umodels.GetUserResponse{}, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	responseData := umodels.GetUserData{
+		Login:    userInDb.Login,
+		Name:     userInDb.Name,
+		Surname:  userInDb.Surname,
+		Score:    userInDb.Score,
+	}
+	response := umodels.GetUserResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "ok",
+	}
+
+	return response, nil
+}
+
+func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, sessionID string) (umodels.UpdateProfileResponse, error) {
+	var response umodels.UpdateProfileResponse
+
+	login, err := uu.sessionRepo.GetSessionLogin(ctx, sessionID)
+	if err != nil {
+		return response, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	user.Login = login
+
+	updatedUser, err := uu.userRepo.UpdateUser(ctx, user)
+	if err != nil {
+		return response, errors.Wrap(err, "userUsecase/UpdateProfile")
+	}
+
+	responseData := umodels.UpdateProfileData{
+		Name:    updatedUser.Name,
+		Surname: updatedUser.Surname,
+	}
+	response = umodels.UpdateProfileResponse{
+		Status: http.StatusOK,
+		Data:   responseData,
+		Msg:    "OK",
+	}
+
+	return response, nil
+}
+
 func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umodels.LoginResponse, string, error) {
 	var response umodels.LoginResponse
-	userInRepo, err := uu.userRepo.GetByEmail(ctx, user.Email)
+
+	userInRepo, err := uu.userRepo.GetByLogin(ctx, user.Login)
 	if err != nil {
-		// TODO user doesnt exist err
-		return response, "", err
+		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
 	}
 
 	if userInRepo.Password != user.Password {
-		var err = errors.New("wrong password")
-		return response, "", err
+		return response, "", sbErr.ErrWrongPassword{
+			Reason:   "wrong password",
+			Function: "userUsecase/LoginUser"}
 	}
 
-	cookieValue, err := uu.sessionRepo.CreateSession(ctx, user.Email)
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Login)
+	if err != nil {
+		return response, "", errors.Wrap(err, "userUsecase/LoginUser")
+	}
 
-	d := umodels.LoginData{
+	responseData := umodels.LoginData{
 		Login:   userInRepo.Login,
 		Name:    userInRepo.Name,
 		Surname: userInRepo.Surname,
@@ -50,54 +132,11 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	}
 	response = umodels.LoginResponse{
 		Status: http.StatusOK,
-		Data:   d,
+		Data:   responseData,
 		Msg:    "OK",
 	}
 
-	return response, cookieValue, nil
-}
-
-func isValidEmail(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err != nil
-}
-
-func isLoginValid(input string) bool {
-	var validator *regexp.Regexp
-	validator = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")
-	return !validator.MatchString(input)
-}
-
-func removeAllAndCount(input string) (string, int) {
-	matches := emoji.FindAll(input)
-	emoCount := 0
-
-	for _, item := range matches {
-		emoCount += item.Occurrences
-		emo := item.Match.(emoji.Emoji)
-		rs := []rune(emo.Value)
-		for _, r := range rs {
-			input = strings.ReplaceAll(input, string([]rune{r}), "")
-		}
-	}
-
-	return input, emoCount
-}
-
-func minPasswordLength(emoCount int) int {
-	minLength := 8
-	if minLength-emoCount < 0 {
-		return 0
-	}
-	return minLength - emoCount
-}
-
-func isPasswordValid(input string) bool {
-	inputWithoutEmoji, emoCount := removeAllAndCount(input)
-	var validator *regexp.Regexp
-	minPasswordLength := minPasswordLength(emoCount)
-	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{" + strconv.Itoa(minPasswordLength) + ",20}$")
-	return !validator.MatchString(inputWithoutEmoji)
+	return response, sessionID, nil
 }
 
 func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.SignupResponse, string, error) {
@@ -105,11 +144,15 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 
 	signedupUser, err := uu.userRepo.Store(ctx, user)
 	if err != nil {
-		// TODO error
-		return response, "", err
+		return response, "", errors.Wrap(err, "userUsecase/Signup")
 	}
 
-	d := umodels.SignUpData{
+	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Login)
+	if err != nil {
+		return response, "", errors.Wrap(err, "userUsecase/Signup")
+	}
+
+	responseData := umodels.SignUpData{
 		Login:   signedupUser.Login,
 		Name:    signedupUser.Name,
 		Surname: signedupUser.Surname,
@@ -118,20 +161,14 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 	}
 	response = umodels.SignupResponse{
 		Status: http.StatusOK,
-		Data:   d,
+		Data:   responseData,
 		Msg:    "OK",
 	}
 
-	cookieValue, err := uu.sessionRepo.CreateSession(ctx, user.Email)
-	if err != nil {
-		// TODO error
-		return response, "", err
-	}
-
-	return response, cookieValue, nil
+	return response, sessionID, nil
 }
 
 func (uu *userUsecase) Logout(ctx context.Context, cookieValue string) error {
 	err := uu.sessionRepo.DeleteSession(ctx, cookieValue)
-	return err
+	return errors.Wrap(err, "userUsecase/Logout")
 }
