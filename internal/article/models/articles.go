@@ -69,7 +69,7 @@ type СategoriesArticles struct {
 }
 
 type Author struct {
-	Id       int
+	//	Id       int
 	Login    string `json:"login"`
 	Name     string `json:"name"`
 	Surname  string `json:"surname"`
