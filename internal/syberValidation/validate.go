@@ -16,7 +16,7 @@ func ValidateSignUp(user umodels.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Login, validation.Required, validation.Length(4, 20),
 			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$"))),
-		validation.Field(&user.Email, validation.Required, is.Email, validation.Length(4, 40)),
+		validation.Field(&user.Email, validation.Required, is.EmailFormat, validation.Length(4, 40)),
 		validation.Field(&user.Password, validation.Required, validation.By(isPasswordValid)),
 	)
 	if err != nil {
@@ -29,9 +29,9 @@ func ValidateSignUp(user umodels.User) error {
 func ValidateUpdate(user umodels.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Name, validation.When(user.Name != "", validation.Length(4, 20),
-			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")))),
+			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z0-9_а-яА-ЯЁё]{4,20}$")))),
 		validation.Field(&user.Surname, validation.When(user.Surname != "",validation.Length(4, 20),
-			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")))),
+			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z0-9_а-яА-ЯЁё]{4,20}$")))),
 		validation.Field(&user.Password, validation.When(user.Password != "", validation.By(isPasswordValid))),
 	)
 	if err != nil {
@@ -68,7 +68,8 @@ func isPasswordValid(input interface{}) error {
 	inputWithoutEmoji, emoCount := removeAllAndCount(input.(string))
 	var validator *regexp.Regexp
 	minPasswordLength := minPasswordLength(emoCount)
-	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{" + strconv.Itoa(minPasswordLength) + ",20}$")
+	// password length: min 8, max 40
+	validator = regexp.MustCompile("^[a-zA-Z0-9[:punct:]]{" + strconv.Itoa(minPasswordLength) + ",40}$")
 	if !validator.MatchString(inputWithoutEmoji) {
 		return errors.New("invalid symbols in password")
 	}
