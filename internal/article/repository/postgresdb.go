@@ -204,7 +204,8 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 }
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.OutArticle, err error) {
-	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.Id = $1", id)
+	var newArticle amodels.DbArticle
+	err = m.Db.Get(&newArticle, "SELECT * FROM ARTICLES WHERE articles.Id = $1", id)
 	var outArticle amodels.OutArticle
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -212,26 +213,15 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 			Function: "articleRepository/GetByID",
 		}
 	}
-	var newArticle amodels.DbArticle
-	for rows.Next() {
-		err = rows.StructScan(&newArticle)
-		if err != nil {
-			return outArticle, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/GetByID",
-			}
-		}
-	}
 	var newAuth amodels.Author
-	for rows.Next() {
-		err = rows.StructScan(&newAuth)
-		if err != nil {
-			return outArticle, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
-			}
+	err = m.Db.Get(&newAuth, `SELECT AU.* FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName WHERE AR.ID = $1`, id)
+	if err != nil {
+		return outArticle, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/GetByID",
 		}
 	}
+
 	outArticle, err = fullArticleConv(newArticle, m.Db, newAuth)
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
