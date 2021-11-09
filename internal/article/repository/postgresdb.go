@@ -28,6 +28,11 @@ inner join categories_articles ca  on c.Id = ca.categories_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id = $1;`
 
+const multiArtTags = `select a.Id, c.tag from categories c
+inner join categories_articles ca  on c.Id = ca.categories_id
+inner join articles a on a.Id = ca.articles_id
+where a.Id in (`
+
 func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	var article amodels.Preview
 	article.Author = auth
@@ -45,6 +50,48 @@ func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Previe
 	}
 	return article
 }
+
+func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview) ([]amodels.Preview, error) {
+	schema := multiArtTags
+	var ids []interface{}
+	for i, data := range ChunkData {
+		ids = append(ids, data.Id)
+		schema = schema + `$` + fmt.Sprint(i+1)
+		if i < len(ChunkData)-1 {
+			schema = schema + `,`
+		}
+	}
+	schema = schema + `) order by a.Id, c.tag;`
+
+	rows, err := m.Db.Queryx(schema, ids...)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
+	}
+	var newtag string
+	var id int
+	i := 0
+	for rows.Next() {
+		err = rows.Scan(&id, &newtag)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
+		}
+		myid, _ := strconv.Atoi(ChunkData[i].Id)
+		if myid == id {
+			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
+		} else {
+			i++
+			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
+		}
+	}
+	return ChunkData, nil
+}
+
 func fullPreviewConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (amodels.Preview, error) {
 	article := previewShortConv(val, auth)
 	rows, err := Db.Queryx(tagsLoad, val.Id)
@@ -174,45 +221,11 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		outArticle = previewShortConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
 	}
-	schema := `select a.Id, c.tag from categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
-	inner join articles a on a.Id = ca.articles_id
-	where a.Id in (`
-	var ids []interface{}
-	for i, data := range ChunkData {
-		//id, _ := strconv.Atoi(data.Id)
-		ids = append(ids, data.Id)
-		schema = schema + `$` + fmt.Sprint(i+1)
-		if i < len(ChunkData)-1 {
-			schema = schema + `,`
-		}
-	}
-	schema = schema + `) order by a.Id, c.tag;`
-
-	rows, err = m.Db.Queryx(schema, ids...)
+	ChunkData, err = m.uploadTags(ChunkData)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/Fetch",
-		}
-	}
-	var newtag string
-	var id int
-	i := 0
-	for rows.Next() {
-		err = rows.Scan(&id, &newtag)
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
-			}
-		}
-		myid, _ := strconv.Atoi(ChunkData[i].Id)
-		if myid == id {
-			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
-		} else {
-			i++
-			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
 		}
 	}
 	if overCount {
