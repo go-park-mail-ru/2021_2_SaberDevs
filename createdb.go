@@ -221,14 +221,14 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	fmt.Println()
 	results, err := myRepo.GetByAuthor(context.TODO(), "dar", 0, 5)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	for _, result := range results {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	fmt.Println()
 	results, err = myRepo.GetByTag(context.TODO(), "finance", 0, 5)
@@ -236,7 +236,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	for _, result := range results {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 
 	fmt.Println()
@@ -255,7 +255,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
 	err = myRepo.Delete(context.TODO(), 3)
 	if err != nil {
@@ -267,14 +267,14 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	newresult, err = myRepo.Fetch(context.TODO(), 12, 7)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	fmt.Println()
 	fmt.Println()
@@ -288,5 +288,5 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 }

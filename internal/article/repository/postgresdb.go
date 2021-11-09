@@ -23,8 +23,9 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 
 const previewLen = 50
 
-func articleConv(val amodels.DbArticle) amodels.OutArticle {
+func articleConv(val amodels.DbArticle, auth amodels.Author) amodels.OutArticle {
 	var article amodels.OutArticle
+	article.Author = auth
 	// article.AuthorAvatar = val.AuthorAvatar
 	// article.AuthorName = val.AuthorName
 	// article.AuthorUrl = val.AuthorUrl
@@ -37,8 +38,8 @@ func articleConv(val amodels.DbArticle) amodels.OutArticle {
 	return article
 }
 
-func articleShortConv(val amodels.DbArticle) (amodels.OutArticle, error) {
-	article := articleConv(val)
+func articleShortConv(val amodels.DbArticle, auth amodels.Author) (amodels.OutArticle, error) {
+	article := articleConv(val, auth)
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
 	} else {
@@ -46,8 +47,8 @@ func articleShortConv(val amodels.DbArticle) (amodels.OutArticle, error) {
 	}
 	return article, nil
 }
-func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.OutArticle, error) {
-	article := articleConv(val)
+func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (amodels.OutArticle, error) {
+	article := articleConv(val, auth)
 	article.Text = val.Text
 	rows, err := Db.Queryx(`select c.tag from categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
@@ -111,6 +112,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		}
 	}
 	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
 	var outArticle amodels.OutArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
@@ -120,7 +122,30 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 				Function: "articleRepository/Fetch",
 			}
 		}
-		outArticle, err = articleShortConv(newArticle)
+		arts = append(arts, newArticle)
+	}
+
+	rows, err = m.Db.Queryx("SELECT AU.* FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.NAME ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
+	}
+	var auths []amodels.Author
+	var newAuth amodels.Author
+	for rows.Next() {
+		err = rows.StructScan(&newAuth)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
+		}
+		auths = append(auths, newAuth)
+	}
+	for i, article := range arts {
+		outArticle, err = articleShortConv(article, auths[i])
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
@@ -195,7 +220,17 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 			}
 		}
 	}
-	outArticle, err = fullArticleConv(newArticle, m.Db)
+	var newAuth amodels.Author
+	for rows.Next() {
+		err = rows.StructScan(&newAuth)
+		if err != nil {
+			return outArticle, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
+			}
+		}
+	}
+	outArticle, err = fullArticleConv(newArticle, m.Db, newAuth)
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -224,25 +259,53 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 			Function: "articleRepository/GetByTag",
 		}
 	}
-	var outArticle amodels.OutArticle
 	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
+	var outArticle amodels.OutArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/GetByTag",
+				Function: "articleRepository/Fetch",
 			}
 		}
-		outArticle, err = fullArticleConv(newArticle, m.Db)
+		arts = append(arts, newArticle)
+	}
+
+	rows, err = m.Db.Queryx(`SELECT AU.* FROM from categories c
+	inner join categories_articles ca  on c.Id = ca.categories_id
+	inner join articles a on a.Id = ca.articles_id
+	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.NAME where c.tag = $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, tag, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
+	}
+	var auths []amodels.Author
+	var newAuth amodels.Author
+	for rows.Next() {
+		err = rows.StructScan(&newAuth)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/GetByTag",
+				Function: "articleRepository/Fetch",
+			}
+		}
+		auths = append(auths, newAuth)
+	}
+	for i, article := range arts {
+		outArticle, err = fullArticleConv(article, m.Db, auths[i])
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
 			}
 		}
 		ChunkData = append(ChunkData, outArticle)
 	}
+
 	if overCount {
 		ChunkData = append(ChunkData, data.End)
 	}
@@ -254,32 +317,54 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1 LIMIT $2 OFFSET $3", author, chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1 LIMIT $2 OFFSET $3 ORDER BY Id", author, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/GetByAuthor",
 		}
 	}
-	var outArticle amodels.OutArticle
 	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
+	var outArticle amodels.OutArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/GetByAuthor",
+				Function: "articleRepository/Fetch",
 			}
 		}
-		outArticle, err = fullArticleConv(newArticle, m.Db)
+		arts = append(arts, newArticle)
+	}
+	rows, err = m.Db.Queryx("SELECT AU.* FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.NAME  WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Fetch",
+		}
+	}
+	var auths []amodels.Author
+	var newAuth amodels.Author
+	for rows.Next() {
+		err = rows.StructScan(&newAuth)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/GetByAuthor",
+				Function: "articleRepository/Fetch",
+			}
+		}
+		auths = append(auths, newAuth)
+	}
+	for i, article := range arts {
+		outArticle, err = fullArticleConv(article, m.Db, auths[i])
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: "articleRepository/Fetch",
 			}
 		}
 		ChunkData = append(ChunkData, outArticle)
-
 	}
 	if overCount {
 		ChunkData = append(ChunkData, data.End)
