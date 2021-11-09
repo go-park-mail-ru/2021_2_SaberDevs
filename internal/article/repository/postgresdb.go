@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
@@ -436,8 +437,8 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
-	updateArticle := `UPDATE articles SET Title = $1, Text = $2 WHERE articles.Id  = $3`
-	_, err = m.Db.Query(updateArticle, a.Title, a.Text, uniqId)
+	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $2 WHERE articles.Id  = $3`
+	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, uniqId)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
