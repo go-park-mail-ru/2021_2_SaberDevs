@@ -55,10 +55,8 @@ func main() {
 		PreviewUrl   VARCHAR(45),
 		Title        VARCHAR(45),
 		Text         TEXT,
-		AuthorUrl    VARCHAR(45),
 		DateTime     VARCHAR(45),
 		AuthorName   VARCHAR(45) REFERENCES author(Login) ON DELETE CASCADE,
-		AuthorAvatar VARCHAR(45),
 		CommentsUrl  VARCHAR(45),
 		Comments     INT,
 		Likes        INT 
@@ -115,10 +113,10 @@ func main() {
 		fmt.Println(author.Name)
 	}
 
-	insert_article := `INSERT INTO articles (PreviewUrl, DateTime,  Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+	insert_article := `INSERT INTO articles (PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 	for i, data := range data.TestData {
 		date := time.Now().Format("2006/1/2 15:04")
-		_, err = db.Exec(insert_article, data.PreviewUrl, date, data.Title, data.Text, data.AuthorUrl, names[i/4], data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
+		_, err = db.Exec(insert_article, data.PreviewUrl, date, data.Title, data.Text, names[i/4], data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
 			fmt.Println(err.Error())
 		}

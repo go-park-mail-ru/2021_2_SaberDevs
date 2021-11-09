@@ -35,17 +35,15 @@ type OutArticle struct {
 }
 
 type DbArticle struct {
-	Id           int    `json:"Id"  db:"id"`
-	DateTime     string `json:"datetime" db:"datetime"`
-	PreviewUrl   string `json:"PreviewUrl" db:"previewurl"`
-	Title        string `json:"title" db:"title"`
-	Text         string `json:"text" db:"text"`
-	AuthorUrl    string `json:"authorUrl" db:"authorurl"`
-	AuthorName   string `json:"authorName" db:"authorname"`
-	AuthorAvatar string `json:"authorAvatar" db:"authoravatar"`
-	CommentsUrl  string `json:"commentsUrl" db:"commentsurl"`
-	Comments     uint   `json:"comments" db:"comments"`
-	Likes        uint   `json:"likes" db:"likes"`
+	Id          int    `json:"Id"  db:"id"`
+	DateTime    string `json:"datetime" db:"datetime"`
+	PreviewUrl  string `json:"PreviewUrl" db:"previewurl"`
+	Title       string `json:"title" db:"title"`
+	Text        string `json:"text" db:"text"`
+	AuthorName  string `json:"authorName" db:"authorname"`
+	CommentsUrl string `json:"commentsUrl" db:"commentsurl"`
+	Comments    uint   `json:"comments" db:"comments"`
+	Likes       uint   `json:"likes" db:"likes"`
 }
 
 type ChunkResponse struct {
