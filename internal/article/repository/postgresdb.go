@@ -23,11 +23,11 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 
 const previewLen = 50
 
-func articleConv(val amodels.DbArticle) amodels.Article {
-	var article amodels.Article
-	article.AuthorAvatar = val.AuthorAvatar
-	article.AuthorName = val.AuthorName
-	article.AuthorUrl = val.AuthorUrl
+func articleConv(val amodels.DbArticle) amodels.OutArticle {
+	var article amodels.OutArticle
+	// article.AuthorAvatar = val.AuthorAvatar
+	// article.AuthorName = val.AuthorName
+	// article.AuthorUrl = val.AuthorUrl
 	article.Comments = val.Comments
 	article.CommentsUrl = val.CommentsUrl
 	article.Id = fmt.Sprint(val.Id)
@@ -37,7 +37,7 @@ func articleConv(val amodels.DbArticle) amodels.Article {
 	return article
 }
 
-func articleShortConv(val amodels.DbArticle) (amodels.Article, error) {
+func articleShortConv(val amodels.DbArticle) (amodels.OutArticle, error) {
 	article := articleConv(val)
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
@@ -46,7 +46,7 @@ func articleShortConv(val amodels.DbArticle) (amodels.Article, error) {
 	}
 	return article, nil
 }
-func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error) {
+func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.OutArticle, error) {
 	article := articleConv(val)
 	article.Text = val.Text
 	rows, err := Db.Queryx(`select c.tag from categories c
@@ -73,8 +73,8 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB) (amodels.Article, error
 	return article, nil
 }
 
-func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize int, args ...interface{}) (int, []amodels.Article, bool, error) {
-	var ChunkData []amodels.Article
+func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize int, args ...interface{}) (int, []amodels.OutArticle, bool, error) {
+	var ChunkData []amodels.OutArticle
 	overCount := false
 	var count int
 	err := m.Db.Get(&count, schemaCount, args...)
@@ -97,7 +97,7 @@ func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize
 	return chunkSize, ChunkData, overCount, nil
 }
 
-func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Article, err error) {
+func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.OutArticle, err error) {
 	schemaCount := "SELECT count(*) FROM articles;"
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize)
 	if err != nil || len(ChunkData) > 0 {
@@ -111,7 +111,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		}
 	}
 	var newArticle amodels.DbArticle
-	var outArticle amodels.Article
+	var outArticle amodels.OutArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -176,9 +176,9 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	return ChunkData, nil
 }
 
-func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
+func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.OutArticle, err error) {
 	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.Id = $1", id)
-	var outArticle amodels.Article
+	var outArticle amodels.OutArticle
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -205,7 +205,7 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 	return outArticle, nil
 }
 
-func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.Article, err error) {
+func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.OutArticle, err error) {
 	schemaCount := `SELECT count(*) FROM  categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
@@ -224,7 +224,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 			Function: "articleRepository/GetByTag",
 		}
 	}
-	var outArticle amodels.Article
+	var outArticle amodels.OutArticle
 	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
@@ -248,7 +248,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	}
 	return ChunkData, nil
 }
-func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, from, chunkSize int) (result []amodels.Article, err error) {
+func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, from, chunkSize int) (result []amodels.OutArticle, err error) {
 	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.AuthorName = $1`
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, author)
 	if err != nil || len(ChunkData) > 0 {
@@ -261,7 +261,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 			Function: "articleRepository/GetByAuthor",
 		}
 	}
-	var outArticle amodels.Article
+	var outArticle amodels.OutArticle
 	var newArticle amodels.DbArticle
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)

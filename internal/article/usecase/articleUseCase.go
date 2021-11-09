@@ -28,7 +28,23 @@ func IdToString(id string) (int, error) {
 	return idInt, err
 }
 
-func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+func artOut(a *amodels.OutArticle) *amodels.Article {
+	var out amodels.Article
+	out.AuthorAvatar = a.Author.AvatarUrl
+	out.AuthorName = a.Author.Name
+	out.AuthorUrl = a.Author.AvatarUrl
+	out.Comments = a.Comments
+	out.CommentsUrl = a.CommentsUrl
+	out.Id = a.Id
+	out.Likes = a.Likes
+	out.PreviewUrl = a.PreviewUrl
+	out.Tags = a.Tags
+	out.Text = a.Text
+	out.Title = a.Title
+	return &out
+}
+
+func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.OutArticle, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
@@ -38,12 +54,12 @@ func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSi
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
 }
 
-func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.Article, err error) {
+func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.OutArticle, err error) {
 	result, err = m.articleRepo.GetByID(ctx, id)
 	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
-func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) (result []amodels.OutArticle, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByTag")
@@ -52,7 +68,7 @@ func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded 
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 
-func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) (result []amodels.Article, err error) {
+func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) (result []amodels.OutArticle, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByAuthor")
@@ -84,18 +100,20 @@ func (m *articleUsecase) Delete(ctx context.Context, id string) error {
 	err = m.articleRepo.Delete(ctx, int64(idInt))
 	return errors.Wrap(err, "articleUsecase/Delete")
 }
+
 func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) error {
 	idInt, err := IdToString(a.Id)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
 	newArticle, err := m.GetByID(ctx, int64(idInt))
+	upArt := artOut(&newArticle)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
-	newArticle.Text = a.Text
-	newArticle.Tags = a.Tags
-	newArticle.Title = a.Title
-	err = m.articleRepo.Update(ctx, &newArticle)
+	upArt.Text = a.Text
+	upArt.Tags = a.Tags
+	upArt.Title = a.Title
+	err = m.articleRepo.Update(ctx, upArt)
 	return errors.Wrap(err, "articleUsecase/Update")
 }

@@ -52,14 +52,12 @@ var TestData = [...]amodels.Article{
 	},
 }
 
-var End = amodels.Article{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
-	"А всё, а раньше надо было", "А всё, а раньше надо было", "#", "mollenTEST1",
-	"static/img/loader-1-HorizontalBalls.gif", "#", 0, 0,
-}
-
 var TestUsers = []umodels.User{
 	{"mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", "mollenTEST1", 123456},
 	{"dar", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "123", 13553},
 	{"viphania", "viphania@exp.ru", "viphania@exp.ru", "viphania@exp.ru", "123", 120},
 	{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 }
+
+var End = amodels.OutArticle{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
+	"А всё, а раньше надо было", "А всё, а раньше надо было", amodels.Author{"mollenTEST1", "mollenTEST1", "mollenTEST1", "static/img/loader-1-HorizontalBalls.gif", "mollenTEST1", "mollenTEST1", 123456}, "#", 0, 0}
