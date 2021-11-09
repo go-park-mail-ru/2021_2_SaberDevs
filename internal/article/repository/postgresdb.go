@@ -37,6 +37,8 @@ const byTag = "articleRepository/GetByTag"
 
 const byAuthor = "articleRepository/GetByAuthor"
 
+const toFetch = "articleRepository/Fetch"
+
 func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	var article amodels.Preview
 	article.Author = auth
@@ -56,6 +58,7 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 }
 
 func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName string) ([]amodels.Preview, error) {
+	funcName = funcName + "/uploadTags"
 	schema := multiArtTags
 	var ids []interface{}
 	for i, data := range ChunkData {
@@ -92,6 +95,37 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 			i++
 			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
 		}
+	}
+	return ChunkData, nil
+}
+
+func (m *psqlArticleRepository) addTags(ChunkData []amodels.Preview, funcName string, rows *sqlx.Rows, overCount bool, arts []amodels.DbArticle) ([]amodels.Preview, error) {
+	funcName = funcName + "/addTags"
+	var auths []amodels.Author
+	var newAuth amodels.Author
+	for rows.Next() {
+		err := rows.StructScan(&newAuth)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: funcName,
+			}
+		}
+		auths = append(auths, newAuth)
+	}
+	for i, article := range arts {
+		outArticle := previewConv(article, auths[i])
+		ChunkData = append(ChunkData, outArticle)
+	}
+	ChunkData, err := m.uploadTags(ChunkData, funcName)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: funcName,
+		}
+	}
+	if overCount {
+		ChunkData = append(ChunkData, data.End)
 	}
 	return ChunkData, nil
 }
@@ -162,18 +196,17 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
+			Function: toFetch,
 		}
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
-	var outArticle amodels.Preview
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: toFetch,
 			}
 		}
 		arts = append(arts, newArticle)
@@ -186,33 +219,8 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 			Function: "articleRepository/Fetch",
 		}
 	}
-	var auths []amodels.Author
-	var newAuth amodels.Author
-	for rows.Next() {
-		err = rows.StructScan(&newAuth)
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
-			}
-		}
-		auths = append(auths, newAuth)
-	}
-	for i, article := range arts {
-		outArticle = previewConv(article, auths[i])
-		ChunkData = append(ChunkData, outArticle)
-	}
-	ChunkData, err = m.uploadTags(ChunkData, "articleRepository/Fetch")
-	if err != nil {
-		return ChunkData, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
-		}
-	}
-	if overCount {
-		ChunkData = append(ChunkData, data.End)
-	}
-	return ChunkData, nil
+	ChunkData, err = m.addTags(ChunkData, toFetch, rows, overCount, arts)
+	return ChunkData, err
 }
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.FullArticle, err error) {
@@ -266,7 +274,6 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
-	var outArticle amodels.Preview
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -288,34 +295,8 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 			Function: byTag,
 		}
 	}
-	var auths []amodels.Author
-	var newAuth amodels.Author
-	for rows.Next() {
-		err = rows.StructScan(&newAuth)
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: byTag,
-			}
-		}
-		auths = append(auths, newAuth)
-	}
-
-	for i, article := range arts {
-		outArticle = previewConv(article, auths[i])
-		ChunkData = append(ChunkData, outArticle)
-	}
-	ChunkData, err = m.uploadTags(ChunkData, byTag)
-	if err != nil {
-		return ChunkData, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: byTag,
-		}
-	}
-	if overCount {
-		ChunkData = append(ChunkData, data.End)
-	}
-	return ChunkData, nil
+	ChunkData, err = m.addTags(ChunkData, byTag, rows, overCount, arts)
+	return ChunkData, err
 }
 func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, from, chunkSize int) (result []amodels.Preview, err error) {
 	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.AuthorName = $1`
@@ -332,7 +313,6 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
-	var outArticle amodels.Preview
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -350,33 +330,8 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 			Function: byAuthor,
 		}
 	}
-	var auths []amodels.Author
-	var newAuth amodels.Author
-	for rows.Next() {
-		err = rows.StructScan(&newAuth)
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: byAuthor,
-			}
-		}
-		auths = append(auths, newAuth)
-	}
-	for i, article := range arts {
-		outArticle = previewConv(article, auths[i])
-		ChunkData = append(ChunkData, outArticle)
-	}
-	ChunkData, err = m.uploadTags(ChunkData, byAuthor)
-	if err != nil {
-		return ChunkData, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: byTag,
-		}
-	}
-	if overCount {
-		ChunkData = append(ChunkData, data.End)
-	}
-	return ChunkData, nil
+	ChunkData, err = m.addTags(ChunkData, byAuthor, rows, overCount, arts)
+	return ChunkData, err
 }
 
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (int, error) {
