@@ -18,7 +18,6 @@ type psqlArticleRepository struct {
 }
 
 func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
-	//TODO defer db.Close()
 	return &psqlArticleRepository{db}
 }
 
@@ -29,7 +28,7 @@ func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Previe
 	article.Author = auth
 	article.Comments = val.Comments
 	article.DateTime = val.DateTime
-	//article.CommentsUrl = val.CommentsUrl
+	article.CommentsUrl = val.CommentsUrl
 	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
