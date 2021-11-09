@@ -56,7 +56,7 @@ func main() {
 		Title        VARCHAR(45),
 		Text         TEXT,
 		AuthorUrl    VARCHAR(45),
-		DateTime     VARCHAR(45) DEFAULT "1999",
+		DateTime     VARCHAR(45),
 		AuthorName   VARCHAR(45) REFERENCES author(Login) ON DELETE CASCADE,
 		AuthorAvatar VARCHAR(45),
 		CommentsUrl  VARCHAR(45),

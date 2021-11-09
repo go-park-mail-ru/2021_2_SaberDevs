@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"time"
 
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	"github.com/pkg/errors"
@@ -41,6 +42,7 @@ func artOut(a *amodels.OutArticle) *amodels.Article {
 	out.Tags = a.Tags
 	out.Text = a.Text
 	out.Title = a.Title
+	out.DateTime = a.DateTime
 	return &out
 }
 
@@ -82,6 +84,7 @@ func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.A
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
 	newArticle.Title = a.Title
+	newArticle.DateTime = time.Now().Format("2006/1/2 15:04")
 
 	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Value)
 	if err != nil {
