@@ -60,4 +60,4 @@ var TestUsers = []umodels.User{
 }
 
 var End = amodels.OutArticle{"end", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
-	"А всё, а раньше надо было", "А всё, а раньше надо было", amodels.Author{"mollenTEST1", "mollenTEST1", "mollenTEST1", "static/img/loader-1-HorizontalBalls.gif", "mollenTEST1", "mollenTEST1", 123456}, "#", 0, 0}
+	"А всё, а раньше надо было", "А всё, а раньше надо было", amodels.Author{1, "mollenTEST1", "mollenTEST1", "mollenTEST1", "static/img/loader-1-HorizontalBalls.gif", "mollenTEST1", "mollenTEST1", 123456}, "#", 0, 0}

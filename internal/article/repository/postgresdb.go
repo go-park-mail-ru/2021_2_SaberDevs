@@ -125,7 +125,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		arts = append(arts, newArticle)
 	}
 
-	rows, err = m.Db.Queryx("SELECT AU.* FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.NAME ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
+	rows, err = m.Db.Queryx("SELECT AU.* FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName ORDER BY AR.Id LIMIT $1 OFFSET $2", chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -267,20 +267,20 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: "articleRepository/Tag1",
 			}
 		}
 		arts = append(arts, newArticle)
 	}
 
-	rows, err = m.Db.Queryx(`SELECT AU.* FROM from categories c
+	rows, err = m.Db.Queryx(`SELECT AU.* FROM categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
-	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.NAME where c.tag = $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, tag, chunkSize, from)
+	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.AUTHORNAME where c.tag = $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, tag, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
+			Function: "articleRepository/Tag2",
 		}
 	}
 	var auths []amodels.Author
@@ -290,7 +290,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: "articleRepository/Tag3",
 			}
 		}
 		auths = append(auths, newAuth)
@@ -300,7 +300,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: "articleRepository/Tag4",
 			}
 		}
 		ChunkData = append(ChunkData, outArticle)
@@ -317,7 +317,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1 LIMIT $2 OFFSET $3 ORDER BY Id", author, chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT * FROM ARTICLES WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -332,16 +332,16 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: "articleRepository/Author",
 			}
 		}
 		arts = append(arts, newArticle)
 	}
-	rows, err = m.Db.Queryx("SELECT AU.* FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.NAME  WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
+	rows, err = m.Db.Queryx("SELECT AU.* FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", author, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
+			Function: "articleRepository/Auth1",
 		}
 	}
 	var auths []amodels.Author
@@ -351,7 +351,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: "articleRepository/Auth2",
 			}
 		}
 		auths = append(auths, newAuth)
