@@ -37,7 +37,7 @@ const byTag = "articleRepository/GetByTag"
 
 const byAuthor = "articleRepository/GetByAuthor"
 
-func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
+func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	var article amodels.Preview
 	article.Author = auth
 	article.Comments = val.Comments
@@ -94,29 +94,6 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 		}
 	}
 	return ChunkData, nil
-}
-
-func fullPreviewConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (amodels.Preview, error) {
-	article := previewShortConv(val, auth)
-	rows, err := Db.Queryx(tagsLoad, val.Id)
-	if err != nil {
-		return article, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/fullArticleConv",
-		}
-	}
-	var mytag string
-	for rows.Next() {
-		err = rows.Scan(&mytag)
-		if err != nil {
-			return article, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/fullArticleConv",
-			}
-		}
-		article.Tags = append(article.Tags, mytag)
-	}
-	return article, nil
 }
 
 func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (amodels.FullArticle, error) {
@@ -222,7 +199,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		auths = append(auths, newAuth)
 	}
 	for i, article := range arts {
-		outArticle = previewShortConv(article, auths[i])
+		outArticle = previewConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
 	}
 	ChunkData, err = m.uploadTags(ChunkData, "articleRepository/Fetch")
@@ -325,7 +302,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	}
 
 	for i, article := range arts {
-		outArticle = previewShortConv(article, auths[i])
+		outArticle = previewConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
 	}
 	ChunkData, err = m.uploadTags(ChunkData, byTag)
@@ -386,7 +363,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		auths = append(auths, newAuth)
 	}
 	for i, article := range arts {
-		outArticle = previewShortConv(article, auths[i])
+		outArticle = previewConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
 	}
 	ChunkData, err = m.uploadTags(ChunkData, byAuthor)
