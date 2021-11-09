@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"time"
 
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
@@ -54,9 +55,8 @@ func main() {
 		PreviewUrl   VARCHAR(45),
 		Title        VARCHAR(45),
 		Text         TEXT,
-		AuthorUrl    VARCHAR(45),
+		DateTime     VARCHAR(45),
 		AuthorName   VARCHAR(45) REFERENCES author(Login) ON DELETE CASCADE,
-		AuthorAvatar VARCHAR(45),
 		CommentsUrl  VARCHAR(45),
 		Comments     INT,
 		Likes        INT 
@@ -113,9 +113,10 @@ func main() {
 		fmt.Println(author.Name)
 	}
 
-	insert_article := `INSERT INTO articles (PreviewUrl, Title, Text, AuthorUrl, AuthorName, AuthorAvatar, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
+	insert_article := `INSERT INTO articles (PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 	for i, data := range data.TestData {
-		_, err = db.Exec(insert_article, data.PreviewUrl, data.Title, data.Text, data.AuthorUrl, names[i/4], data.AuthorAvatar, data.CommentsUrl, data.Comments, data.Likes)
+		date := time.Now().Format("2006/1/2 15:04")
+		_, err = db.Exec(insert_article, data.PreviewUrl, date, data.Title, data.Text, names[i/4], data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -131,7 +132,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Print(newArticle.Id, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
+		fmt.Print(newArticle.Id, "  ", newArticle.DateTime, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
 	}
 
 	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
@@ -221,14 +222,14 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	fmt.Println()
 	results, err := myRepo.GetByAuthor(context.TODO(), "dar", 0, 5)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	for _, result := range results {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	fmt.Println()
 	results, err = myRepo.GetByTag(context.TODO(), "finance", 0, 5)
@@ -236,7 +237,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	for _, result := range results {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 
 	fmt.Println()
@@ -255,7 +256,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
 	err = myRepo.Delete(context.TODO(), 3)
 	if err != nil {
@@ -267,14 +268,14 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	newresult, err = myRepo.Fetch(context.TODO(), 12, 7)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	fmt.Println()
 	fmt.Println()
@@ -288,5 +289,5 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.AuthorName, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 }
