@@ -51,7 +51,7 @@ func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Previe
 	return article
 }
 
-func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview) ([]amodels.Preview, error) {
+func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName string) ([]amodels.Preview, error) {
 	schema := multiArtTags
 	var ids []interface{}
 	for i, data := range ChunkData {
@@ -67,7 +67,7 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview) ([]amode
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
+			Function: funcName,
 		}
 	}
 	var newtag string
@@ -78,7 +78,7 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview) ([]amode
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
+				Function: funcName,
 			}
 		}
 		myid, _ := strconv.Atoi(ChunkData[i].Id)
@@ -221,7 +221,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		outArticle = previewShortConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
 	}
-	ChunkData, err = m.uploadTags(ChunkData)
+	ChunkData, err = m.uploadTags(ChunkData, "articleRepository/Fetch")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
