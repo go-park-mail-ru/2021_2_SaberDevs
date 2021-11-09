@@ -33,6 +33,10 @@ inner join categories_articles ca  on c.Id = ca.categories_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id in (`
 
+const byTag = "articleRepository/GetByTag"
+
+const byAuthor = "articleRepository/GetByAuthor"
+
 func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	var article amodels.Preview
 	article.Author = auth
@@ -264,6 +268,7 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 }
 
 func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.Preview, err error) {
+
 	schemaCount := `SELECT count(*) FROM  categories c
 	inner join categories_articles ca  on c.Id = ca.categories_id
 	inner join articles a on a.Id = ca.articles_id
@@ -279,7 +284,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/GetByTag",
+			Function: byTag,
 		}
 	}
 	var newArticle amodels.DbArticle
@@ -290,7 +295,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Tag1",
+				Function: byTag,
 			}
 		}
 		arts = append(arts, newArticle)
@@ -303,7 +308,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Tag2",
+			Function: byTag,
 		}
 	}
 	var auths []amodels.Author
@@ -313,22 +318,23 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Tag3",
+				Function: byTag,
 			}
 		}
 		auths = append(auths, newAuth)
 	}
+
 	for i, article := range arts {
-		outArticle, err = fullPreviewConv(article, m.Db, auths[i])
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Tag4",
-			}
-		}
+		outArticle = previewShortConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
 	}
-
+	ChunkData, err = m.uploadTags(ChunkData, byTag)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byTag,
+		}
+	}
 	if overCount {
 		ChunkData = append(ChunkData, data.End)
 	}
@@ -344,7 +350,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/GetByAuthor",
+			Function: byAuthor,
 		}
 	}
 	var newArticle amodels.DbArticle
@@ -355,7 +361,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Author",
+				Function: byAuthor,
 			}
 		}
 		arts = append(arts, newArticle)
@@ -364,7 +370,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Auth1",
+			Function: byAuthor,
 		}
 	}
 	var auths []amodels.Author
@@ -374,20 +380,21 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Auth2",
+				Function: byAuthor,
 			}
 		}
 		auths = append(auths, newAuth)
 	}
 	for i, article := range arts {
-		outArticle, err = fullPreviewConv(article, m.Db, auths[i])
-		if err != nil {
-			return ChunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "articleRepository/Fetch",
-			}
-		}
+		outArticle = previewShortConv(article, auths[i])
 		ChunkData = append(ChunkData, outArticle)
+	}
+	ChunkData, err = m.uploadTags(ChunkData, byAuthor)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byTag,
+		}
 	}
 	if overCount {
 		ChunkData = append(ChunkData, data.End)
