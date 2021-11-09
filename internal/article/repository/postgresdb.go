@@ -23,6 +23,11 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 
 const previewLen = 50
 
+const tagsLoad = `select c.tag from categories c
+inner join categories_articles ca  on c.Id = ca.categories_id
+inner join articles a on a.Id = ca.articles_id
+where a.Id = $1;`
+
 func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	var article amodels.Preview
 	article.Author = auth
@@ -42,10 +47,7 @@ func previewShortConv(val amodels.DbArticle, auth amodels.Author) amodels.Previe
 }
 func fullPreviewConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (amodels.Preview, error) {
 	article := previewShortConv(val, auth)
-	rows, err := Db.Queryx(`select c.tag from categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
-	inner join articles a on a.Id = ca.articles_id
-	where a.Id = $1;`, val.Id)
+	rows, err := Db.Queryx(tagsLoad, val.Id)
 	if err != nil {
 		return article, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -77,10 +79,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
 	article.Text = val.Text
-	rows, err := Db.Queryx(`select c.tag from categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
-	inner join articles a on a.Id = ca.articles_id
-	where a.Id = $1;`, val.Id)
+	rows, err := Db.Queryx(tagsLoad, val.Id)
 	if err != nil {
 		return article, sbErr.ErrDbError{
 			Reason:   err.Error(),
