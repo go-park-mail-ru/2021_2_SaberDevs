@@ -79,9 +79,9 @@ type СategoriesArticles struct {
 type Author struct {
 	Id        int
 	Login     string `json:"login"`
-	Name      string `json:"name"`
-	Surname   string `json:"surname"`
-	AvatarUrl string `json:"avatarurl" db:"avatarurl"`
+	Name      string `json:"firstName"`
+	Surname   string `json:"lastName"`
+	AvatarUrl string `json:"avatarUrl" db:"avatarurl"`
 	Email     string `json:"email" valid:"email,optional"`
 	Password  string `json:"password"`
 	Score     int    `json:"score"`
