@@ -22,6 +22,7 @@ type Article struct {
 
 type OutArticle struct {
 	Id          string   `json:"id"`
+	DateTime    string   `json:"datetime" db:"datetime"`
 	PreviewUrl  string   `json:"previewUrl"`
 	Tags        []string `json:"tags"`
 	Title       string   `json:"title"`
@@ -34,6 +35,7 @@ type OutArticle struct {
 
 type DbArticle struct {
 	Id           int    `json:"Id"  db:"id"`
+	DateTime     string `json:"datetime" db:"datetime"`
 	PreviewUrl   string `json:"PreviewUrl" db:"previewurl"`
 	Title        string `json:"title" db:"title"`
 	Text         string `json:"text" db:"text"`

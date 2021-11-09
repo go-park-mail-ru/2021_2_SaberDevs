@@ -30,6 +30,7 @@ func articleConv(val amodels.DbArticle, auth amodels.Author) amodels.OutArticle 
 	// article.AuthorName = val.AuthorName
 	// article.AuthorUrl = val.AuthorUrl
 	article.Comments = val.Comments
+	article.DateTime = val.DateTime
 	article.CommentsUrl = val.CommentsUrl
 	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
