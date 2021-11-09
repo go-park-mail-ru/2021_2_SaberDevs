@@ -437,7 +437,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
-	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $2 WHERE articles.Id  = $3`
+	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3 WHERE articles.Id  = $4`
 	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, uniqId)
 	if err != nil {
 		return sbErr.ErrDbError{
