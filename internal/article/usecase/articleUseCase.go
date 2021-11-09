@@ -29,7 +29,7 @@ func IdToString(id string) (int, error) {
 	return idInt, err
 }
 
-func artOut(a *amodels.OutArticle) *amodels.Article {
+func artOut(a *amodels.FullArticle) *amodels.Article {
 	var out amodels.Article
 	out.AuthorAvatar = a.Author.AvatarUrl
 	out.AuthorName = a.Author.Name
@@ -38,7 +38,6 @@ func artOut(a *amodels.OutArticle) *amodels.Article {
 	out.CommentsUrl = a.CommentsUrl
 	out.Id = a.Id
 	out.Likes = a.Likes
-	out.PreviewUrl = a.PreviewUrl
 	out.Tags = a.Tags
 	out.Text = a.Text
 	out.Title = a.Title
@@ -46,7 +45,7 @@ func artOut(a *amodels.OutArticle) *amodels.Article {
 	return &out
 }
 
-func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.OutArticle, err error) {
+func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
@@ -56,12 +55,12 @@ func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSi
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
 }
 
-func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.OutArticle, err error) {
+func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.FullArticle, err error) {
 	result, err = m.articleRepo.GetByID(ctx, id)
 	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
-func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) (result []amodels.OutArticle, err error) {
+func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByTag")
@@ -70,7 +69,7 @@ func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded 
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 
-func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) (result []amodels.OutArticle, err error) {
+func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByAuthor")

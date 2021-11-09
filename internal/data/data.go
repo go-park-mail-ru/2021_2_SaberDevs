@@ -59,5 +59,5 @@ var TestUsers = []umodels.User{
 	{"DenisTest", "DenisTest1", "DenisTest1", "DenisTest1@exp.ru", "DenisTest1", 120},
 }
 
-var End = amodels.OutArticle{"end", "123456", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
+var End = amodels.Preview{"end", "123456", "static/img/endOfFeed.png", []string{"IT-News", "Study"},
 	"А всё, а раньше надо было", "А всё, а раньше надо было", amodels.Author{1, "mollenTEST1", "mollenTEST1", "mollenTEST1", "static/img/loader-1-HorizontalBalls.gif", "mollenTEST1", "mollenTEST1", 123456}, "#", 0, 0}
