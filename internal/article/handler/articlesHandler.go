@@ -102,7 +102,10 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetbyID")
 	}
-	response := Data
+	response := amodels.ArticleResponse{
+		Status: http.StatusOK,
+		Data:   Data,
+	}
 
 	return c.JSON(http.StatusOK, response)
 }

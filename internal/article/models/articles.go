@@ -52,8 +52,8 @@ type ChunkResponse struct {
 }
 
 type ArticleResponse struct {
-	Status uint    `json:"status"`
-	Data   Article `json:"data"`
+	Status uint       `json:"status"`
+	Data   OutArticle `json:"data"`
 }
 type ArticleCreate struct {
 	Title string   `json:"title" db:"title"`
