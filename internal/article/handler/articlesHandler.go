@@ -143,7 +143,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 
 	response := amodels.GenericResponse{
 		Status: http.StatusOK,
-		Msg:    up,
+		Data:   up,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -187,11 +187,10 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
 
-	response := fmt.Sprint(Id)
-	// amodels.GenericResponse{
-	// 	Status: http.StatusOK,
-	// 	Msg:    fmt.Sprint(Id),
-	// }
+	response := amodels.GenericResponse{
+		Status: http.StatusOK,
+		Data:   fmt.Sprint(Id),
+	}
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -207,7 +206,7 @@ func (api *ArticlesHandler) Delete(c echo.Context) error {
 
 	response := amodels.GenericResponse{
 		Status: http.StatusOK,
-		Msg:    del,
+		Data:   del,
 	}
 	return c.JSON(http.StatusOK, response)
 }

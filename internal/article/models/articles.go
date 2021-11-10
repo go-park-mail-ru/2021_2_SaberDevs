@@ -71,7 +71,7 @@ type ArticleResponse struct {
 
 type GenericResponse struct {
 	Status uint   `json:"status"`
-	Msg    string `json:"msg"`
+	Data   string `json:"data"`
 }
 type ArticleCreate struct {
 	Title string   `json:"title" db:"title"`
