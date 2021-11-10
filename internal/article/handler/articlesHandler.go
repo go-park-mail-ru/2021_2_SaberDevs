@@ -186,10 +186,12 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
-	response := amodels.GenericResponse{
-		Status: http.StatusOK,
-		Msg:    fmt.Sprint(Id),
-	}
+
+	response := fmt.Sprint(Id)
+	// amodels.GenericResponse{
+	// 	Status: http.StatusOK,
+	// 	Msg:    fmt.Sprint(Id),
+	// }
 
 	return c.JSON(http.StatusOK, response)
 }
