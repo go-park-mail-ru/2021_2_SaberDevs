@@ -68,6 +68,11 @@ type ArticleResponse struct {
 	Status uint        `json:"status"`
 	Data   FullArticle `json:"data"`
 }
+
+type GenericResponse struct {
+	Status uint   `json:"status"`
+	Msg    string `json:"msg"`
+}
 type ArticleCreate struct {
 	Title string   `json:"title" db:"title"`
 	Text  string   `json:"text" db:"text"`
