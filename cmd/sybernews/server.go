@@ -99,6 +99,11 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
 
+	e.GET("/img/:name", func(c echo.Context) error {
+		name := c.Param("name")
+		return c.File(name)
+	})
+
 	e.POST("api/v1/user/login", userAPI.Login)
 	e.POST("api/v1/user/signup", userAPI.Register)
 	e.POST("api/v1/user/logout", userAPI.Logout, authMiddleware.CheckAuth)
