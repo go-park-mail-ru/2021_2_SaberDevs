@@ -128,7 +128,7 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) Update(c echo.Context) error {
 	newArticle := new(amodels.ArticleUpdate)
 	err := c.Bind(newArticle)
-	if err != nil {
+	if (err != nil) || (newArticle == new(amodels.ArticleUpdate)) {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
 			Function: "articlesHandler/Update",
