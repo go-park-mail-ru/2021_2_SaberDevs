@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
@@ -53,8 +52,8 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	if len(val.Text) <= previewLen {
 		article.Text = val.Text
 	} else {
-		temp := strings.Split(val.Text[:50], "")
-		article.Text = strings.Join(temp, "")
+		temp := []rune(val.Text)
+		article.Text = string(temp[:50])
 	}
 	return article
 }
