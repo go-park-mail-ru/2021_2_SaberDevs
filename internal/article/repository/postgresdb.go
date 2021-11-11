@@ -49,7 +49,7 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
-	if len(val.Text) <= previewLen {
+	if len([]rune(val.Text)) <= previewLen {
 		article.Text = val.Text
 	} else {
 		temp := []rune(val.Text)
