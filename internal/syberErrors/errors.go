@@ -152,3 +152,14 @@ type ErrValidate struct {
 func (e ErrValidate) Error() string {
 	return fmt.Sprintf(e.Reason)
 }
+
+// -------------------------------------------------------------------------------
+
+type ErrNoContent struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrNoContent) Error() string {
+	return fmt.Sprintf(e.Reason)
+}
