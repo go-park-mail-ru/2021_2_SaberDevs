@@ -92,10 +92,10 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
-	insert_author := `INSERT INTO author (Login, Name, Surname, AvatarUrl, Email, Password, Score) VALUES ($1, $2, $3, $4, $5, $6, $7);`
+	insert_author := `INSERT INTO author (Login, Name, Surname, AvatarUrl, Email, Password, Score, DESCRIPTION) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 
 	for _, data := range data.TestUsers {
-		_, err = db.Exec(insert_author, data.Login, data.Name, data.Surname, data.AvatarUrl, data.Email, data.Password, data.Score)
+		_, err = db.Exec(insert_author, data.Login, data.Name, data.Surname, data.AvatarUrl, data.Email, data.Password, data.Score, "Something Strange")
 		if err != nil {
 			fmt.Println(err.Error())
 		}

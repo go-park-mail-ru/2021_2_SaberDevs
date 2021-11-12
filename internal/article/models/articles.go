@@ -98,7 +98,7 @@ type Author struct {
 	Name        string `json:"firstName"`
 	Surname     string `json:"lastName"`
 	AvatarUrl   string `json:"avatarUrl" db:"avatarurl"`
-	Description string `json:"description" db:"avatarurl"`
+	Description string `json:"description" db:"description"`
 	Email       string `json:"email" valid:"email,optional"`
 	Password    string `json:"password"`
 	Score       int    `json:"score"`
