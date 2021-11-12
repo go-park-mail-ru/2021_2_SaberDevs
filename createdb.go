@@ -39,7 +39,7 @@ func main() {
 		Id          SERIAL PRIMARY KEY NOT NULL,
 		Login       VARCHAR(45) NOT NULL UNIQUE,
 		AvatarUrl   VARCHAR(75),
-		Description TEXT,
+		Description TEXT NOT NULL,
 		Name        VARCHAR(45),
 		Surname     VARCHAR(45),
 		Email       VARCHAR(45),
