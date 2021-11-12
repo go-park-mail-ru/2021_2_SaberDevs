@@ -93,14 +93,15 @@ type СategoriesArticles struct {
 }
 
 type Author struct {
-	Id        int    `json:"-"`
-	Login     string `json:"login"`
-	Name      string `json:"firstName"`
-	Surname   string `json:"lastName"`
-	AvatarUrl string `json:"avatarUrl" db:"avatarurl"`
-	Email     string `json:"email" valid:"email,optional"`
-	Password  string `json:"password"`
-	Score     int    `json:"score"`
+	Id          int    `json:"-"`
+	Login       string `json:"login"`
+	Name        string `json:"firstName"`
+	Surname     string `json:"lastName"`
+	AvatarUrl   string `json:"avatarUrl" db:"avatarurl"`
+	Description string `json:"description" db:"avatarurl"`
+	Email       string `json:"email" valid:"email,optional"`
+	Password    string `json:"password"`
+	Score       int    `json:"score"`
 }
 
 // ArticleUsecase represent the article's usecases
