@@ -21,7 +21,7 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
 
-const previewLen = 50
+const previewLen = 350
 
 const tagsLoad = `select c.tag from categories c
 inner join categories_articles ca  on c.Id = ca.categories_id
@@ -53,7 +53,7 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 		article.Text = val.Text
 	} else {
 		temp := []rune(val.Text)
-		article.Text = string(temp[:50])
+		article.Text = string(temp[:previewLen])
 	}
 	return article
 }
