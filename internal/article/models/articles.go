@@ -21,7 +21,20 @@ type Article struct {
 	Likes        uint     `json:"likes"`
 }
 
-type OutArticle struct {
+type FullArticle struct {
+	Id          string   `json:"id"`
+	DateTime    string   `json:"datetime" db:"datetime"`
+	PreviewUrl  string   `json:"previewUrl"`
+	Tags        []string `json:"tags"`
+	Title       string   `json:"title"`
+	Text        string   `json:"text"`
+	Author      Author   `json:"author"`
+	CommentsUrl string   `json:"commentsUrl"`
+	Comments    uint     `json:"comments"`
+	Likes       uint     `json:"likes"`
+}
+
+type Preview struct {
 	Id          string   `json:"id"`
 	DateTime    string   `json:"datetime" db:"datetime"`
 	PreviewUrl  string   `json:"previewUrl"`
@@ -47,13 +60,18 @@ type DbArticle struct {
 }
 
 type ChunkResponse struct {
-	Status    uint         `json:"status"`
-	ChunkData []OutArticle `json:"data"`
+	Status    uint      `json:"status"`
+	ChunkData []Preview `json:"data"`
 }
 
 type ArticleResponse struct {
-	Status uint       `json:"status"`
-	Data   OutArticle `json:"data"`
+	Status uint        `json:"status"`
+	Data   FullArticle `json:"data"`
+}
+
+type GenericResponse struct {
+	Status uint   `json:"status"`
+	Data   string `json:"data"`
 }
 type ArticleCreate struct {
 	Title string   `json:"title" db:"title"`
@@ -75,22 +93,23 @@ type СategoriesArticles struct {
 }
 
 type Author struct {
-	Id        int    `json:"-"`
-	Login     string `json:"login"`
-	Name      string `json:"firstName"`
-	Surname   string `json:"lastName"`
-	AvatarUrl string `json:"avatarUrl" db:"avatarurl"`
-	Email     string `json:"email" valid:"email,optional"`
-	Password  string `json:"password"`
-	Score     int    `json:"score"`
+	Id          int    `json:"-"`
+	Login       string `json:"login"`
+	Name        string `json:"firstName"`
+	Surname     string `json:"lastName"`
+	AvatarUrl   string `json:"avatarUrl" db:"avatarurl"`
+	Description string `json:"description" db:"description"`
+	Email       string `json:"email" valid:"email,optional"`
+	Password    string `json:"password"`
+	Score       int    `json:"score"`
 }
 
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
-	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]OutArticle, error)
-	GetByID(ctx context.Context, id int64) (OutArticle, error)
-	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]OutArticle, error)
-	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]OutArticle, error)
+	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByID(ctx context.Context, id int64) (FullArticle, error)
+	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
 	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
@@ -98,10 +117,10 @@ type ArticleUsecase interface {
 
 // ArticleRepository represent the article's repository contract
 type ArticleRepository interface {
-	Fetch(ctx context.Context, from, chunkSize int) ([]OutArticle, error)
-	GetByID(ctx context.Context, id int64) (OutArticle, error)
-	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]OutArticle, error)
-	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]OutArticle, error)
+	Fetch(ctx context.Context, from, chunkSize int) ([]Preview, error)
+	GetByID(ctx context.Context, id int64) (FullArticle, error)
+	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]Preview, error)
+	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error

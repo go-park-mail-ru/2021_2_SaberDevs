@@ -36,13 +36,15 @@ func main() {
 		DROP TABLE IF EXISTS categories_articles CASCADE;`
 
 	schema1 := `CREATE TABLE author(
-		Id       SERIAL PRIMARY KEY NOT NULL,
-		Login    VARCHAR(45) NOT NULL UNIQUE,
-		Name     VARCHAR(45),
-		Surname  VARCHAR(45),
-		Email    VARCHAR(45),
-		Password VARCHAR(45),
-		Score    VARCHAR(45)
+		Id          SERIAL PRIMARY KEY NOT NULL,
+		Login       VARCHAR(45) NOT NULL UNIQUE,
+		AvatarUrl   VARCHAR(75),
+		Description TEXT NOT NULL,
+		Name        VARCHAR(45),
+		Surname     VARCHAR(45),
+		Email       VARCHAR(45),
+		Password    VARCHAR(45),
+		Score       VARCHAR(45)
 		);`
 
 	schema2 := `CREATE TABLE categories (
@@ -53,7 +55,7 @@ func main() {
 	schema3 := `CREATE TABLE articles (
 		Id           SERIAL PRIMARY KEY,
 		PreviewUrl   VARCHAR(45),
-		Title        VARCHAR(45),
+		Title        VARCHAR(350),
 		Text         TEXT,
 		DateTime     VARCHAR(45),
 		AuthorName   VARCHAR(45) REFERENCES author(Login) ON DELETE CASCADE,
@@ -90,15 +92,15 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
-	insert_author := `INSERT INTO author (Login, Name, Surname, Email, Password, Score) VALUES ($1, $2, $3, $4, $5, $6);`
+	insert_author := `INSERT INTO author (Login, Name, Surname, AvatarUrl, Email, Password, Score, DESCRIPTION) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 
 	for _, data := range data.TestUsers {
-		_, err = db.Exec(insert_author, data.Login, data.Name, data.Surname, data.Email, data.Password, data.Score)
+		_, err = db.Exec(insert_author, data.Login, data.Name, data.Surname, data.AvatarUrl, data.Email, data.Password, data.Score, "Something Strange")
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 	}
-	rows, err := db.Queryx("SELECT * FROM author")
+	rows, err := db.Queryx("SELECT ID, LOGIN, NAME, SURNAME, EMAIL, PASSWORD, SCORE FROM author")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -122,7 +124,7 @@ func main() {
 		}
 	}
 
-	rows, err = db.Queryx("SELECT * FROM ARTICLES")
+	rows, err = db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -279,7 +281,7 @@ func main() {
 	}
 	fmt.Println()
 	fmt.Println()
-	ar.Text = `<a onblur="alert(secret)" href="http://www.google.com">Google</a>`
+	// ar.Text = `<a onblur="alert(secret)" href="http://www.google.com">Google</a>`
 	ar.Tags = append(ar.Tags, "jojo")
 	err = myRepo.Update(context.TODO(), &ar)
 	if err != nil {

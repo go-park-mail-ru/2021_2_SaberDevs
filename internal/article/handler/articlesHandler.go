@@ -128,7 +128,7 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) Update(c echo.Context) error {
 	newArticle := new(amodels.ArticleUpdate)
 	err := c.Bind(newArticle)
-	if err != nil {
+	if (err != nil) || (newArticle == new(amodels.ArticleUpdate)) {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
 			Function: "articlesHandler/Update",
@@ -141,7 +141,11 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
 
-	response := up
+	response := amodels.GenericResponse{
+		Status: http.StatusOK,
+		Data:   up,
+	}
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -183,7 +187,11 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
 
-	response := fmt.Sprint(Id)
+	response := amodels.GenericResponse{
+		Status: http.StatusOK,
+		Data:   fmt.Sprint(Id),
+	}
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -195,6 +203,10 @@ func (api *ArticlesHandler) Delete(c echo.Context) error {
 		return errors.Wrap(err, "articlesHandler/Delete")
 	}
 	// формируем ответ
-	response := del
+
+	response := amodels.GenericResponse{
+		Status: http.StatusOK,
+		Data:   del,
+	}
 	return c.JSON(http.StatusOK, response)
 }
