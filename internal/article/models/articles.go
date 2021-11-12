@@ -100,7 +100,7 @@ type Author struct {
 	AvatarUrl   string `json:"avatarUrl" db:"avatarurl"`
 	Description string `json:"description" db:"description"`
 	Email       string `json:"email" valid:"email,optional"`
-	Password    string `json:"password"`
+	Password    string `json:"-"`
 	Score       int    `json:"score"`
 }
 
