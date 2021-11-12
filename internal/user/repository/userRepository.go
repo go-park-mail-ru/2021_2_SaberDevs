@@ -132,7 +132,7 @@ func (r *userPsqlRepo) GetByLogin(ctx context.Context, login string) (umodels.Us
 	if err != nil {
 		return umodels.User{}, sbErr.ErrUserDoesntExist{
 			Reason:   err.Error(),
-			Function: "userRepositiry/GetByEmail",
+			Function: "userRepositiry/GetByLogin",
 		}
 	}
 
@@ -150,8 +150,8 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 		}
 	}
 
-	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $8, $9)`
-	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "static/img/users/user_icon_loading.svg", "")
+	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "static/img/users/user.jpg", "")
 	if err != nil {
 		return umodels.User{}, sbErr.ErrInternal{
 			Reason:   err.Error(),

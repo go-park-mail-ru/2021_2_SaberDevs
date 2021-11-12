@@ -11,7 +11,7 @@ type User struct {
 	Email    string `json:"email" db:"email" valid:"email,optional" `
 	Password string `json:"password" db:"password"`
 	Score    int    `json:"score" db:"score"`
-	AvatarURL string `json:"avatarUrl" db:"avatarUrl"`
+	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
 	Description string `json:"description" db:"description"`
 }
 
