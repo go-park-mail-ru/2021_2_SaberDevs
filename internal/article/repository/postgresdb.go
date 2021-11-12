@@ -21,7 +21,7 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
 
-const previewLen = 1350
+const previewLen = 350
 
 const tagsLoad = `select c.tag from categories c
 inner join categories_articles ca  on c.Id = ca.categories_id
