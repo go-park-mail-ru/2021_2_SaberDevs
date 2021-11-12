@@ -76,9 +76,9 @@ var TestData = [...]amodels.Article{
 }
 
 var TestUsers = []amodels.Author{
-	{1, "mollenTEST1", "mollenTEST1", "mollenTEST1", "static/img/photo-elon-musk.jpg", "", "mollenTEST1", "mollenTEST@1", 123456},
-	{2, "dar", "dar@exp.ru", "dar@exp.ru", "dar@exp.ru", "static/img/photo-elon-musk.jpg", "", "dar@exp.ru", 13553},
-	{3, "viphania", "viphania@exp.ru", "viphania@exp.ru", "static/img/photo-elon-musk.jpg", "", "viphania@exp.ru", "123", 120},
+	{1, "mollenTEST1", "mollenTEST1", "mollenTEST1", "static/img/photo-elon-musk.jpg", "", "mollenTEST1", "mollenTEST1", 123456},
+	{2, "dar", "darivush", "pavlov", "static/img/photo-elon-musk.jpg", "", "dar@exp.ru", "123", 13553},
+	{3, "viphania", "viphania", "pavlova", "static/img/photo-elon-musk.jpg", "", "viphania@exp.ru", "123", 120},
 	{4, "DenisTest", "DenisTest1", "DenisTest1", "static/img/photo-elon-musk.jpg", "", "DenisTest1@exp.ru", "DenisTest1", 120},
 }
 

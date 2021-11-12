@@ -11,6 +11,8 @@ type User struct {
 	Email    string `json:"email" db:"email" valid:"email,optional" `
 	Password string `json:"password" db:"password"`
 	Score    int    `json:"score" db:"score"`
+	AvatarURL string `json:"avatarUrl" db:"avatarUrl"`
+	Description string `json:"description" db:"description"`
 }
 
 type RequestUser struct {
@@ -24,6 +26,8 @@ type LoginData struct {
 	Name    string `json:"firstName"`
 	Email   string `json:"email"`
 	Score   int    `json:"score"`
+	AvatarURL string `json:"avatarUrl"`
+	Description string `json:"description"`
 }
 
 type LoginResponse struct {
@@ -37,6 +41,7 @@ type LoginResponse struct {
 type UpdateProfileData struct {
 	Surname string `json:"lastName"`
 	Name    string `json:"firstName"`
+	Description string `json:"description"`
 }
 
 type UpdateProfileResponse struct {
@@ -59,6 +64,8 @@ type GetUserData struct {
 	Surname string `json:"lastName"`
 	Name    string `json:"firstName"`
 	Score   int    `json:"score"`
+	AvatarURL string `json:"avatarUrl"`
+	Description string `json:"description"`
 }
 
 type GetUserResponse struct {
@@ -75,6 +82,8 @@ type SignUpData struct {
 	Name    string `json:"firstName"`
 	Email   string `json:"email"`
 	Score   int    `json:"score"`
+	AvatarURL string `json:"avatarUrl"`
+	Description string `json:"description"`
 }
 
 type RequestSignup struct {
