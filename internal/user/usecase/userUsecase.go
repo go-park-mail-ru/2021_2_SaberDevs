@@ -40,6 +40,8 @@ func (uu *userUsecase) GetAuthorProfile(ctx context.Context, author string) (umo
 		Name:    authorInDb.Name,
 		Surname: authorInDb.Surname,
 		Score:   authorInDb.Score,
+		AvatarURL: authorInDb.AvatarURL,
+		Description: authorInDb.Description,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
@@ -66,6 +68,8 @@ func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (um
 		Name:     userInDb.Name,
 		Surname:  userInDb.Surname,
 		Score:    userInDb.Score,
+		AvatarURL: userInDb.AvatarURL,
+		Description: userInDb.Description,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
@@ -94,6 +98,7 @@ func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, se
 	responseData := umodels.UpdateProfileData{
 		Name:    updatedUser.Name,
 		Surname: updatedUser.Surname,
+		Description: updatedUser.Description,
 	}
 	response = umodels.UpdateProfileResponse{
 		Status: http.StatusOK,
@@ -129,6 +134,8 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 		Surname: userInRepo.Surname,
 		Email:   userInRepo.Email,
 		Score:   userInRepo.Score,
+		AvatarURL: userInRepo.AvatarURL,
+		Description: userInRepo.Description,
 	}
 	response = umodels.LoginResponse{
 		Status: http.StatusOK,
@@ -158,6 +165,8 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 		Surname: signedupUser.Surname,
 		Email:   signedupUser.Email,
 		Score:   signedupUser.Score,
+		AvatarURL: signedupUser.AvatarURL,
+		Description: signedupUser.Description,
 	}
 	response = umodels.SignupResponse{
 		Status: http.StatusOK,

@@ -40,6 +40,8 @@ func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels
 		Surname: userInRepo.Surname,
 		Email:   userInRepo.Email,
 		Score:   userInRepo.Score,
+		AvatarURL: userInRepo.AvatarURL,
+		Description: userInRepo.Description,
 	}
 	response = umodels.LoginResponse{
 		Status: http.StatusOK,

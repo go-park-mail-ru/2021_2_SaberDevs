@@ -6,6 +6,9 @@ import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
+	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
+	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
+	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
 	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
@@ -75,6 +78,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
 	articleRepo := arepo.NewArticleRepository(db)
+	imageRepo := irepo.NewImageRepository()
 
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
@@ -84,6 +88,9 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	articlesAPI := ahandler.NewArticlesHandler(articlesUsecase)
+
+	imageUsecase := iusecase.NewImageUsecase(imageRepo)
+	imageAPI := ihandler.NewImageHandler(imageUsecase)
 
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
@@ -98,6 +105,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
+
+	e.GET("/img/:name", imageAPI.GetImage)
 
 	e.POST("api/v1/user/login", userAPI.Login)
 	e.POST("api/v1/user/signup", userAPI.Register)

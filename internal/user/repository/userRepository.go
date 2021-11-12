@@ -20,7 +20,7 @@ func NewUserRepository(db *sqlx.DB) umodels.UserRepository {
 func (r *userPsqlRepo) GetByName(ctx context.Context, name string) (umodels.User, error) {
 	user := umodels.User{}
 
-	err := r.Db.Get(&user, `SELECT Login, Name, Surname, Email, Password, Score FROM author WHERE Name = $1`, name)
+	err := r.Db.Get(&user, `SELECT Login, Name, Surname, Email, Password, Score, AvatarUrl, Description FROM author WHERE Name = $1`, name)
 	if err != nil {
 		return umodels.User{}, sbErr.ErrUserDoesntExist{
 			Reason:   err.Error(),
@@ -37,6 +37,23 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 		return umodels.User{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
 			Function: "userRepository/UpdateUser",
+		}
+	}
+
+	if user.Description != "" {
+		_, err := tx.Exec(`UPDATE author SET NAME = $1 WHERE Login = $2`, user.Description, user.Login)
+		if err != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return umodels.User{}, sbErr.ErrInternal{
+					Reason:   err.Error(),
+					Function: "userRepository/UpdateUser",
+				}
+			}
+			return umodels.User{}, sbErr.ErrInternal{
+				Reason:   err.Error(),
+				Function: "userRepository/UpdateUser",
+			}
 		}
 	}
 
@@ -111,11 +128,11 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 func (r *userPsqlRepo) GetByLogin(ctx context.Context, login string) (umodels.User, error) {
 	user := umodels.User{}
 
-	err := r.Db.Get(&user, `SELECT Login, Name, Surname, Email, Password, Score FROM author WHERE Login = $1`, login)
+	err := r.Db.Get(&user, `SELECT Login, Name, Surname, Email, Password, Score, AvatarUrl, Description FROM author WHERE Login = $1`, login)
 	if err != nil {
 		return umodels.User{}, sbErr.ErrUserDoesntExist{
 			Reason:   err.Error(),
-			Function: "userRepositiry/GetByEmail",
+			Function: "userRepositiry/GetByLogin",
 		}
 	}
 
@@ -133,8 +150,8 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 		}
 	}
 
-	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score) VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0)
+	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "static/img/users/user.jpg", "")
 	if err != nil {
 		return umodels.User{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
