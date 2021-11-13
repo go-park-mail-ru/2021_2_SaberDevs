@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
@@ -21,7 +22,7 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
 
-const previewLen = 350
+const previewLen = 50
 
 const tagsLoad = `select c.tag from categories c
 inner join categories_articles ca  on c.Id = ca.categories_id
@@ -49,11 +50,13 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
-	if len([]rune(val.Text)) <= previewLen {
+	temp := strings.Split(val.Text, " ")
+	if len(temp) <= previewLen {
 		article.Text = val.Text
 	} else {
-		temp := []rune(val.Text)
-		article.Text = string(temp[:previewLen])
+		// temp := []rune(val.Text)
+		// article.Text = string(temp[:previewLen])
+		article.Text = strings.Join(temp[:previewLen], " ")
 	}
 	return article
 }

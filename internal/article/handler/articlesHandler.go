@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
@@ -50,6 +51,9 @@ func SanitizeArticle(a *amodels.Article) *amodels.Article {
 	}
 	a.Text = s.Sanitize(a.Text)
 	a.Title = s.Sanitize(a.Title)
+	r := regexp.MustCompile("\\s+")
+	a.Title = r.ReplaceAllString(a.Title, " ")
+
 	return a
 }
 func SanitizeCreate(a *amodels.ArticleCreate) *amodels.ArticleCreate {
