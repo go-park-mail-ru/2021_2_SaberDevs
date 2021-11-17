@@ -34,9 +34,9 @@ func ValidateSignUp(user umodels.User) error {
 func ValidateUpdate(user umodels.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Name, validation.When(user.Name != "",
-			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z0-9_а-яА-ЯЁё]{4,20}$")).Error(nameInvalidMsg))),
+			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z_а-яА-ЯЁё'-]{4,20}$")).Error(nameInvalidMsg))),
 		validation.Field(&user.Surname, validation.When(user.Surname != "",
-			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z0-9_а-яА-ЯЁё]{4,20}$")).Error(surnameInvalidMsg))),
+			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z_а-яА-ЯЁё'-]{4,20}$")).Error(surnameInvalidMsg))),
 		validation.Field(&user.Password, validation.When(user.Password != "", validation.By(isPasswordValid))),
 	)
 	if err != nil {
