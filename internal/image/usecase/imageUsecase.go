@@ -4,11 +4,15 @@ import (
 	"context"
 	imodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/models"
 	"github.com/pkg/errors"
+	"mime/multipart"
+	"net/http"
 )
 
 type imageUsecase struct {
 	imageRepo imodels.ImageRepository
 }
+
+const MaxFileSize = 1024 * 1024 * 4
 
 func NewImageUsecase(ir imodels.ImageRepository) imodels.ImageUsecase {
 	return &imageUsecase{
@@ -23,4 +27,33 @@ func (iu *imageUsecase)GetImage(ctx context.Context, imageName string) (string, 
 	}
 
 	return name, nil
+}
+
+func (iu *imageUsecase)SaveImage(ctx context.Context, file *multipart.FileHeader) (imodels.SaveImageResponse, error) {
+	if file.Size > MaxFileSize {
+		// todo file tooo big
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		// todo
+	}
+	defer src.Close()
+	// todo проверить на тип изображения, конвертировать и обрезать до 140*140
+
+	savedImageName, err := iu.imageRepo.SaveImage(ctx, &src)
+	if err != nil {
+		return imodels.SaveImageResponse{}, errors.Wrap(err, "imageHandler/SaveImage")
+	}
+
+	data := imodels.SaveImageData{
+		Name: savedImageName,
+	}
+	response := imodels.SaveImageResponse{
+		Status: http.StatusOK,
+		Data:   data,
+		Msg:    "OK",
+	}
+
+	return response, nil
 }
