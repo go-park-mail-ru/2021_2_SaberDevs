@@ -59,7 +59,7 @@ func ErrorHandler(err error, c echo.Context) {
 		responseBody = errResp.ErrNoSession
 
 	case errors.As(err, &sbErr.ErrDbError{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusBadRequest
 		responseBody = errResp.ErrDbFailure
 
 	case errors.As(err, &sbErr.ErrValidate{}):
