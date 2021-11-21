@@ -270,6 +270,15 @@ func main() {
 	for _, result := range results {
 		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
+	fmt.Println("fgh")
+	results, err = myRepo.GetByCategory(context.TODO(), "Марке", 0, 5)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range results {
+		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+	fmt.Println("fgh")
 	fmt.Println()
 	results, err = myRepo.GetByTag(context.TODO(), "finance", 0, 5)
 	if err != nil {

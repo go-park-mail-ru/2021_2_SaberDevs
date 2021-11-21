@@ -61,6 +61,8 @@ func SanitizeCreate(a *amodels.ArticleCreate) *amodels.ArticleCreate {
 	for i := range a.Tags {
 		a.Tags[i] = l.Sanitize(a.Tags[i])
 	}
+	a.Category = s.Sanitize(a.Category)
+	a.Img = s.Sanitize(a.Img)
 	a.Text = s.Sanitize(a.Text)
 	a.Title = s.Sanitize(a.Title)
 	return a
@@ -72,6 +74,8 @@ func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
 	for i := range a.Tags {
 		a.Tags[i] = l.Sanitize(a.Tags[i])
 	}
+	a.Category = s.Sanitize(a.Category)
+	a.Img = s.Sanitize(a.Img)
 	a.Text = s.Sanitize(a.Text)
 	a.Title = s.Sanitize(a.Title)
 	return a

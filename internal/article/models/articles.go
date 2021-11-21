@@ -90,16 +90,20 @@ type GenericResponse struct {
 	Data   string `json:"data"`
 }
 type ArticleCreate struct {
-	Title string   `json:"title" db:"title"`
-	Text  string   `json:"text" db:"text"`
-	Tags  []string `json:"tags"`
+	Title    string   `json:"title" db:"title"`
+	Text     string   `json:"text" db:"text"`
+	Category string   `json:"category" db:"category"`
+	Img      string   `json:"img" db:"img"`
+	Tags     []string `json:"tags"`
 }
 
 type ArticleUpdate struct {
-	Id    string   `json:"id"  db:"id"`
-	Title string   `json:"title" db:"title"`
-	Text  string   `json:"text" db:"text"`
-	Tags  []string `json:"tags"`
+	Id       string   `json:"id"  db:"id"`
+	Title    string   `json:"title" db:"title"`
+	Text     string   `json:"text" db:"text"`
+	Category string   `json:"category" db:"category"`
+	Img      string   `json:"img" db:"img"`
+	Tags     []string `json:"tags"`
 }
 
 type СategoriesArticles struct {
