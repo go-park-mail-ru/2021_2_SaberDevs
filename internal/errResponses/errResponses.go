@@ -63,7 +63,7 @@ var ErrInvalidLogin = ErrorResponse{
 }
 
 var ErrDbFailure = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotAcceptable,
 	ErrorMsg: "Invalid data in DB",
 }
 
