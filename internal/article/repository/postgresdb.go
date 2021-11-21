@@ -41,6 +41,8 @@ const byTag = "articleRepository/GetByTag"
 
 const byAuthor = "articleRepository/GetByAuthor"
 
+const byCategory = "articleRepository/GetByCategory"
+
 const toFetch = "articleRepository/Fetch"
 
 func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
@@ -341,6 +343,42 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, byAuthor, rows, overCount, arts)
+	return ChunkData, err
+}
+
+func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category string, from, chunkSize int) (result []amodels.Preview, err error) {
+	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.Category = $1`
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, category)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Category = $1 ORDER BY Id LIMIT $2 OFFSET $3", category, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byCategory,
+		}
+	}
+	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: byCategory,
+			}
+		}
+		arts = append(arts, newArticle)
+	}
+	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", newArticle.AuthorName, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byCategory,
+		}
+	}
+	ChunkData, err = m.addTags(ChunkData, byCategory, rows, overCount, arts)
 	return ChunkData, err
 }
 

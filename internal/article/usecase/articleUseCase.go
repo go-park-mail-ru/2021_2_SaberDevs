@@ -79,6 +79,15 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastL
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
+func (m *articleUsecase) GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
+	}
+	result, err = m.articleRepo.GetByAuthor(ctx, category, from, chunkSize)
+	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
+}
+
 func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) (int, error) {
 	newArticle := amodels.Article{}
 	newArticle.Text = a.Text

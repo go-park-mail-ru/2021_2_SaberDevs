@@ -125,6 +125,7 @@ type ArticleUsecase interface {
 	GetByID(ctx context.Context, id int64) (FullArticle, error)
 	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
 	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
@@ -136,6 +137,7 @@ type ArticleRepository interface {
 	GetByID(ctx context.Context, id int64) (FullArticle, error)
 	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]Preview, error)
+	GetByCategory(ctx context.Context, category string, from, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error

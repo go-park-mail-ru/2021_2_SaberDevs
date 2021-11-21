@@ -44,7 +44,6 @@ func SanitizeArticle(a *amodels.Article) *amodels.Article {
 	a.AuthorName = s.Sanitize(a.AuthorName)
 	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
 	a.CommentsUrl = s.Sanitize(a.CommentsUrl)
-	a.Id = s.Sanitize(a.Id)
 	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
 	for i := range a.Tags {
 		a.Tags[i] = l.Sanitize(a.Tags[i])
@@ -119,6 +118,20 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.GetByAuthor(ctx, login, id, chunkSize)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetByAuthor")
+	}
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
+	login := c.QueryParam("category")
+	id := c.QueryParam("idLastLoaded")
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.GetByCategory(ctx, login, id, chunkSize)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
 	}

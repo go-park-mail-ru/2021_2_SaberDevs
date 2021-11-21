@@ -299,7 +299,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
 	err = myRepo.Delete(context.TODO(), 3)
 	if err != nil {
@@ -311,7 +311,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	newresult, err = myRepo.Fetch(context.TODO(), 12, 7)
 	if err != nil {
@@ -332,5 +332,5 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 }
