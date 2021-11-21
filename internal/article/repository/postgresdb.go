@@ -12,7 +12,6 @@ import (
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 )
 
 type psqlArticleRepository struct {
@@ -23,18 +22,7 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
 
-func PreviewLength() (int, error) {
-	viper.SetConfigName("config")
-	viper.AddConfigPath("./configs")
-	viper.SetConfigType("json")
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return 0, err
-	}
-	preview := viper.GetInt("preview.len")
-	return preview, nil
-}
+var PreviewLength = 50
 
 const tagsLoad = `select c.tag from tags c
 inner join tags_articles ca  on c.Id = ca.tags_id
@@ -63,8 +51,8 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
 	temp := strings.Split(val.Text, " ")
-	previewLen, err := PreviewLength()
-	if len(temp) <= previewLen || err != nil {
+	previewLen := PreviewLength
+	if len(temp) <= previewLen {
 		article.Text = val.Text
 	} else {
 		// temp := []rune(val.Text)
