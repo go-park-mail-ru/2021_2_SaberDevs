@@ -6,7 +6,7 @@ import (
 )
 
 //Представление записи
-type Article struct {
+type ArticleData struct {
 	Id           string   `json:"id"`
 	DateTime     string   `json:"datetime" db:"datetime"`
 	PreviewUrl   string   `json:"previewUrl"`
@@ -21,12 +21,28 @@ type Article struct {
 	Likes        uint     `json:"likes"`
 }
 
+type Article struct {
+	Id           string   `json:"id"`
+	DateTime     string   `json:"datetime" db:"datetime"`
+	PreviewUrl   string   `json:"previewUrl"`
+	Tags         []string `json:"tags"`
+	Title        string   `json:"title"`
+	Category     string   `json:"category"`
+	Text         string   `json:"text"`
+	AuthorUrl    string   `json:"authorUrl"`
+	AuthorName   string   `json:"authorName"`
+	AuthorAvatar string   `json:"authorAvatar"`
+	CommentsUrl  string   `json:"commentsUrl"`
+	Comments     uint     `json:"comments"`
+	Likes        uint     `json:"likes"`
+}
 type FullArticle struct {
 	Id          string   `json:"id"`
 	DateTime    string   `json:"datetime" db:"datetime"`
 	PreviewUrl  string   `json:"previewUrl"`
 	Tags        []string `json:"tags"`
 	Title       string   `json:"title"`
+	Category    string   `json:"category"`
 	Text        string   `json:"text"`
 	Author      Author   `json:"author"`
 	CommentsUrl string   `json:"commentsUrl"`
@@ -40,6 +56,7 @@ type Preview struct {
 	PreviewUrl  string   `json:"previewUrl"`
 	Tags        []string `json:"tags"`
 	Title       string   `json:"title"`
+	Category    string   `json:"category"`
 	Text        string   `json:"text"`
 	Author      Author   `json:"author"`
 	CommentsUrl string   `json:"commentsUrl"`
@@ -52,6 +69,7 @@ type DbArticle struct {
 	DateTime    string `json:"datetime" db:"datetime"`
 	PreviewUrl  string `json:"PreviewUrl" db:"previewurl"`
 	Title       string `json:"title" db:"title"`
+	Category    string `json:"category" db:"category"`
 	Text        string `json:"text" db:"text"`
 	AuthorName  string `json:"authorName" db:"authorname"`
 	CommentsUrl string `json:"commentsUrl" db:"commentsurl"`
@@ -77,7 +95,6 @@ type ArticleCreate struct {
 	Title string   `json:"title" db:"title"`
 	Text  string   `json:"text" db:"text"`
 	Tags  []string `json:"tags"`
-	//	AuthorName string   `json:"authorName" db:"authorname"`
 }
 
 type ArticleUpdate struct {
@@ -88,8 +105,8 @@ type ArticleUpdate struct {
 }
 
 type СategoriesArticles struct {
-	Articles_id   uint
-	Categories_id uint
+	Articles_id uint
+	Tags_id     uint
 }
 
 type Author struct {

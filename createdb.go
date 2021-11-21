@@ -213,11 +213,11 @@ func main() {
 	}
 	var tag amodels.СategoriesArticles
 	for rows.Next() {
-		err = rows.Scan(&tag.Articles_id, &tag.Categories_id)
+		err = rows.Scan(&tag.Articles_id, &tag.Tags_id)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fmt.Print(tag.Articles_id, "  ", tag.Categories_id, "\n")
+		fmt.Print(tag.Articles_id, "  ", tag.Tags_id, "\n")
 	}
 
 	rows, err = db.Queryx(`select c.tag from tags c
@@ -272,7 +272,18 @@ func main() {
 	}
 
 	fmt.Println()
-	ar := data.TestData[3]
+	a := data.TestData[3]
+	var ar amodels.Article
+	ar.AuthorAvatar = a.AuthorAvatar
+	ar.AuthorUrl = a.AuthorUrl
+	ar.Comments = a.Comments
+	ar.CommentsUrl = a.CommentsUrl
+	ar.DateTime = a.DateTime
+	ar.Likes = a.Likes
+	ar.PreviewUrl = a.PreviewUrl
+	ar.Text = a.Text
+	ar.Title = a.Title
+	ar.Tags = a.Tags
 	ar.Id = "13"
 	ar.AuthorName = "dar"
 	ar.Tags = append(ar.Tags, "finance")
