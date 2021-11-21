@@ -36,13 +36,13 @@ func PreviewLength() (int, error) {
 	return preview, nil
 }
 
-const tagsLoad = `select c.tag from categories c
-inner join categories_articles ca  on c.Id = ca.categories_id
+const tagsLoad = `select c.tag from tags c
+inner join tags_articles ca  on c.Id = ca.tags_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id = $1;`
 
-const multiArtTags = `select a.Id, c.tag from categories c
-inner join categories_articles ca  on c.Id = ca.categories_id
+const multiArtTags = `select a.Id, c.tag from tags c
+inner join tags_articles ca  on c.Id = ca.tags_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id in (`
 
@@ -271,16 +271,16 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 
 func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.Preview, err error) {
 
-	schemaCount := `SELECT count(*) FROM  categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	schemaCount := `SELECT count(*) FROM  tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	where c.tag = $1;`
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, tag)
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime,  a.Title, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime,  a.Title, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	where c.tag = $1 LIMIT $2 OFFSET $3`, tag, chunkSize, from)
 	if err != nil {
@@ -302,8 +302,8 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		arts = append(arts, newArticle)
 	}
 
-	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.AUTHORNAME where c.tag = $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, tag, chunkSize, from)
 	if err != nil {
@@ -371,7 +371,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 		}
 	}
 
-	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
@@ -381,9 +381,9 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 			}
 		}
 	}
-	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
+	insert_junc := `INSERT INTO tags_articles (articles_id, tags_id) VALUES 
 	((SELECT Id FROM articles WHERE Id = $1) ,    
-	(SELECT Id FROM categories WHERE tag = $2)) ON CONFLICT DO NOTHING;`
+	(SELECT Id FROM tags WHERE tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, Id, v)
 		if err != nil {
@@ -422,7 +422,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
-	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
@@ -432,9 +432,9 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			}
 		}
 	}
-	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES
+	insert_junc := `INSERT INTO tags_articles (articles_id, tags_id) VALUES
 	((SELECT articles.Id FROM articles WHERE articles.Id = $1) ,
-	(SELECT categories.Id FROM categories WHERE categories.tag = $2)) ON CONFLICT DO NOTHING;`
+	(SELECT tags.Id FROM tags WHERE tags.tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, uniqId, v)
 		if err != nil {
