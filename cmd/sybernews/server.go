@@ -120,6 +120,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	articles.GET("/feed", articlesAPI.GetFeed)
 	articles.GET("", articlesAPI.GetByID)
 	articles.GET("/author", articlesAPI.GetByAuthor)
+	articles.GET("/category", articlesAPI.GetByAuthor)
 	articles.GET("/tags", articlesAPI.GetByTag)
 	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
 	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)

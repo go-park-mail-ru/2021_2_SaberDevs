@@ -10,7 +10,8 @@ import (
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	repo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
-	data "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
+	dataDB "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -32,10 +33,11 @@ func main() {
 
 	schema := `DROP TABLE IF EXISTS articles CASCADE;
 		DROP TABLE IF EXISTS author CASCADE;
+		DROP TABLE IF EXISTS tags CASCADE;
 		DROP TABLE IF EXISTS categories CASCADE;
-		DROP TABLE IF EXISTS categories_articles CASCADE;`
+		DROP TABLE IF EXISTS tags_articles CASCADE;`
 
-	schema1 := `CREATE TABLE author(
+	schema0 := `CREATE TABLE author(
 		Id          SERIAL PRIMARY KEY NOT NULL,
 		Login       VARCHAR(45) NOT NULL UNIQUE,
 		AvatarUrl   VARCHAR(75),
@@ -47,9 +49,13 @@ func main() {
 		Score       VARCHAR(45)
 		);`
 
-	schema2 := `CREATE TABLE categories (
-		Id   SERIAL PRIMARY KEY NOT NULL,
-		tag  VARCHAR(45) UNIQUE
+	schema1 := `CREATE TABLE categories (
+		cat  VARCHAR(45) UNIQUE
+		);`
+
+	schema2 := `CREATE TABLE tags (
+			Id   SERIAL PRIMARY KEY NOT NULL,
+			tag  VARCHAR(45) UNIQUE
 		);`
 
 	schema3 := `CREATE TABLE articles (
@@ -58,20 +64,25 @@ func main() {
 		Title        VARCHAR(350),
 		Text         TEXT,
 		DateTime     VARCHAR(45),
+		Category     VARCHAR(45) REFERENCES categories (cat) ON DELETE CASCADE,
 		AuthorName   VARCHAR(45) REFERENCES author(Login) ON DELETE CASCADE,
 		CommentsUrl  VARCHAR(45),
 		Comments     INT,
 		Likes        INT 
 		);`
 
-	schema4 := `CREATE TABLE categories_articles (
+	schema4 := `CREATE TABLE tags_articles (
 		articles_id   INT REFERENCES articles(id) ON DELETE CASCADE,
-		categories_id INT REFERENCES categories(id),
-		CONSTRAINT id PRIMARY KEY (articles_id, categories_id) 
+		tags_id INT REFERENCES tags(id),
+		CONSTRAINT id PRIMARY KEY (articles_id, tags_id) 
 		   );`
 
 	// execute a query on the server
 	_, err = db.Exec(schema)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	_, err = db.Exec(schema0)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -91,10 +102,16 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-
+	insert_cat := `INSERT INTO categories (cat) VALUES ($1);`
+	for _, data := range dataDB.CategoriesList {
+		_, err = db.Exec(insert_cat, data)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
 	insert_author := `INSERT INTO author (Login, Name, Surname, AvatarUrl, Email, Password, Score, DESCRIPTION) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 
-	for _, data := range data.TestUsers {
+	for _, data := range dataDB.TestUsers {
 		_, err = db.Exec(insert_author, data.Login, data.Name, data.Surname, data.AvatarUrl, data.Email, data.Password, data.Score, "Something Strange")
 		if err != nil {
 			fmt.Println(err.Error())
@@ -115,10 +132,10 @@ func main() {
 		fmt.Println(author.Name)
 	}
 
-	insert_article := `INSERT INTO articles (PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+	insert_article := `INSERT INTO articles (PreviewUrl, DateTime, Category, Title, Text, AuthorName,  CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
 	for i, data := range data.TestData {
 		date := time.Now().Format("2006/1/2 15:04")
-		_, err = db.Exec(insert_article, data.PreviewUrl, date, data.Title, data.Text, names[i/4], data.CommentsUrl, data.Comments, data.Likes)
+		_, err = db.Exec(insert_article, data.PreviewUrl, date, dataDB.CategoriesList[i], data.Title, data.Text, names[i/4], data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -137,17 +154,17 @@ func main() {
 		fmt.Print(newArticle.Id, "  ", newArticle.DateTime, "  ", newArticle.PreviewUrl, "  ", newArticle.AuthorName, "  ", newArticle.Likes, "\n")
 	}
 
-	categories := []string{"personal", "marketing", "finance", "design", "career", "technical"}
+	tags := []string{"personal", "marketing", "finance", "design", "career", "technical"}
 
-	insert_cat := `INSERT INTO categories (tag) VALUES ($1);`
-	for _, data := range categories {
-		_, err = db.Exec(insert_cat, data)
+	insert_tag := `INSERT INTO tags (tag) VALUES ($1);`
+	for _, data := range tags {
+		_, err = db.Exec(insert_tag, data)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 	}
 	fmt.Print("whereami", "\n")
-	rows, err = db.Queryx("SELECT * FROM categories;")
+	rows, err = db.Queryx("SELECT * FROM tags;")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -161,10 +178,22 @@ func main() {
 		fmt.Print(tagid, "  ", mytag, "\n")
 	}
 	fmt.Print("whereami", "\n")
+	rows, err = db.Queryx("SELECT * FROM categories;")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for rows.Next() {
+		err = rows.Scan(&mytag)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Print("  ", mytag, "\n")
+	}
+	fmt.Print("whereami", "\n")
 
-	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
-	((SELECT Id FROM articles WHERE Id = $1) ,    
-	(SELECT Id FROM categories WHERE Id = $2));`
+	insert_junc := `INSERT INTO tags_articles (articles_id, tags_id) VALUES 
+	((SELECT Id FROM articles WHERE articles.Id = $1) ,    
+	(SELECT Id FROM tags WHERE tags.Id = $2));`
 
 	rand.Seed(4)
 	for i := 1; i <= 11; i++ {
@@ -178,21 +207,21 @@ func main() {
 		}
 	}
 
-	rows, err = db.Queryx("SELECT * FROM categories_articles;")
+	rows, err = db.Queryx("SELECT * FROM tags_articles;")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	var tag amodels.СategoriesArticles
 	for rows.Next() {
-		err = rows.Scan(&tag.Articles_id, &tag.Categories_id)
+		err = rows.Scan(&tag.Articles_id, &tag.Tags_id)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fmt.Print(tag.Articles_id, "  ", tag.Categories_id, "\n")
+		fmt.Print(tag.Articles_id, "  ", tag.Tags_id, "\n")
 	}
 
-	rows, err = db.Queryx(`select c.tag from categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	rows, err = db.Queryx(`select c.tag from tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	where a.Id = $1;`, 11)
 	if err != nil {
@@ -234,6 +263,23 @@ func main() {
 		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	fmt.Println()
+	results, err = myRepo.GetByCategory(context.TODO(), "Маркетинг", 0, 5)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range results {
+		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+	fmt.Println("fgh")
+	results, err = myRepo.GetByCategory(context.TODO(), "Марке", 0, 5)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range results {
+		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+	fmt.Println("fgh")
+	fmt.Println()
 	results, err = myRepo.GetByTag(context.TODO(), "finance", 0, 5)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -243,9 +289,21 @@ func main() {
 	}
 
 	fmt.Println()
-	ar := data.TestData[3]
+	a := data.TestData[3]
+	var ar amodels.Article
+	ar.AuthorAvatar = a.AuthorAvatar
+	ar.AuthorUrl = a.AuthorUrl
+	ar.Comments = a.Comments
+	ar.CommentsUrl = a.CommentsUrl
+	ar.DateTime = time.Now().Format("2006/1/2 15:04")
+	ar.Likes = a.Likes
+	ar.PreviewUrl = a.PreviewUrl
+	ar.Text = a.Text
+	ar.Title = a.Title
+	ar.Tags = a.Tags
 	ar.Id = "13"
 	ar.AuthorName = "dar"
+	ar.Category = "SaberDevs"
 	ar.Tags = append(ar.Tags, "finance")
 	Id, err := myRepo.Store(context.TODO(), &ar)
 	ar.Id = fmt.Sprint(Id)
@@ -258,7 +316,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
 	err = myRepo.Delete(context.TODO(), 3)
 	if err != nil {
@@ -270,7 +328,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 	newresult, err = myRepo.Fetch(context.TODO(), 12, 7)
 	if err != nil {
@@ -282,7 +340,7 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 	// ar.Text = `<a onblur="alert(secret)" href="http://www.google.com">Google</a>`
-	ar.Tags = append(ar.Tags, "jojo")
+	ar.Tags = []string{"jojo", "finance"}
 	err = myRepo.Update(context.TODO(), &ar)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -291,5 +349,5 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Print(result.Id, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 }

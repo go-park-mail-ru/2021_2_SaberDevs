@@ -6,9 +6,7 @@ import (
 )
 
 //Представление записи
-type Article struct {
-	Id           string   `json:"id"`
-	DateTime     string   `json:"datetime" db:"datetime"`
+type ArticleData struct {
 	PreviewUrl   string   `json:"previewUrl"`
 	Tags         []string `json:"tags"`
 	Title        string   `json:"title"`
@@ -21,12 +19,28 @@ type Article struct {
 	Likes        uint     `json:"likes"`
 }
 
+type Article struct {
+	Id           string   `json:"id"`
+	DateTime     string   `json:"datetime" db:"datetime"`
+	PreviewUrl   string   `json:"previewUrl"`
+	Tags         []string `json:"tags"`
+	Title        string   `json:"title"`
+	Category     string   `json:"category"`
+	Text         string   `json:"text"`
+	AuthorUrl    string   `json:"authorUrl"`
+	AuthorName   string   `json:"authorName"`
+	AuthorAvatar string   `json:"authorAvatar"`
+	CommentsUrl  string   `json:"commentsUrl"`
+	Comments     uint     `json:"comments"`
+	Likes        uint     `json:"likes"`
+}
 type FullArticle struct {
 	Id          string   `json:"id"`
 	DateTime    string   `json:"datetime" db:"datetime"`
 	PreviewUrl  string   `json:"previewUrl"`
 	Tags        []string `json:"tags"`
 	Title       string   `json:"title"`
+	Category    string   `json:"category"`
 	Text        string   `json:"text"`
 	Author      Author   `json:"author"`
 	CommentsUrl string   `json:"commentsUrl"`
@@ -40,6 +54,7 @@ type Preview struct {
 	PreviewUrl  string   `json:"previewUrl"`
 	Tags        []string `json:"tags"`
 	Title       string   `json:"title"`
+	Category    string   `json:"category"`
 	Text        string   `json:"text"`
 	Author      Author   `json:"author"`
 	CommentsUrl string   `json:"commentsUrl"`
@@ -52,6 +67,7 @@ type DbArticle struct {
 	DateTime    string `json:"datetime" db:"datetime"`
 	PreviewUrl  string `json:"PreviewUrl" db:"previewurl"`
 	Title       string `json:"title" db:"title"`
+	Category    string `json:"category" db:"category"`
 	Text        string `json:"text" db:"text"`
 	AuthorName  string `json:"authorName" db:"authorname"`
 	CommentsUrl string `json:"commentsUrl" db:"commentsurl"`
@@ -74,22 +90,25 @@ type GenericResponse struct {
 	Data   string `json:"data"`
 }
 type ArticleCreate struct {
-	Title string   `json:"title" db:"title"`
-	Text  string   `json:"text" db:"text"`
-	Tags  []string `json:"tags"`
-	//	AuthorName string   `json:"authorName" db:"authorname"`
+	Title    string   `json:"title" db:"title"`
+	Text     string   `json:"text" db:"text"`
+	Category string   `json:"category" db:"category"`
+	Img      string   `json:"img" db:"img"`
+	Tags     []string `json:"tags"`
 }
 
 type ArticleUpdate struct {
-	Id    string   `json:"id"  db:"id"`
-	Title string   `json:"title" db:"title"`
-	Text  string   `json:"text" db:"text"`
-	Tags  []string `json:"tags"`
+	Id       string   `json:"id"  db:"id"`
+	Title    string   `json:"title" db:"title"`
+	Text     string   `json:"text" db:"text"`
+	Category string   `json:"category" db:"category"`
+	Img      string   `json:"img" db:"img"`
+	Tags     []string `json:"tags"`
 }
 
 type СategoriesArticles struct {
-	Articles_id   uint
-	Categories_id uint
+	Articles_id uint
+	Tags_id     uint
 }
 
 type Author struct {
@@ -100,7 +119,7 @@ type Author struct {
 	AvatarUrl   string `json:"avatarUrl" db:"avatarurl"`
 	Description string `json:"description" db:"description"`
 	Email       string `json:"email" valid:"email,optional"`
-	Password    string `json:"password"`
+	Password    string `json:"-"`
 	Score       int    `json:"score"`
 }
 
@@ -110,6 +129,7 @@ type ArticleUsecase interface {
 	GetByID(ctx context.Context, id int64) (FullArticle, error)
 	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
 	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
@@ -121,6 +141,7 @@ type ArticleRepository interface {
 	GetByID(ctx context.Context, id int64) (FullArticle, error)
 	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]Preview, error)
+	GetByCategory(ctx context.Context, category string, from, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error

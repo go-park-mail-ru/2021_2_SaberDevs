@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
@@ -21,21 +22,26 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
 
-const previewLen = 350
+var PreviewLength = 50
 
-const tagsLoad = `select c.tag from categories c
-inner join categories_articles ca  on c.Id = ca.categories_id
+const tagsLoad = `select c.tag from tags c
+inner join tags_articles ca  on c.Id = ca.tags_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id = $1;`
 
-const multiArtTags = `select a.Id, c.tag from categories c
-inner join categories_articles ca  on c.Id = ca.categories_id
+const multiArtTags = `select a.Id, c.tag from tags c
+inner join tags_articles ca  on c.Id = ca.tags_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id in (`
+
+const deleteTags = `delete from tags_articles ta
+where ta.articles_id  = $1`
 
 const byTag = "articleRepository/GetByTag"
 
 const byAuthor = "articleRepository/GetByAuthor"
+
+const byCategory = "articleRepository/GetByCategory"
 
 const toFetch = "articleRepository/Fetch"
 
@@ -47,13 +53,17 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	article.CommentsUrl = val.CommentsUrl
 	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
+	article.Category = val.Category
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
-	if len([]rune(val.Text)) <= previewLen {
+	temp := strings.Split(val.Text, " ")
+	previewLen := PreviewLength
+	if len(temp) <= previewLen {
 		article.Text = val.Text
 	} else {
-		temp := []rune(val.Text)
-		article.Text = string(temp[:previewLen])
+		// temp := []rune(val.Text)
+		// article.Text = string(temp[:previewLen])
+		article.Text = strings.Join(temp[:previewLen], " ")
 	}
 	return article
 }
@@ -141,6 +151,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
+	article.Category = val.Category
 	article.Text = val.Text
 	rows, err := Db.Queryx(tagsLoad, val.Id)
 	if err != nil {
@@ -193,7 +204,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -226,7 +237,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.FullArticle, err error) {
 	var newArticle amodels.DbArticle
-	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1", id)
+	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1", id)
 	var outArticle amodels.FullArticle
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -255,16 +266,16 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 
 func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.Preview, err error) {
 
-	schemaCount := `SELECT count(*) FROM  categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	schemaCount := `SELECT count(*) FROM  tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	where c.tag = $1;`
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, tag)
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime,  a.Title, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	where c.tag = $1 LIMIT $2 OFFSET $3`, tag, chunkSize, from)
 	if err != nil {
@@ -286,8 +297,8 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		arts = append(arts, newArticle)
 	}
 
-	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM categories c
-	inner join categories_articles ca  on c.Id = ca.categories_id
+	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.AUTHORNAME where c.tag = $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, tag, chunkSize, from)
 	if err != nil {
@@ -305,7 +316,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -335,9 +346,45 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	return ChunkData, err
 }
 
+func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category string, from, chunkSize int) (result []amodels.Preview, err error) {
+	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.Category = $1`
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, category)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Category = $1 ORDER BY Id LIMIT $2 OFFSET $3", category, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byCategory,
+		}
+	}
+	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: byCategory,
+			}
+		}
+		arts = append(arts, newArticle)
+	}
+	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", newArticle.AuthorName, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byCategory,
+		}
+	}
+	ChunkData, err = m.addTags(ChunkData, byCategory, rows, overCount, arts)
+	return ChunkData, err
+}
+
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (int, error) {
-	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID;`
-	rows, err := m.Db.Query(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
+	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Category, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;`
+	rows, err := m.Db.Query(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -355,7 +402,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 		}
 	}
 
-	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
@@ -365,9 +412,9 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 			}
 		}
 	}
-	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES 
+	insert_junc := `INSERT INTO tags_articles (articles_id, tags_id) VALUES 
 	((SELECT Id FROM articles WHERE Id = $1) ,    
-	(SELECT Id FROM categories WHERE tag = $2)) ON CONFLICT DO NOTHING;`
+	(SELECT Id FROM tags WHERE tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, Id, v)
 		if err != nil {
@@ -398,27 +445,35 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
-	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3 WHERE articles.Id  = $4`
-	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, uniqId)
+	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5,  WHERE articles.Id  = $6`
+	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "articleRepository/Update",
 		}
 	}
-	insertCat := `INSERT INTO categories (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
+	schema := deleteTags
+	_, err = m.Db.Exec(schema, uniqId)
+	if err != nil {
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Update",
+		}
+	}
+	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
 			return sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Store",
+				Function: "articleRepository/Update",
 			}
 		}
 	}
-	insert_junc := `INSERT INTO categories_articles (articles_id, categories_id) VALUES
+	insert_junc := `INSERT INTO tags_articles (articles_id, tags_id) VALUES
 	((SELECT articles.Id FROM articles WHERE articles.Id = $1) ,
-	(SELECT categories.Id FROM categories WHERE categories.tag = $2)) ON CONFLICT DO NOTHING;`
+	(SELECT tags.Id FROM tags WHERE tags.tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
 		_, err = m.Db.Exec(insert_junc, uniqId, v)
 		if err != nil {

@@ -79,11 +79,22 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastL
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
+func (m *articleUsecase) GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
+	}
+	result, err = m.articleRepo.GetByAuthor(ctx, category, from, chunkSize)
+	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
+}
+
 func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) (int, error) {
 	newArticle := amodels.Article{}
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
 	newArticle.Title = a.Title
+	newArticle.Category = a.Category
+	newArticle.PreviewUrl = a.Img
 	newArticle.DateTime = time.Now().Format("2006/1/2 15:04")
 
 	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Value)
@@ -114,6 +125,8 @@ func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) e
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
+	upArt.Category = a.Category
+	upArt.PreviewUrl = a.Img
 	upArt.Text = a.Text
 	upArt.Tags = a.Tags
 	upArt.Title = a.Title
