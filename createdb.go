@@ -35,7 +35,7 @@ func main() {
 		DROP TABLE IF EXISTS author CASCADE;
 		DROP TABLE IF EXISTS tags CASCADE;
 		DROP TABLE IF EXISTS categories CASCADE;
-		DROP TABLE IF EXISTS categories_articles CASCADE
+		DROP TABLE IF EXISTS categories_articles CASCADE;
 		DROP TABLE IF EXISTS tags_articles CASCADE;`
 
 	schema0 := `CREATE TABLE author(
