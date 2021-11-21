@@ -37,7 +37,7 @@ func formCookie(cookeValue string) *http.Cookie {
 		Value:    cookeValue,
 		HttpOnly: true,
 		Expires:  time.Now().Add(10 * time.Hour),
-		Path: "/",
+		Path:     "/",
 	}
 }
 

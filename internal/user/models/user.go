@@ -5,13 +5,13 @@ import (
 )
 
 type User struct {
-	Login    string `json:"login" db:"login"`
-	Name     string `json:"firstName" db:"name"`
-	Surname  string `json:"lastName" db:"surname"`
-	Email    string `json:"email" db:"email" valid:"email,optional" `
-	Password string `json:"password" db:"password"`
-	Score    int    `json:"score" db:"score"`
-	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
+	Login       string `json:"login" db:"login"`
+	Name        string `json:"firstName" db:"name"`
+	Surname     string `json:"lastName" db:"surname"`
+	Email       string `json:"email" db:"email" valid:"email,optional" `
+	Password    string `json:"password" db:"password"`
+	Score       int    `json:"score" db:"score"`
+	AvatarURL   string `json:"avatarUrl" db:"avatarurl"`
 	Description string `json:"description" db:"description"`
 }
 
@@ -21,12 +21,12 @@ type RequestUser struct {
 }
 
 type LoginData struct {
-	Login   string `json:"login"`
-	Surname string `json:"lastName"`
-	Name    string `json:"firstName"`
-	Email   string `json:"email"`
-	Score   int    `json:"score"`
-	AvatarURL string `json:"avatarUrl"`
+	Login       string `json:"login"`
+	Surname     string `json:"lastName"`
+	Name        string `json:"firstName"`
+	Email       string `json:"email"`
+	Score       int    `json:"score"`
+	AvatarURL   string `json:"avatarUrl"`
 	Description string `json:"description"`
 }
 
@@ -39,8 +39,8 @@ type LoginResponse struct {
 // -----------------------------------------------
 
 type UpdateProfileData struct {
-	Surname string `json:"lastName"`
-	Name    string `json:"firstName"`
+	Surname     string `json:"lastName"`
+	Name        string `json:"firstName"`
 	Description string `json:"description"`
 }
 
@@ -60,11 +60,11 @@ type LogoutResponse struct {
 // -----------------------------------------------
 
 type GetUserData struct {
-	Login   string `json:"login"`
-	Surname string `json:"lastName"`
-	Name    string `json:"firstName"`
-	Score   int    `json:"score"`
-	AvatarURL string `json:"avatarUrl"`
+	Login       string `json:"login"`
+	Surname     string `json:"lastName"`
+	Name        string `json:"firstName"`
+	Score       int    `json:"score"`
+	AvatarURL   string `json:"avatarUrl"`
 	Description string `json:"description"`
 }
 
@@ -77,12 +77,12 @@ type GetUserResponse struct {
 // -----------------------------------------------
 
 type SignUpData struct {
-	Login   string `json:"login"`
-	Surname string `json:"lastName"`
-	Name    string `json:"firstName"`
-	Email   string `json:"email"`
-	Score   int    `json:"score"`
-	AvatarURL string `json:"avatarUrl"`
+	Login       string `json:"login"`
+	Surname     string `json:"lastName"`
+	Name        string `json:"firstName"`
+	Email       string `json:"email"`
+	Score       int    `json:"score"`
+	AvatarURL   string `json:"avatarUrl"`
 	Description string `json:"description"`
 }
 

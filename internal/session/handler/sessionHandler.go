@@ -24,7 +24,7 @@ func (api *SessionHandler) CheckSession(c echo.Context) error {
 	if err != nil {
 
 		return sbErr.ErrNoSession{
-			Reason: err.Error(),
+			Reason:   err.Error(),
 			Function: "sessionHandler/CheckSession",
 		}
 	}

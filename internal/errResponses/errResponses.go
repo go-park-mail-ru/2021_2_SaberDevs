@@ -18,27 +18,27 @@ var ErrUnpackingJSON = ErrorResponse{
 }
 
 var ErrUserDoesntExist = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "User doesnt exist",
 }
 
 var ErrWrongPassword = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Wrong password",
 }
 
 var ErrUserExists = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "User already exists",
 }
 
 var ErrAuthorised = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Already authorised",
 }
 
 var ErrNotLoggedin = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Not logged in",
 }
 
@@ -48,30 +48,35 @@ var ErrNotFeedNumber = ErrorResponse{
 }
 
 var ErrInvalidEmail = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Invalid symbols in email",
 }
 
 var ErrInvalidPassword = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Invalid symbols in password",
 }
 
 var ErrInvalidLogin = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Invalid symbols in login",
 }
 
 var ErrDbFailure = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Invalid data in DB",
 }
 
 var ErrNoSession = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Session doesnt exist",
 }
 
+var ErrBadImage = ErrorResponse{
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Cannot upload image",
+}
+
 var ErrValidation = ErrorResponse{
-	Status: http.StatusFailedDependency,
+	Status: http.StatusNotFound,
 }

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	imodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/models"
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/pkg/errors"
 	"mime/multipart"
 	"net/http"
@@ -20,8 +21,8 @@ func NewImageUsecase(ir imodels.ImageRepository) imodels.ImageUsecase {
 	}
 }
 
-func (iu *imageUsecase)GetImage(ctx context.Context, imageName string) (string, error) {
-	name , err := iu.imageRepo.GetImageByName(ctx, imageName)
+func (iu *imageUsecase) GetImage(ctx context.Context, imageName string) (string, error) {
+	name, err := iu.imageRepo.GetImageByName(ctx, imageName)
 	if err != nil {
 		return "", errors.Wrap(err, "imageUsecase/GetImage")
 	}
@@ -29,14 +30,20 @@ func (iu *imageUsecase)GetImage(ctx context.Context, imageName string) (string, 
 	return name, nil
 }
 
-func (iu *imageUsecase)SaveImage(ctx context.Context, file *multipart.FileHeader) (imodels.SaveImageResponse, error) {
+func (iu *imageUsecase) SaveImage(ctx context.Context, file *multipart.FileHeader) (imodels.SaveImageResponse, error) {
 	if file.Size > MaxFileSize {
-		// todo file tooo big
+		return imodels.SaveImageResponse{}, sbErr.ErrBadImage{
+			Reason:   "image too big",
+			Function: "imageUsecase/SaveImage",
+		}
 	}
 
 	src, err := file.Open()
 	if err != nil {
-		// todo
+		return imodels.SaveImageResponse{}, sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "imageUsecase/SaveImage",
+		}
 	}
 	defer src.Close()
 	// todo проверить на тип изображения, конвертировать и обрезать до 140*140

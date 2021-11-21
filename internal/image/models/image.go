@@ -10,13 +10,13 @@ type Image struct {
 }
 
 type SaveImageData struct {
-	Name string      `json:"imgId"`
+	Name string `json:"imgId"`
 }
 
 type SaveImageResponse struct {
-	Status uint      `json:"status"`
+	Status uint          `json:"status"`
 	Data   SaveImageData `json:"data"`
-	Msg    string    `json:"msg"`
+	Msg    string        `json:"msg"`
 }
 
 type ImageUsecase interface {

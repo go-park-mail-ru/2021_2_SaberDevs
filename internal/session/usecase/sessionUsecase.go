@@ -35,12 +35,12 @@ func (su *sessionUsecase) IsSession(ctx context.Context, cookie string) (umodels
 	}
 
 	d := umodels.LoginData{
-		Login:   userInRepo.Login,
-		Name:    userInRepo.Name,
-		Surname: userInRepo.Surname,
-		Email:   userInRepo.Email,
-		Score:   userInRepo.Score,
-		AvatarURL: userInRepo.AvatarURL,
+		Login:       userInRepo.Login,
+		Name:        userInRepo.Name,
+		Surname:     userInRepo.Surname,
+		Email:       userInRepo.Email,
+		Score:       userInRepo.Score,
+		AvatarURL:   userInRepo.AvatarURL,
 		Description: userInRepo.Description,
 	}
 	response = umodels.LoginResponse{
