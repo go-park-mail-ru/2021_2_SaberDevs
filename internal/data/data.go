@@ -5,7 +5,7 @@ import (
 )
 
 var TestData = [...]amodels.ArticleData{
-	{"1", "", "static/img/computer.png", []string{"IT-News", "Study"}, "Apple полгода не выпускала исправление уязвимости нулевого дня, хотя эксплойт для неё находился в открытом доступе",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "Apple полгода не выпускала исправление уязвимости нулевого дня, хотя эксплойт для неё находился в открытом доступе",
 		"Как сообщает портал SecurityLab, хакеры использовали политические новостные сайты Гонконга для заражения компьютеров на macOS бэкдором путём использования двух уязвимостей, одна из которых была ранее неизвестна. Атаки на устройства начались по меньшей мере в апреле этого года. " +
 			"Тогда в сети появился эксплойт для уязвимости нулевого дня, однако Apple исправила проблему только в сентябре. Первая из двух уязвимостей CVE-2021-1789 — уязвимость удаленного выполнения кода в WebKit. Вторая CVE-2021-30869 — это уязвимость локального повышения привилегий в " +
 			"компоненте ядра XNU, которую исправили в сентябре. С их помощью злоумышленники получали на macOS привилегии суперпользователя и загружали на устройство шпионские программы MACMA или OSX.CDDS. Загруженные программы могут записывать аудио, делать скриншоты, загружать и выгружать " +
@@ -18,7 +18,7 @@ var TestData = [...]amodels.ArticleData{
 			"(CVE-2021-1870, CVE-2021-1871, CVE-2021-1872), марте (CVE-2021-1879), мае (CVE-2021-30663, CVE-2021-30665, CVE-2021-30713, CVE-2021-30666) и июне (CVE-2021-30761 и CVE-2021-30762).", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1001,
 	},
-	{"2", "", "static/img/computer.png", []string{"IT-News", "Study"}, "Российская компания вышла в фина л международного конкурса Entrepreneurship World Cup (EWC) с призовым фондом $1 млн",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "Российская компания вышла в фина л международного конкурса Entrepreneurship World Cup (EWC) с призовым фондом $1 млн",
 		"Компании из РФ нередко участвуют в международных конкурсах, занимая призовые места. В частности, платформа Botkin.AI резидента Фонда «Сколково» (Группа ВЭБ.РФ) «Интеллоджик» прошла в финал международного конкурса Entrepreneurship World Cup (EWC). Финал состоится в декабре 2021 в Саудовской Аравии." +
 			"Компания стала единственной организацией из РФ, которая прошла финальный отбор. К слову, в этом году на EWC подано свыше 100 тыс заявок из 200 стран. Теперь 25 финалистов отправятся в Эр-Рияд для презентации своего продукта на заключительном этапе конкурса. Что касается российской платформы, " +
 			"то она дает возможность при помощи ИИ анализировать медицинские снимки, выявляя патологические изменения." +
@@ -31,7 +31,7 @@ var TestData = [...]amodels.ArticleData{
 			"Юлия Щеглова, проектный менеджер Фонда «Сколково»: «“Интеллоджик” достоин представлять нашу страну в конкурсной программе международного уровня. У компании накопился солидный опыт в разработке и 3 патента на технологии искусственного интеллекта. Качество платформы Botkin AI было проверено врачами в 25 проектах по всему миру». ",
 		"#", "Григорий", "static/img/photo-elon-musk.jpg", "#", 97, 1002},
 
-	{"3", "", "static/img/computer.png", []string{"IT-News", "Study"}, "Abcbot — новый ботнет, нацеленный на Linux",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "Abcbot — новый ботнет, нацеленный на Linux",
 		"Исследователи кибербезопасности из Netlab Qihoo 360 раскрыли подробности о новом растущем ботнете «Abcbot», который распространяется подобно червям, заражая системы Linux с последующим запуском распределенных DDoS-атак. " +
 			"Первая версия вредоноса датируется июлем 2021 года, но 30 октября были замечены его новые разновидности, заточенные под атаки на слабозащищенные серверы Linux с уязвимостью нулевого дня. Все это говорит о том, что вредонос постоянно совершенствуется. " +
 			"В основу выводов Netlab также лег отчет Trend Micro от начала сентября, в котором описывались атаки с использованием криптоджекинга, нацеленные на Huawei Cloud. Эти вторжения, помимо прочего, выделились тем, что вирусные скрипты оболочки, в частности, " +
@@ -41,35 +41,35 @@ var TestData = [...]amodels.ArticleData{
 			"другие устройства путем сканирования открытых портов. При этом он также автоматически обновляется, когда операторы вносят доработки.\n", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1003,
 	},
-	{"4", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1004,
 	},
-	{"5", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1005,
 	},
-	{"6", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1006,
 	},
-	{"7", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1007,
 	},
-	{"8", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 14,
 	},
-	{"9", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1008,
 	},
-	{"10", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1009,
 	},
-	{"11", "", "static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"static/img/computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "static/img/photo-elon-musk.jpg",
 		"#", 97, 1010,
 	},

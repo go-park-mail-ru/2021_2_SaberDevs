@@ -278,7 +278,7 @@ func main() {
 	ar.AuthorUrl = a.AuthorUrl
 	ar.Comments = a.Comments
 	ar.CommentsUrl = a.CommentsUrl
-	ar.DateTime = a.DateTime
+	ar.DateTime = time.Now().Format("2006/1/2 15:04")
 	ar.Likes = a.Likes
 	ar.PreviewUrl = a.PreviewUrl
 	ar.Text = a.Text

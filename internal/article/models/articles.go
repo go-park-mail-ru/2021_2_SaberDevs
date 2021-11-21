@@ -7,8 +7,6 @@ import (
 
 //Представление записи
 type ArticleData struct {
-	Id           string   `json:"id"`
-	DateTime     string   `json:"datetime" db:"datetime"`
 	PreviewUrl   string   `json:"previewUrl"`
 	Tags         []string `json:"tags"`
 	Title        string   `json:"title"`
