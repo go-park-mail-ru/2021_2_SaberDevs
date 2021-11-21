@@ -286,6 +286,7 @@ func main() {
 	ar.Tags = a.Tags
 	ar.Id = "13"
 	ar.AuthorName = "dar"
+	ar.Category = "SaberDevs"
 	ar.Tags = append(ar.Tags, "finance")
 	Id, err := myRepo.Store(context.TODO(), &ar)
 	ar.Id = fmt.Sprint(Id)

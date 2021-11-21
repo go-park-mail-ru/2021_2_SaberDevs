@@ -200,7 +200,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES ORDER BY Id LIMIT $1 OFFSET $2", chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -233,7 +233,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 
 func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.FullArticle, err error) {
 	var newArticle amodels.DbArticle
-	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1", id)
+	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1", id)
 	var outArticle amodels.FullArticle
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -270,7 +270,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime,  a.Title, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
+	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
 	where c.tag = $1 LIMIT $2 OFFSET $3`, tag, chunkSize, from)
@@ -312,7 +312,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime,  Title, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 ORDER BY Id LIMIT $2 OFFSET $3", author, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -343,8 +343,8 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 }
 
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (int, error) {
-	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID;`
-	rows, err := m.Db.Query(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
+	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Category, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;`
+	rows, err := m.Db.Query(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
