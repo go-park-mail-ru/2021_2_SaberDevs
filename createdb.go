@@ -311,7 +311,7 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 	// ar.Text = `<a onblur="alert(secret)" href="http://www.google.com">Google</a>`
-	ar.Tags = append(ar.Tags, "jojo")
+	ar.Tags = []string{"jojo", "finance"}
 	err = myRepo.Update(context.TODO(), &ar)
 	if err != nil {
 		fmt.Println(err.Error())

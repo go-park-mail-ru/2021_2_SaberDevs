@@ -34,6 +34,9 @@ inner join tags_articles ca  on c.Id = ca.tags_id
 inner join articles a on a.Id = ca.articles_id
 where a.Id in (`
 
+const deleteTags = `delete from tags_articles ta
+where ta.articles_id  = $1`
+
 const byTag = "articleRepository/GetByTag"
 
 const byAuthor = "articleRepository/GetByAuthor"
@@ -410,13 +413,21 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
+	schema := deleteTags
+	_, err = m.Db.Exec(schema, uniqId)
+	if err != nil {
+		return sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/Update",
+		}
+	}
 	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
 		_, err = m.Db.Exec(insertCat, data)
 		if err != nil {
 			return sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: "articleRepository/Store",
+				Function: "articleRepository/Update",
 			}
 		}
 	}
