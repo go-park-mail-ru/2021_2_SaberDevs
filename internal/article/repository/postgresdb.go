@@ -51,6 +51,7 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	article.CommentsUrl = val.CommentsUrl
 	article.Id = fmt.Sprint(val.Id)
 	article.Likes = val.Likes
+	article.Category = val.Category
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
 	temp := strings.Split(val.Text, " ")
@@ -148,6 +149,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 	article.Likes = val.Likes
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
+	article.Category = val.Category
 	article.Text = val.Text
 	rows, err := Db.Queryx(tagsLoad, val.Id)
 	if err != nil {
