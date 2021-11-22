@@ -351,4 +351,13 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+
+	fmt.Println()
+	newresult, err = myRepo.FindArticles(context.TODO(), "high", 0, 4)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
 }

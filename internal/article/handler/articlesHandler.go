@@ -188,6 +188,9 @@ func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	q := c.QueryParam("q")
 	id := c.QueryParam("idLastLoaded")
+	s := bluemonday.StrictPolicy()
+	id = s.Sanitize(id)
+	q = s.Sanitize(q)
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.FindArticles(ctx, q, id, chunkSize)
 	if err != nil {
@@ -203,6 +206,9 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
 	q := c.QueryParam("q")
 	id := c.QueryParam("idLastLoaded")
+	s := bluemonday.StrictPolicy()
+	id = s.Sanitize(id)
+	q = s.Sanitize(q)
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.FindAuthors(ctx, q, id, chunkSize)
 	if err != nil {
@@ -218,6 +224,9 @@ func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
 func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	q := c.QueryParam("q")
 	id := c.QueryParam("idLastLoaded")
+	s := bluemonday.StrictPolicy()
+	id = s.Sanitize(id)
+	q = s.Sanitize(q)
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.FindByTag(ctx, q, id, chunkSize)
 	if err != nil {
