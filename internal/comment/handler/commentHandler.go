@@ -53,9 +53,42 @@ func (api *CommentHandler) CreateComment(c echo.Context) error {
 }
 
 func (api *CommentHandler) UpdateComment(c echo.Context) error {
+	requestComment := cmodels.Comment{}
+	err := c.Bind(requestComment)
+	if err != nil {
+		return sbErr.ErrUnpackingJSON{
+			Reason:   err.Error(),
+			Function: "commentHandler/UpdateComment",
+		}
+	}
 
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrNotLoggedin{
+			Reason:   err.Error(),
+			Function: "commentHandler/UpdateComment",
+		}
+	}
+
+	requestComment = SanitizeComment(requestComment)
+
+	ctx := c.Request().Context()
+	response, err := api.ComentUsecase.UpdateComment(ctx, &requestComment, cookie.Value)
+	if err != nil {
+		return errors.Wrap(err, "commentHandler/UpdateComment")
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (api *CommentHandler) GetCommentsByArticleID(c echo.Context) error {
+	aricleID := c.QueryParam("id")
+	ctx := c.Request().Context()
 
+	response, err := api.ComentUsecase.GetCommentsByArticleID(ctx, aricleID)
+	if err != nil {
+		return errors.Wrap(err, "commentHandler/GetCommentsByArticleID")
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
