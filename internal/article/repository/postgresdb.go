@@ -452,12 +452,12 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 
 func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
 	query = "%" + query + "%"
-	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.Category = $1`
+	schemaCount := `SELECT count(*) FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1;`
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, query)
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Category = $1 ORDER BY Id LIMIT $2 OFFSET $3", query, chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1 ORDER BY Id LIMIT $2 OFFSET $3", query, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
