@@ -57,7 +57,7 @@ var TestData = [...]amodels.ArticleData{
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1007,
 	},
-	{"scomputer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
+	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
 		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 14,
 	},
