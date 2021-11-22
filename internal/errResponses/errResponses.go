@@ -38,7 +38,7 @@ var ErrAuthorised = ErrorResponse{
 }
 
 var ErrNotLoggedin = ErrorResponse{
-	Status:   http.StatusNotFound,
+	Status:   http.StatusUnauthorized,
 	ErrorMsg: "Not logged in",
 }
 
@@ -68,7 +68,7 @@ var ErrDbFailure = ErrorResponse{
 }
 
 var ErrNoSession = ErrorResponse{
-	Status:   http.StatusNotFound,
+	Status:   http.StatusUnauthorized,
 	ErrorMsg: "Несуществует сессии",
 }
 

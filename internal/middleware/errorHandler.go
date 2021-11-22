@@ -35,7 +35,7 @@ func ErrorHandler(err error, c echo.Context) {
 		responseBody = errResp.ErrAuthorised
 
 	case errors.As(err, &sbErr.ErrNotLoggedin{}):
-		responseCode = http.StatusNotFound
+		responseCode = http.StatusUnauthorized
 		responseBody = errResp.ErrNotLoggedin
 
 	case errors.As(err, &sbErr.ErrNotFeedNumber{}):
@@ -55,7 +55,7 @@ func ErrorHandler(err error, c echo.Context) {
 		responseBody = errResp.ErrInvalidLogin
 
 	case errors.As(err, &sbErr.ErrNoSession{}):
-		responseCode = http.StatusNotFound
+		responseCode = http.StatusUnauthorized
 		responseBody = errResp.ErrNoSession
 
 	case errors.As(err, &sbErr.ErrDbError{}):
