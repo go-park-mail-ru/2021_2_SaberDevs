@@ -80,6 +80,11 @@ type ChunkResponse struct {
 	ChunkData []Preview `json:"data"`
 }
 
+type AuthorsChunks struct {
+	Status    uint     `json:"status"`
+	ChunkData []Author `json:"data"`
+}
+
 type ArticleResponse struct {
 	Status uint        `json:"status"`
 	Data   FullArticle `json:"data"`
@@ -130,6 +135,9 @@ type ArticleUsecase interface {
 	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	FindByTag(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	FindAuthors(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Author, error)
+	FindArticles(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
 	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
@@ -142,6 +150,9 @@ type ArticleRepository interface {
 	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]Preview, error)
 	GetByCategory(ctx context.Context, category string, from, chunkSize int) ([]Preview, error)
+	FindByTag(ctx context.Context, query string, from, chunkSize int) ([]Preview, error)
+	FindAuthors(ctx context.Context, query string, from, chunkSize int) ([]Author, error)
+	FindArticles(ctx context.Context, query string, from, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, id int64) error
