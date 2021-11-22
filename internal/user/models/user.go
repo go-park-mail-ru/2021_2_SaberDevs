@@ -103,7 +103,7 @@ type SignupResponse struct {
 // -----------------------------------------------
 
 type UserUsecase interface {
-	UpdateProfile(ctx context.Context, user *User, sessionID string) (UpdateProfileResponse, error)
+	UpdateProfile(ctx context.Context, user *User, sessionID string) (LoginResponse, error)
 	GetAuthorProfile(ctx context.Context, author string) (GetUserResponse, error)
 	GetUserProfile(ctx context.Context, sessionID string) (GetUserResponse, error)
 	LoginUser(ctx context.Context, user *User) (LoginResponse, string, error)

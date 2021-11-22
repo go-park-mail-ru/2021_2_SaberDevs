@@ -5,6 +5,7 @@ import (
 	imodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/pkg/errors"
+	"io"
 	"mime/multipart"
 	"net/http"
 )
@@ -46,7 +47,33 @@ func (iu *imageUsecase) SaveImage(ctx context.Context, file *multipart.FileHeade
 		}
 	}
 	defer src.Close()
-	// todo проверить на тип изображения, конвертировать и обрезать до 140*140
+
+	buff := make([]byte, 512)
+	_, err = src.Read(buff)
+	if err != nil {
+		return imodels.SaveImageResponse{}, sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "imageUsecase/SaveImage",
+		}
+	}
+
+	filetype := http.DetectContentType(buff)
+	if filetype != "image/jpeg" && filetype != "image/png" {
+		return imodels.SaveImageResponse{}, sbErr.ErrBadImage{
+			Reason:   err.Error(),
+			Function: "imageUsecase/SaveImage",
+		}
+	}
+
+	_, err = src.Seek(0, io.SeekStart)
+	if err != nil {
+		return imodels.SaveImageResponse{}, sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "imageUsecase/SaveImage",
+		}
+	}
+
+
 
 	savedImageName, err := iu.imageRepo.SaveImage(ctx, &src)
 	if err != nil {

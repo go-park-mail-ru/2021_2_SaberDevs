@@ -19,17 +19,17 @@ var ErrUnpackingJSON = ErrorResponse{
 
 var ErrUserDoesntExist = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "User doesnt exist",
+	ErrorMsg: "Пользователь не существует",
 }
 
 var ErrWrongPassword = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "Wrong password",
+	ErrorMsg: "Неверный пароль",
 }
 
 var ErrUserExists = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "User already exists",
+	ErrorMsg: "Пользователь уже существует",
 }
 
 var ErrAuthorised = ErrorResponse{
@@ -49,17 +49,17 @@ var ErrNotFeedNumber = ErrorResponse{
 
 var ErrInvalidEmail = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "Invalid symbols in email",
+	ErrorMsg: "Неверные символы в email",
 }
 
 var ErrInvalidPassword = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "Invalid symbols in password",
+	ErrorMsg: "Неверные символы в пароле",
 }
 
 var ErrInvalidLogin = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "Invalid symbols in login",
+	ErrorMsg: "Неверные символы в логине",
 }
 
 var ErrDbFailure = ErrorResponse{
@@ -69,12 +69,12 @@ var ErrDbFailure = ErrorResponse{
 
 var ErrNoSession = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "Session doesnt exist",
+	ErrorMsg: "Несуществует сессии",
 }
 
 var ErrBadImage = ErrorResponse{
 	Status:   http.StatusNotFound,
-	ErrorMsg: "Cannot upload image",
+	ErrorMsg: "Неудалось загрузить изображение. Размер не должен превышать 5мб, поддерживаемые форматы png jpeg",
 }
 
 var ErrValidation = ErrorResponse{

@@ -108,6 +108,23 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 		}
 	}
 
+	if user.AvatarURL != "" {
+		_, err := tx.Exec(`UPDATE author SET AvatarUrl = $1 WHERE Login = $2`, user.AvatarURL, user.Login)
+		if err != nil {
+			err := tx.Rollback()
+			if err != nil {
+				return umodels.User{}, sbErr.ErrInternal{
+					Reason:   err.Error(),
+					Function: "userRepository/UpdateUser",
+				}
+			}
+			return umodels.User{}, sbErr.ErrInternal{
+				Reason:   err.Error(),
+				Function: "userRepository/UpdateUser",
+			}
+		}
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		// добавить Rollback?
@@ -120,6 +137,8 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 	updatedUser := umodels.User{
 		Name:    user.Name,
 		Surname: user.Surname,
+		Description: user.Description,
+		AvatarURL: user.AvatarURL,
 	}
 
 	return updatedUser, nil
