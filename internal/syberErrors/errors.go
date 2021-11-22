@@ -175,3 +175,14 @@ type ErrBadImage struct {
 func (e ErrBadImage) Error() string {
 	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
+
+// -------------------------------------------------------------------------------
+
+type ErrUnauthorized struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrUnauthorized) Error() string {
+	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
+}

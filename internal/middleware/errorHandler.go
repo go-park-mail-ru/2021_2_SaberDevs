@@ -62,6 +62,10 @@ func ErrorHandler(err error, c echo.Context) {
 		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrDbFailure
 
+	case errors.As(err, &sbErr.ErrUnauthorized{}):
+		responseCode = http.StatusUnauthorized
+		responseBody = errResp.ErrDbFailure
+
 	case errors.As(err, &sbErr.ErrValidate{}):
 		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrorResponse{

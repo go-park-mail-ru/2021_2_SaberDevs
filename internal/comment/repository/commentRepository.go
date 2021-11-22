@@ -15,14 +15,18 @@ func NewUserRepository(db *sqlx.DB) cmodels.CommentRepository {
 	return &commentPsqlRepo{db}
 }
 
-func (cr *commentPsqlRepo)StoreComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
+func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 
 }
 
-func (cr *commentPsqlRepo)UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
+func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 
 }
 
-func (cr *commentPsqlRepo)GetCommentsByArticleID(ctx context.Context, articleID string, lastCommentID string) ([]cmodels.Comment, error) {
+func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID string, lastCommentID string) ([]cmodels.PreparedComment, error) {
+
+}
+
+func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID string) (cmodels.Comment, error) {
 
 }

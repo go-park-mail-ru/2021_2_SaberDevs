@@ -6,10 +6,28 @@ type Comment struct {
 	Id          int    `json:"Id"  db:"id"`
 	DateTime    string `json:"datetime" db:"datetime"`
 	Text        string `json:"text" db:"text"`
-	AuthorLogin string `json:"authorName" db:"authorlogin"`
+	AuthorLogin string `json:"authorLogin" db:"authorlogin"`
 	ArticleId   string `json:"articleIdd" db:"articleid"`
 	ParentId    string `json:"parentId" db:"parentid"`
 	IsEdited    bool   `json:"isEdited" db:"isedited"`
+}
+
+type PreparedComment struct {
+	Id        int    `json:"Id"  db:"id"`
+	DateTime  string `json:"datetime" db:"datetime"`
+	Text      string `json:"text" db:"text"`
+	ArticleId string `json:"articleIdd" db:"articleid"`
+	ParentId  string `json:"parentId" db:"parentid"`
+	IsEdited  bool   `json:"isEdited" db:"isedited"`
+	Author    Author `json:"author"`
+}
+
+type Author struct {
+	Login     string `json:"login"`
+	Surname   string `json:"lastName"`
+	Name      string `json:"firstName"`
+	Score     int    `json:"score"`
+	AvatarURL string `json:"avatarUrl"`
 }
 
 type Response struct {
@@ -29,5 +47,6 @@ type CommentUsecase interface {
 type CommentRepository interface {
 	StoreComment(ctx context.Context, comment *Comment) (Comment, error)
 	UpdateComment(ctx context.Context, comment *Comment) (Comment, error)
-	GetCommentsByArticleID(ctx context.Context, articleID string, lastCommentID string) ([]Comment, error)
+	GetCommentsByArticleID(ctx context.Context, articleID string, lastCommentID string) ([]PreparedComment, error)
+	GetCommentByID(ctx context.Context, commentID string) (Comment, error)
 }

@@ -72,6 +72,11 @@ var ErrNoSession = ErrorResponse{
 	ErrorMsg: "Несуществует сессии",
 }
 
+var ErrUnauthorized = ErrorResponse{
+	Status:   http.StatusUnauthorized,
+	ErrorMsg: "Нет прав на данное действие",
+}
+
 var ErrBadImage = ErrorResponse{
 	Status:   http.StatusNotFound,
 	ErrorMsg: "Неудалось загрузить изображение. Размер не должен превышать 5мб, поддерживаемые форматы png jpeg",
