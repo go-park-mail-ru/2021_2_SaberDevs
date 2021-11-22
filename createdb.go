@@ -369,4 +369,13 @@ func main() {
 	for _, result := range newresult {
 		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
+
+	fmt.Println()
+	newresult, err = myRepo.FindByTag(context.TODO(), "in", 0, 10)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
 }
