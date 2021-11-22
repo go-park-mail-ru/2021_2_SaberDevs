@@ -378,4 +378,13 @@ func main() {
 	for _, result := range newresult {
 		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
+
+	fmt.Println()
+	authr, err := myRepo.FindAuthors(context.TODO(), "en", 0, 10)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range authr {
+		fmt.Print(result.Id, " ", result.Login, " ", result.Name, " ", result.Surname, " ", "\n")
+	}
 }
