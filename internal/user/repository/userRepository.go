@@ -135,10 +135,10 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 	}
 
 	updatedUser := umodels.User{
-		Name:    user.Name,
-		Surname: user.Surname,
+		Name:        user.Name,
+		Surname:     user.Surname,
 		Description: user.Description,
-		AvatarURL: user.AvatarURL,
+		AvatarURL:   user.AvatarURL,
 	}
 
 	return updatedUser, nil

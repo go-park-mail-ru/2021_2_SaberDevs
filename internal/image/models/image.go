@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"image"
 	"mime/multipart"
 )
 
@@ -26,5 +27,5 @@ type ImageUsecase interface {
 
 type ImageRepository interface {
 	GetImageByName(ctx context.Context, imageName string) (string, error)
-	SaveImage(ctx context.Context, src *multipart.File) (string, error)
+	SaveImage(ctx context.Context, src *image.Image) (string, error)
 }

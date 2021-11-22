@@ -5,6 +5,9 @@ import (
 	imodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/pkg/errors"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -73,9 +76,32 @@ func (iu *imageUsecase) SaveImage(ctx context.Context, file *multipart.FileHeade
 		}
 	}
 
+	var img image.Image
+	switch filetype {
+	case "image/jpeg":
+		img, err = jpeg.Decode(src)
+		if err != nil {
+			return imodels.SaveImageResponse{}, sbErr.ErrInternal{
+				Reason:   err.Error(),
+				Function: "imageUsecase/SaveImage",
+			}
+		}
+	case "image/png":
+		img, err = png.Decode(src)
+		if err != nil {
+			return imodels.SaveImageResponse{}, sbErr.ErrInternal{
+				Reason:   err.Error(),
+				Function: "imageUsecase/SaveImage",
+			}
+		}
+	default:
+		return imodels.SaveImageResponse{}, sbErr.ErrInternal{
+			Reason:   "switch error in default",
+			Function: "imageUsecase/SaveImage",
+		}
+	}
 
-
-	savedImageName, err := iu.imageRepo.SaveImage(ctx, &src)
+	savedImageName, err := iu.imageRepo.SaveImage(ctx, &img)
 	if err != nil {
 		return imodels.SaveImageResponse{}, errors.Wrap(err, "imageHandler/SaveImage")
 	}
