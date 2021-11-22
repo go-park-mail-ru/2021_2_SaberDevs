@@ -15,7 +15,7 @@ var TestData = [...]amodels.ArticleData{
 			"апреля, Apple очень долго не выпускала обновление для исправления уязвимости. О наличии проблемы сообщала не только Google, но и исследователи из Pangu Lab. Кроме того, эксплоит был представлен на Mobile Security Conference (MOSEC) в июле. " +
 			"Согласно заметкам релиза сентябрьского обновления с исправлением уязвимостей, упомянутому ранее, полный список устройств, на которых закрыли CVE-2021-30869, включает iPhone 5s, iPhone 6, iPhone 6 Plus, iPad Air, iPad mini 2, iPad mini 3, iPod touch (6-го поколения) " +
 			"под управлением iOS 12.5.5 и Mac с обновлением безопасности 2021-006 Catalina. Проблема исправлена в iOS 12.5.5, iOS 14.4 и iPad OS 14.4 и mac OS Big Sur 11.2. В обновлении также вышли патчи для уязвимостей нулевого дня, впервые обнаруженных в феврале " +
-			"(CVE-2021-1870, CVE-2021-1871, CVE-2021-1872), марте (CVE-2021-1879), мае (CVE-2021-30663, CVE-2021-30665, CVE-2021-30713, CVE-2021-30666) и июне (CVE-2021-30761 и CVE-2021-30762).", "#", "Григорий", "static/img/photo-elon-musk.jpg",
+			"(CVE-2021-1870, CVE-2021-1871, CVE-2021-1872), марте (CVE-2021-1879), мае (CVE-2021-30663, CVE-2021-30665, CVE-2021-30713, CVE-2021-30666) и июне (CVE-2021-30761 и CVE-2021-30762).", "#", "Григорий", "user.jpg",
 		"#", 97, 1001,
 	},
 	{"startup-593343_1920.jpg", []string{"IT-News", "Study"}, "Российская компания вышла в фина л международного конкурса Entrepreneurship World Cup (EWC) с призовым фондом $1 млн",
@@ -29,7 +29,7 @@ var TestData = [...]amodels.ArticleData{
 			"Сергей Сорокин, генеральный директор Botkin.AI: «Мы благодарны организаторамGlobal Entrepreneurship Week за возможность представить наш проект в финале. И, безусловно, гордимся нашей фантастической командой, которая сделала платформу Botkin.AI – проект, который был выбран среди сотни тысяч других компаний со всего мира». " +
 			"Entrepreneurship World Cup – крупнейшая конкурсная программа поддержки предпринимателей. EWS направлен на помощь компаниям, находящимся на разных стадиях развития. С момента запуска в 2019 году проект помог более 300 000 участникам из 200 стран, предоставив финансовую и профессиональную помощь. " +
 			"Юлия Щеглова, проектный менеджер Фонда «Сколково»: «“Интеллоджик” достоин представлять нашу страну в конкурсной программе международного уровня. У компании накопился солидный опыт в разработке и 3 патента на технологии искусственного интеллекта. Качество платформы Botkin AI было проверено врачами в 25 проектах по всему миру». ",
-		"#", "Григорий", "photo-elon-musk.jpg", "#", 97, 1002},
+		"#", "Григорий", "user.jpg", "#", 97, 1002},
 
 	{"usb-1284227_1920.jpg", []string{"IT-News", "Study"}, "Abcbot — новый ботнет, нацеленный на Linux",
 		"Исследователи кибербезопасности из Netlab Qihoo 360 раскрыли подробности о новом растущем ботнете «Abcbot», который распространяется подобно червям, заражая системы Linux с последующим запуском распределенных DDoS-атак. " +
@@ -38,39 +38,39 @@ var TestData = [...]amodels.ArticleData{
 			"отключали процесс мониторинга и сканирования серверов на проблемы безопасности, а также сбрасывали пароли пользователей от сервиса Elastic Cloud. " +
 			"Теперь, как сообщает китайская компания Qihoo 360, эти скрипты используются для распространения Abcbot. Всего на сегодня было зафиксировано шесть версий этого ботнета. " +
 			"После установки на захваченную систему вредонос запускает выполнение серии шагов, в результате которых зараженное устройство переопределяется в веб-сервер. Далее, помимо передачи системной информации C&C-серверу, происходит распространение вируса на " +
-			"другие устройства путем сканирования открытых портов. При этом он также автоматически обновляется, когда операторы вносят доработки.\n", "#", "Григорий", "photo-elon-musk.jpg",
+			"другие устройства путем сканирования открытых портов. При этом он также автоматически обновляется, когда операторы вносят доработки.\n", "#", "Григорий", "user.jpg",
 		"#", 97, 1003,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1004,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1005,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1006,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1007,
 	},
 	{"scomputer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 14,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1008,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1009,
 	},
 	{"computer.png", []string{"IT-News", "Study"}, "7 Skills of Highly Effective Programmers",
-		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "photo-elon-musk.jpg",
+		"Our team was inspired by the seven skills of highly effective", "#", "Григорий", "user.jpg",
 		"#", 97, 1010,
 	},
 }
