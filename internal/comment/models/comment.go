@@ -13,9 +13,9 @@ type Comment struct {
 }
 
 type Response struct {
-	Status uint       `json:"status"`
+	Status uint        `json:"status"`
 	Data   interface{} `json:"data"`
-	Msg    string     `json:"msg"`
+	Msg    string      `json:"msg"`
 }
 
 // -----------------------------------------------
