@@ -41,7 +41,7 @@ func (r *userPsqlRepo) UpdateUser(ctx context.Context, user *umodels.User) (umod
 	}
 
 	if user.Description != "" {
-		_, err := tx.Exec(`UPDATE author SET NAME = $1 WHERE Login = $2`, user.Description, user.Login)
+		_, err := tx.Exec(`UPDATE author SET Description = $1 WHERE Login = $2`, user.Description, user.Login)
 		if err != nil {
 			err := tx.Rollback()
 			if err != nil {
