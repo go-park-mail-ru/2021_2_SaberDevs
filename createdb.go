@@ -373,7 +373,7 @@ func main() {
 	insert_article := `INSERT INTO articles (PreviewUrl, DateTime, Category, Title, Text, AuthorName,  CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
 	for i, data := range data.TestData {
 		date := time.Now().Format("2006/1/2 15:04")
-		_, err = db.Exec(insert_article, data.PreviewUrl, date, dataDB.CategoriesList[i], data.Title, data.Text, names[i/4].Login, data.CommentsUrl, data.Comments, data.Likes)
+		_, err = db.Exec(insert_article, data.PreviewUrl, date, dataDB.CategoriesList[i%26], data.Title, data.Text, names[i%4].Login, data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
