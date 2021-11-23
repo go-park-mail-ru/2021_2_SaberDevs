@@ -24,12 +24,12 @@ type sqlComment struct {
 }
 
 type sqlPreparedComment struct {
-	Id        int64          `json:"Id"  db:"id"`
-	DateTime  string         `json:"datetime" db:"datetime"`
-	Text      string         `json:"text" db:"text"`
-	ArticleId int64          `json:"articleIdd" db:"articleid"`
-	ParentId  sql.NullInt64          `json:"parentId" db:"parentid"`
-	IsEdited  bool           `json:"isEdited" db:"isedited"`
+	Id             int64         `json:"Id"  db:"id"`
+	DateTime       string        `json:"datetime" db:"datetime"`
+	Text           string        `json:"text" db:"text"`
+	ArticleId      int64         `json:"articleIdd" db:"articleid"`
+	ParentId       sql.NullInt64 `json:"parentId" db:"parentid"`
+	IsEdited       bool          `json:"isEdited" db:"isedited"`
 	cmodels.Author `json:"author"`
 }
 
@@ -78,14 +78,6 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 }
 
 func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
-	// id, err := strconv.Atoi(comment.Id)
-	// if err != nil {
-	// 	return cmodels.Comment{}, sbErr.ErrInternal{
-	// 		Reason:   err.Error(),
-	// 		Function: "commentRepository/StoreComment",
-	// 	}
-	// }
-
 	result, err := cr.Db.Query(`UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, ParentId, Text, IsEdited, DateTime`,
 		comment.Text, comment.IsEdited, comment.Id)
 	if err != nil {
@@ -117,26 +109,40 @@ func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.C
 	}, nil
 }
 
-// Login     string `json:"login" db:"login"`
-// 	Surname   string `json:"lastName" db:"surname"`
-// 	Name      string `json:"firstName" db:"name"`
-// 	Score     int    `json:"score" db:"score"`
-// 	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
-
 func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID int64, lastCommentID int64) ([]cmodels.PreparedComment, error) {
-	var comments []sqlPreparedComment
+	var sqlComments []sqlPreparedComment
 
 	schema := `select c.id, c.articleid, c.parentid, c.text, c.isedited, c.datetime, a.login, a.surname, a.name, a.score, a.avatarurl  
                from comments c join author a on a.login = c.AuthorLogin where c.ArticleId = $1 limit 50`
 
-	err := cr.Db.Select(&comments, schema, articleID)
+	err := cr.Db.Select(&sqlComments, schema, articleID)
 	if err != nil {
 		return []cmodels.PreparedComment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
 			Function: "commentRepository/GetCommentsByArticleID",
 		}
 	}
-	return []cmodels.PreparedComment{}, nil
+
+	var comments []cmodels.PreparedComment
+	for _, comment := range sqlComments {
+		comments = append(comments, cmodels.PreparedComment{
+			Id:        comment.Id,
+			DateTime:  comment.DateTime,
+			Text:      comment.Text,
+			ArticleId: comment.ArticleId,
+			ParentId:  comment.ParentId.Int64,
+			IsEdited:  comment.IsEdited,
+			Author: cmodels.Author{
+				Login:     comment.Login,
+				Surname:   comment.Surname,
+				Name:      comment.Name,
+				Score:     comment.Score,
+				AvatarURL: comment.AvatarURL,
+			},
+		})
+	}
+
+	return comments, nil
 }
 
 func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) (cmodels.Comment, error) {
