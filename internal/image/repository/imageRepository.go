@@ -48,12 +48,5 @@ func (ir *imageRepo) SaveImage(ctx context.Context, src *image.Image) (string, e
 		}
 	}
 
-	// if _, err = io.Copy(imgFile, *src); err != nil {
-	// 	return "", sbErr.ErrInternal{
-	// 		Reason:   err.Error(),
-	// 		Function: "imageRepository/SaveImage",
-	// 	}
-	// }
-
 	return imgName + ".webp", nil
 }
