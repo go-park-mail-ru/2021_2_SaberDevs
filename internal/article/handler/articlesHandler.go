@@ -132,10 +132,10 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
-	login := c.QueryParam("category")
+	cat := c.QueryParam("category")
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByCategory(ctx, login, id, chunkSize)
+	ChunkData, err := api.UseCase.GetByCategory(ctx, cat, id, chunkSize)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
 	}
@@ -175,6 +175,60 @@ func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.GetByTag(ctx, tag, id, chunkSize)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *ArticlesHandler) FindArticles(c echo.Context) error {
+	q := c.QueryParam("q")
+	id := c.QueryParam("idLastLoaded")
+	s := bluemonday.StrictPolicy()
+	id = s.Sanitize(id)
+	q = s.Sanitize(q)
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.FindArticles(ctx, q, id, chunkSize)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	response := amodels.ChunkResponse{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
+	q := c.QueryParam("q")
+	id := c.QueryParam("idLastLoaded")
+	s := bluemonday.StrictPolicy()
+	id = s.Sanitize(id)
+	q = s.Sanitize(q)
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.FindAuthors(ctx, q, id, chunkSize)
+	if err != nil {
+		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	response := amodels.AuthorsChunks{
+		Status:    http.StatusOK,
+		ChunkData: ChunkData,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (api *ArticlesHandler) FindByTag(c echo.Context) error {
+	q := c.QueryParam("q")
+	id := c.QueryParam("idLastLoaded")
+	s := bluemonday.StrictPolicy()
+	id = s.Sanitize(id)
+	q = s.Sanitize(q)
+	ctx := c.Request().Context()
+	ChunkData, err := api.UseCase.FindByTag(ctx, q, id, chunkSize)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
 	}

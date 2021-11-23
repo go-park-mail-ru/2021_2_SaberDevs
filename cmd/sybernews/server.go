@@ -94,6 +94,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
+	search := e.Group("/api/v1/search")
+	search.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	e.Use(syberMiddleware.ValidateRequestBody)
@@ -106,8 +108,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
 
-	e.GET("api/v1/img/:name", imageAPI.GetImage)
-	e.POST("api/v1/img/upload", imageAPI.SaveImage, authMiddleware.CheckAuth)
+	e.GET("/img/:name", imageAPI.GetImage)
 
 	e.POST("api/v1/user/login", userAPI.Login)
 	e.POST("api/v1/user/signup", userAPI.Register)
@@ -120,11 +121,15 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	articles.GET("/feed", articlesAPI.GetFeed)
 	articles.GET("", articlesAPI.GetByID)
 	articles.GET("/author", articlesAPI.GetByAuthor)
-	articles.GET("/category", articlesAPI.GetByAuthor)
+	articles.GET("/category", articlesAPI.GetByCategory)
 	articles.GET("/tags", articlesAPI.GetByTag)
 	articles.POST("/create", articlesAPI.Create, authMiddleware.CheckAuth)
 	articles.POST("/update", articlesAPI.Update, authMiddleware.CheckAuth)
 	articles.POST("/delete", articlesAPI.Delete, authMiddleware.CheckAuth)
+
+	search.GET("/articles", articlesAPI.FindArticles)
+	search.GET("/author", articlesAPI.FindAuthors)
+	search.GET("/tags", articlesAPI.FindByTag)
 }
 
 func Run(address string) {

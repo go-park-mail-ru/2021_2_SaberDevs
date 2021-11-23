@@ -88,6 +88,33 @@ func (m *articleUsecase) GetByCategory(ctx context.Context, category string, idL
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 
+func (m *articleUsecase) FindByTag(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
+	}
+	result, err = m.articleRepo.FindByTag(ctx, category, from, chunkSize)
+	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
+}
+
+func (m *articleUsecase) FindAuthors(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Author, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
+	}
+	result, err = m.articleRepo.FindAuthors(ctx, category, from, chunkSize)
+	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
+}
+
+func (m *articleUsecase) FindArticles(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+	from, err := IdToString(idLastLoaded)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
+	}
+	result, err = m.articleRepo.FindArticles(ctx, category, from, chunkSize)
+	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
+}
+
 func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) (int, error) {
 	newArticle := amodels.Article{}
 	newArticle.Text = a.Text

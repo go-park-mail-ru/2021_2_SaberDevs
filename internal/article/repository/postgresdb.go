@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/data"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -198,6 +199,30 @@ func (m *psqlArticleRepository) limitChecker(schemaCount string, from, chunkSize
 	return chunkSize, ChunkData, overCount, nil
 }
 
+func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunkSize int, args ...interface{}) (int, []amodels.Author, bool, error) {
+	var ChunkData []amodels.Author
+	overCount := false
+	var count int
+	err := m.Db.Get(&count, schemaCount, args...)
+	if err != nil {
+		return chunkSize, ChunkData, overCount, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: "articleRepository/limitChecker",
+		}
+	}
+
+	if count <= from {
+		ChunkData = append(ChunkData, models.Author{Login: "end"})
+		overCount = true
+	}
+
+	if (count > from) && (count < from+chunkSize) {
+		chunkSize = count - from
+		overCount = true
+	}
+	return chunkSize, ChunkData, overCount, nil
+}
+
 func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Preview, err error) {
 	schemaCount := "SELECT count(*) FROM articles;"
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize)
@@ -310,6 +335,54 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	ChunkData, err = m.addTags(ChunkData, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
+
+func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
+	query = "%" + query + "%"
+	schemaCount := `SELECT count(*) FROM  tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
+	inner join articles a on a.Id = ca.articles_id
+	where c.tag LIKE $1;`
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, query)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
+	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
+	inner join articles a on a.Id = ca.articles_id
+	where c.tag LIKE $1 LIMIT $2 OFFSET $3`, query, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byTag,
+		}
+	}
+	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: byTag,
+			}
+		}
+		arts = append(arts, newArticle)
+	}
+
+	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM tags c
+	inner join tags_articles ca  on c.Id = ca.tags_id
+	inner join articles a on a.Id = ca.articles_id
+	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.AUTHORNAME where c.tag LIKE $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, query, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byTag,
+		}
+	}
+	ChunkData, err = m.addTags(ChunkData, byTag, rows, overCount, arts)
+	return ChunkData, err
+}
+
 func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, from, chunkSize int) (result []amodels.Preview, err error) {
 	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.AuthorName = $1`
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, author)
@@ -343,6 +416,74 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, byAuthor, rows, overCount, arts)
+	return ChunkData, err
+}
+
+func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, from, chunkSize int) (result []amodels.Author, err error) {
+	query = "%" + query + "%"
+	schemaCount := `SELECT count(*) FROM AUTHOR WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1;`
+	chunkSize, ChunkData, overCount, err := m.authLimitChecker(schemaCount, from, chunkSize, query)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
+	rows, err := m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 ORDER BY AU.Id LIMIT $2 OFFSET $3", query, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byAuthor,
+		}
+	}
+	var newAuthor models.Author
+	for rows.Next() {
+		err = rows.StructScan(&newAuthor)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: byAuthor,
+			}
+		}
+		ChunkData = append(ChunkData, newAuthor)
+	}
+	if overCount {
+		ChunkData = append(ChunkData, models.Author{Login: "end"})
+	}
+	return ChunkData, err
+}
+
+func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
+	query = "%" + query + "%"
+	schemaCount := `SELECT count(*) FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1;`
+	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, query)
+	if err != nil || len(ChunkData) > 0 {
+		return ChunkData, err
+	}
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1 ORDER BY Id LIMIT $2 OFFSET $3", query, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byCategory,
+		}
+	}
+	var newArticle amodels.DbArticle
+	var arts []amodels.DbArticle
+	for rows.Next() {
+		err = rows.StructScan(&newArticle)
+		if err != nil {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: byCategory,
+			}
+		}
+		arts = append(arts, newArticle)
+	}
+	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", newArticle.AuthorName, chunkSize, from)
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: byCategory,
+		}
+	}
+	ChunkData, err = m.addTags(ChunkData, byCategory, rows, overCount, arts)
 	return ChunkData, err
 }
 
