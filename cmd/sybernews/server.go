@@ -19,11 +19,10 @@ import (
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	"github.com/jmoiron/sqlx"
-	"github.com/tarantool/go-tarantool"
-	"net/http"
-
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/tarantool/go-tarantool"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -145,17 +144,17 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 
 func Run(address string) {
 	e := echo.New()
-	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
-	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
-	// 	AllowCredentials: true,
-	// }))
-
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
+
+	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// 	AllowOrigins:     []string{"*"},
+	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
+	// 	AllowCredentials: true,
+	// }))
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
