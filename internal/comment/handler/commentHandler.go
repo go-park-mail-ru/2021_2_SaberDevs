@@ -7,6 +7,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 	"net/http"
+	"strconv"
 )
 
 type CommentHandler struct {
@@ -54,7 +55,7 @@ func (api *CommentHandler) CreateComment(c echo.Context) error {
 
 func (api *CommentHandler) UpdateComment(c echo.Context) error {
 	requestComment := cmodels.Comment{}
-	err := c.Bind(requestComment)
+	err := c.Bind(&requestComment)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
@@ -74,6 +75,7 @@ func (api *CommentHandler) UpdateComment(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	response, err := api.ComentUsecase.UpdateComment(ctx, &requestComment, cookie.Value)
+	// response, err := api.ComentUsecase.UpdateComment(ctx, &requestComment, "cookie.Value")
 	if err != nil {
 		return errors.Wrap(err, "commentHandler/UpdateComment")
 	}
@@ -85,7 +87,15 @@ func (api *CommentHandler) GetCommentsByArticleID(c echo.Context) error {
 	aricleID := c.QueryParam("id")
 	ctx := c.Request().Context()
 
-	response, err := api.ComentUsecase.GetCommentsByArticleID(ctx, aricleID)
+	id, err := strconv.ParseInt(aricleID, 10, 64)
+	if err != nil {
+		return sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "commentHandler/GetCommentsByArticleID",
+		}
+	}
+
+	response, err := api.ComentUsecase.GetCommentsByArticleID(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "commentHandler/GetCommentsByArticleID")
 	}

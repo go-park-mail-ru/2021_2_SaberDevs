@@ -80,6 +80,8 @@ func (cu *commentUsecase) UpdateComment(ctx context.Context, comment *cmodels.Co
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/UpdateComment")
 	}
 
+	// login := ""
+
 	commentInRepo, err := cu.commentRepo.GetCommentByID(ctx, comment.Id)
 	if err != nil {
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/UpdateComment")
@@ -132,8 +134,8 @@ func (cu *commentUsecase) UpdateComment(ctx context.Context, comment *cmodels.Co
 	return response, nil
 }
 
-func (cu *commentUsecase) GetCommentsByArticleID(ctx context.Context, articleID string) (cmodels.Response, error) {
-	responseData, err := cu.commentRepo.GetCommentsByArticleID(ctx, articleID, "0")
+func (cu *commentUsecase) GetCommentsByArticleID(ctx context.Context, articleID int64) (cmodels.Response, error) {
+	responseData, err := cu.commentRepo.GetCommentsByArticleID(ctx, articleID, 0)
 	if err != nil {
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/GetCommentsByArticleID")
 	}

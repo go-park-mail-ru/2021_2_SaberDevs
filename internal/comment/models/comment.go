@@ -3,31 +3,31 @@ package models
 import "context"
 
 type Comment struct {
-	Id          string    `json:"Id"  db:"id"`
+	Id          int64  `json:"Id"  db:"id"`
 	DateTime    string `json:"datetime" db:"datetime"`
 	Text        string `json:"text" db:"text"`
 	AuthorLogin string `json:"authorLogin" db:"authorlogin"`
-	ArticleId   string `json:"articleId" db:"articleid"`
-	ParentId    string `json:"parentId" db:"parentid"`
+	ArticleId   int64  `json:"articleId" db:"articleid"`
+	ParentId    int64  `json:"parentId" db:"parentid"`
 	IsEdited    bool   `json:"isEdited" db:"isedited"`
 }
 
 type PreparedComment struct {
-	Id        string    `json:"Id"  db:"id"`
+	Id        int64  `json:"Id"  db:"id"`
 	DateTime  string `json:"datetime" db:"datetime"`
 	Text      string `json:"text" db:"text"`
-	ArticleId string `json:"articleIdd" db:"articleid"`
-	ParentId  string `json:"parentId" db:"parentid"`
+	ArticleId int64  `json:"articleIdd" db:"articleid"`
+	ParentId  int64  `json:"parentId" db:"parentid"`
 	IsEdited  bool   `json:"isEdited" db:"isedited"`
 	Author    Author `json:"author"`
 }
 
 type Author struct {
-	Login     string `json:"login"`
-	Surname   string `json:"lastName"`
-	Name      string `json:"firstName"`
-	Score     int    `json:"score"`
-	AvatarURL string `json:"avatarUrl"`
+	Login     string `json:"login" db:"login"`
+	Surname   string `json:"lastName" db:"surname"`
+	Name      string `json:"firstName" db:"name"`
+	Score     int    `json:"score" db:"score"`
+	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
 }
 
 type Response struct {
@@ -41,12 +41,12 @@ type Response struct {
 type CommentUsecase interface {
 	CreateComment(ctx context.Context, comment *Comment, sessionID string) (Response, error)
 	UpdateComment(ctx context.Context, comment *Comment, sessionID string) (Response, error)
-	GetCommentsByArticleID(ctx context.Context, articleID string) (Response, error)
+	GetCommentsByArticleID(ctx context.Context, articleID int64) (Response, error)
 }
 
 type CommentRepository interface {
 	StoreComment(ctx context.Context, comment *Comment) (Comment, error)
 	UpdateComment(ctx context.Context, comment *Comment) (Comment, error)
-	GetCommentsByArticleID(ctx context.Context, articleID string, lastCommentID string) ([]PreparedComment, error)
-	GetCommentByID(ctx context.Context, commentID string) (Comment, error)
+	GetCommentsByArticleID(ctx context.Context, articleID int64, lastCommentID int64) ([]PreparedComment, error)
+	GetCommentByID(ctx context.Context, commentID int64) (Comment, error)
 }

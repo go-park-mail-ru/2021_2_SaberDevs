@@ -118,6 +118,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	e.POST("api/v1/img/upload", imageAPI.SaveImage, authMiddleware.CheckAuth)
 
 	e.POST("api/v1/comments/create", commentsAPi.CreateComment)
+	e.POST("api/v1/comments/update", commentsAPi.UpdateComment)
+	e.GET("api/v1/comments", commentsAPi.GetCommentsByArticleID)
 
 	e.POST("api/v1/user/login", userAPI.Login)
 	e.POST("api/v1/user/signup", userAPI.Register)
