@@ -295,7 +295,7 @@ func Testing() {
 	}
 
 	fmt.Println()
-	results, err = myRepo.GetByCategory(context.TODO(), "Миграция", 0, 10)
+	results, err = myRepo.GetByCategory(context.TODO(), "Офис", 0, 10)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
