@@ -350,7 +350,7 @@ func main() {
 	schema3 := `CREATE TABLE articles (
 		Id           SERIAL PRIMARY KEY,
 		PreviewUrl   VARCHAR(45),
-		Title        VARCHAR(350),
+		Title        TEXT,
 		Text         TEXT,
 		DateTime     VARCHAR(45),
 		Category     VARCHAR(45) REFERENCES categories (cat) ON DELETE CASCADE,
@@ -433,7 +433,7 @@ func main() {
 	(SELECT Id FROM tags WHERE tags.Id = $2));`
 
 	rand.Seed(4)
-	for i := 1; i <= 11; i++ {
+	for i := 1; i <= 49; i++ {
 		_, err = db.Exec(insert_junc, i, rand.Int63n(4)+2)
 		if err != nil {
 			fmt.Println(err.Error())
