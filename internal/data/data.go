@@ -265,3 +265,15 @@ var CategoriesList = []string{
 	"Приёмная",
 	"Миграция",
 }
+
+// {
+// 	"id" : string,
+// 	"articleId" : string,
+// 	"text" : string
+// 	"author" : {
+// 		"login" : string,
+// 		"firstName" : string,
+// 		"lastName" : string,
+// 		"avatarUrl" : string,
+// 	}
+// }

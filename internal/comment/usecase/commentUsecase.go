@@ -8,7 +8,6 @@ import (
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/pkg/errors"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -18,7 +17,7 @@ type commentUsecase struct {
 	commentRepo cmodels.CommentRepository
 }
 
-func NewUserUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, cr cmodels.CommentRepository) cmodels.CommentUsecase {
+func NewCommentUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, cr cmodels.CommentRepository) cmodels.CommentUsecase {
 	return &commentUsecase{
 		userRepo:    ur,
 		sessionRepo: sr,
@@ -37,7 +36,7 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 		Text:        comment.Text,
 		AuthorLogin: login,
 		ArticleId:   comment.ArticleId,
-		ParentId:    "",
+		ParentId:    comment.ParentId,
 		IsEdited:    false,
 	}
 
@@ -81,7 +80,7 @@ func (cu *commentUsecase) UpdateComment(ctx context.Context, comment *cmodels.Co
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/UpdateComment")
 	}
 
-	commentInRepo, err := cu.commentRepo.GetCommentByID(ctx, strconv.Itoa(comment.Id))
+	commentInRepo, err := cu.commentRepo.GetCommentByID(ctx, comment.Id)
 	if err != nil {
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/UpdateComment")
 	}

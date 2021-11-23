@@ -13,7 +13,7 @@ type CommentHandler struct {
 	ComentUsecase cmodels.CommentUsecase
 }
 
-func NewUserHandler(cu cmodels.CommentUsecase) *CommentHandler {
+func NewCommentHandler(cu cmodels.CommentUsecase) *CommentHandler {
 	return &CommentHandler{cu}
 }
 
@@ -25,7 +25,7 @@ func SanitizeComment(c cmodels.Comment) cmodels.Comment {
 
 func (api *CommentHandler) CreateComment(c echo.Context) error {
 	requestComment := cmodels.Comment{}
-	err := c.Bind(requestComment)
+	err := c.Bind(&requestComment)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),

@@ -1,11 +1,12 @@
 package server
 
 import (
-	"net/http"
-
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
+	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
+	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
+	cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
 	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
@@ -19,6 +20,7 @@ import (
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
+	"net/http"
 
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -79,6 +81,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
 	articleRepo := arepo.NewArticleRepository(db)
 	imageRepo := irepo.NewImageRepository()
+	commentsRepo := crepo.NewCommentRepository(db)
 
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
@@ -91,6 +94,9 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 
 	imageUsecase := iusecase.NewImageUsecase(imageRepo)
 	imageAPI := ihandler.NewImageHandler(imageUsecase)
+
+	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
+	commentsAPi := chandler.NewCommentHandler(commentUsecase)
 
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
@@ -110,6 +116,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 
 	e.GET("api/v1/img/:name", imageAPI.GetImage)
 	e.POST("api/v1/img/upload", imageAPI.SaveImage, authMiddleware.CheckAuth)
+
+	e.POST("api/v1/comments/create", commentsAPi.CreateComment)
 
 	e.POST("api/v1/user/login", userAPI.Login)
 	e.POST("api/v1/user/signup", userAPI.Register)
@@ -135,8 +143,14 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 
 func Run(address string) {
 	e := echo.New()
+	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
+	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
+	// 	AllowCredentials: true,
+	// }))
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))

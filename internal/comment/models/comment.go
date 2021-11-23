@@ -3,17 +3,17 @@ package models
 import "context"
 
 type Comment struct {
-	Id          int    `json:"Id"  db:"id"`
+	Id          string    `json:"Id"  db:"id"`
 	DateTime    string `json:"datetime" db:"datetime"`
 	Text        string `json:"text" db:"text"`
 	AuthorLogin string `json:"authorLogin" db:"authorlogin"`
-	ArticleId   string `json:"articleIdd" db:"articleid"`
+	ArticleId   string `json:"articleId" db:"articleid"`
 	ParentId    string `json:"parentId" db:"parentid"`
 	IsEdited    bool   `json:"isEdited" db:"isedited"`
 }
 
 type PreparedComment struct {
-	Id        int    `json:"Id"  db:"id"`
+	Id        string    `json:"Id"  db:"id"`
 	DateTime  string `json:"datetime" db:"datetime"`
 	Text      string `json:"text" db:"text"`
 	ArticleId string `json:"articleIdd" db:"articleid"`
