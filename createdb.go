@@ -293,6 +293,15 @@ func Testing() {
 	for _, result := range authr {
 		fmt.Print(result.Id, " ", result.Login, " ", result.Name, " ", result.Surname, " ", "\n")
 	}
+
+	fmt.Println()
+	results, err = myRepo.GetByCategory(context.TODO(), "Маркетинг", 0, 10)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range results {
+		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
 }
 
 func main() {
