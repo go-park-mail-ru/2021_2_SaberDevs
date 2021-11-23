@@ -18,27 +18,27 @@ var ErrUnpackingJSON = ErrorResponse{
 }
 
 var ErrUserDoesntExist = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "User doesnt exist",
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Пользователь не существует",
 }
 
 var ErrWrongPassword = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "Wrong password",
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Неверный пароль",
 }
 
 var ErrUserExists = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "User already exists",
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Пользователь уже существует",
 }
 
 var ErrAuthorised = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Already authorised",
 }
 
 var ErrNotLoggedin = ErrorResponse{
-	Status:   http.StatusFailedDependency,
+	Status:   http.StatusUnauthorized,
 	ErrorMsg: "Not logged in",
 }
 
@@ -48,30 +48,40 @@ var ErrNotFeedNumber = ErrorResponse{
 }
 
 var ErrInvalidEmail = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "Invalid symbols in email",
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Неверные символы в email",
 }
 
 var ErrInvalidPassword = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "Invalid symbols in password",
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Неверные символы в пароле",
 }
 
 var ErrInvalidLogin = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "Invalid symbols in login",
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Неверные символы в логине",
 }
 
 var ErrDbFailure = ErrorResponse{
-	Status:   http.StatusBadRequest,
+	Status:   http.StatusNotFound,
 	ErrorMsg: "Invalid data in DB",
 }
 
 var ErrNoSession = ErrorResponse{
-	Status:   http.StatusFailedDependency,
-	ErrorMsg: "Session doesnt exist",
+	Status:   http.StatusUnauthorized,
+	ErrorMsg: "Несуществует сессии",
+}
+
+var ErrUnauthorized = ErrorResponse{
+	Status:   http.StatusUnauthorized,
+	ErrorMsg: "Нет прав на данное действие",
+}
+
+var ErrBadImage = ErrorResponse{
+	Status:   http.StatusNotFound,
+	ErrorMsg: "Неудалось загрузить изображение. Размер не должен превышать 5мб, поддерживаемые форматы png jpeg",
 }
 
 var ErrValidation = ErrorResponse{
-	Status: http.StatusFailedDependency,
+	Status: http.StatusNotFound,
 }

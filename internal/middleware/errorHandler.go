@@ -31,11 +31,11 @@ func ErrorHandler(err error, c echo.Context) {
 		responseBody = errResp.ErrUserExists
 
 	case errors.As(err, &sbErr.ErrAuthorised{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrAuthorised
 
 	case errors.As(err, &sbErr.ErrNotLoggedin{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusUnauthorized
 		responseBody = errResp.ErrNotLoggedin
 
 	case errors.As(err, &sbErr.ErrNotFeedNumber{}):
@@ -43,31 +43,39 @@ func ErrorHandler(err error, c echo.Context) {
 		responseBody = errResp.ErrNotFeedNumber
 
 	case errors.As(err, &sbErr.ErrInvalidEmail{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrInvalidEmail
 
 	case errors.As(err, &sbErr.ErrInvalidPassword{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrInvalidPassword
 
 	case errors.As(err, &sbErr.ErrInvalidLogin{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrInvalidLogin
 
 	case errors.As(err, &sbErr.ErrNoSession{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusUnauthorized
 		responseBody = errResp.ErrNoSession
 
 	case errors.As(err, &sbErr.ErrDbError{}):
-		responseCode = http.StatusBadRequest
+		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrDbFailure
 
+	case errors.As(err, &sbErr.ErrUnauthorized{}):
+		responseCode = http.StatusUnauthorized
+		responseBody = errResp.ErrUnauthorized
+
 	case errors.As(err, &sbErr.ErrValidate{}):
-		responseCode = http.StatusFailedDependency
+		responseCode = http.StatusNotFound
 		responseBody = errResp.ErrorResponse{
-			Status:   http.StatusFailedDependency,
+			Status:   http.StatusNotFound,
 			ErrorMsg: err.Error(),
 		}
+
+	case errors.As(err, &sbErr.ErrBadImage{}):
+		responseCode = http.StatusNotFound
+		responseBody = errResp.ErrBadImage
 
 	default:
 		responseCode = http.StatusInternalServerError

@@ -19,7 +19,10 @@ func NewImageHandler(iu imodels.ImageUsecase) *ImageHandler {
 func (api *ImageHandler) SaveImage(c echo.Context) error {
 	imageFile, err := c.FormFile("img")
 	if err != nil {
-		// todo
+		return sbErr.ErrNoContent{
+			Reason:   err.Error(),
+			Function: "imageHandler/SaveImage",
+		}
 	}
 
 	ctx := c.Request().Context()
@@ -41,21 +44,19 @@ func (api *ImageHandler) SaveImage(c echo.Context) error {
 	// }
 	// defer src.Close()
 
-
-
 }
 
 func (api *ImageHandler) GetImage(c echo.Context) error {
 	imgName := c.Param("name")
 	if imgName == "" {
 		return sbErr.ErrNoContent{
-			Reason:  "no image",
+			Reason:   "no image",
 			Function: "imageHandler/GetImage",
 		}
 	}
 
 	ctx := c.Request().Context()
-	name , err := api.ImageUsecase.GetImage(ctx, imgName)
+	name, err := api.ImageUsecase.GetImage(ctx, imgName)
 	if err != nil {
 		return errors.Wrap(err, "imageHandler/GetImage")
 	}
