@@ -230,8 +230,16 @@ func Testing() {
 	}
 	fmt.Print(result.Id, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 
-	fmt.Println()
-	newresult, err = myRepo.FindArticles(context.TODO(), "приз", 0, 4)
+	fmt.Println("эксплойт для")
+	newresult, err = myRepo.FindArticles(context.TODO(), "компании", 0, 4)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+	fmt.Println("Progra")
+	newresult, err = myRepo.FindArticles(context.TODO(), "7 skill high", 0, 5)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -239,17 +247,8 @@ func Testing() {
 		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 
-	fmt.Println()
-	newresult, err = myRepo.FindArticles(context.TODO(), "Prog", 0, 5)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	for _, result := range newresult {
-		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
-	}
-
-	fmt.Println("WOWERROR")
-	newresult, err = myRepo.FindArticles(context.TODO(), "Program", 100, 15)
+	fmt.Println("Program")
+	newresult, err = myRepo.FindArticles(context.TODO(), "programm skills", 0, 15)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -366,6 +365,19 @@ func main() {
 		CONSTRAINT id PRIMARY KEY (articles_id, tags_id) 
 		   );`
 
+	schema5 := `CREATE OR REPLACE FUNCTION make_tsvector(title TEXT, content TEXT)
+		RETURNS tsvector AS $$
+		BEGIN
+		RETURN (setweight(to_tsvector('english', title),'A') ||
+		setweight(to_tsvector('english', content), 'B')||
+		setweight(to_tsvector('russian', title), 'A')||
+		setweight(to_tsvector('russian', content), 'B'));
+		END
+		$$ LANGUAGE 'plpgsql;`
+
+	// schema6 := `CREATE INDEX IF NOT EXISTS idx_fts_articles ON articles
+	// 	USING gin(make_tsvector(title, Text))`
+
 	// execute a query on the server
 	_, err = db.Exec(schema)
 	if err != nil {
@@ -391,6 +403,14 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	_, err = db.Exec(schema5)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	// _, err = db.Exec(schema6)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
 	insert_cat := `INSERT INTO categories (cat) VALUES ($1);`
 	for _, data := range dataDB.CategoriesList {
 		_, err = db.Exec(insert_cat, data)
