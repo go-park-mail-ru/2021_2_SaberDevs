@@ -497,7 +497,6 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category string, from, chunkSize int) (result []amodels.Preview, err error) {
 	schemaCount := `SELECT count(*) FROM ARTICLES WHERE articles.Category = $1`
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, category)
-	fmt.Println(chunkSize, ChunkData, overCount, err)
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}

@@ -295,7 +295,7 @@ func Testing() {
 	}
 
 	fmt.Println()
-	results, err = myRepo.GetByCategory(context.TODO(), "Маркетинг", 0, 10)
+	results, err = myRepo.GetByCategory(context.TODO(), "Миграция", 0, 10)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -410,7 +410,9 @@ func main() {
 	insert_article := `INSERT INTO articles (PreviewUrl, DateTime, Category, Title, Text, AuthorName,  CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
 	for i, data := range data.TestData {
 		date := time.Now().Format("2006/1/2 15:04")
-		_, err = db.Exec(insert_article, data.PreviewUrl, date, dataDB.CategoriesList[i%26], data.Title, data.Text, names[i%4].Login, data.CommentsUrl, data.Comments, data.Likes)
+		di := i % 26
+		fmt.Println(di, dataDB.CategoriesList[di])
+		_, err = db.Exec(insert_article, data.PreviewUrl, date, dataDB.CategoriesList[di], data.Title, data.Text, names[i%4].Login, data.CommentsUrl, data.Comments, data.Likes)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
