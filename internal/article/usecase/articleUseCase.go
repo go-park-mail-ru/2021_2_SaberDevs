@@ -84,7 +84,7 @@ func (m *articleUsecase) GetByCategory(ctx context.Context, category string, idL
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
 	}
-	result, err = m.articleRepo.GetByAuthor(ctx, category, from, chunkSize)
+	result, err = m.articleRepo.GetByCategory(ctx, category, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 

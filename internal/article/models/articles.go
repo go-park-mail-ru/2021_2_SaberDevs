@@ -123,7 +123,7 @@ type Author struct {
 	Surname     string `json:"lastName"`
 	AvatarUrl   string `json:"avatarUrl" db:"avatarurl"`
 	Description string `json:"description" db:"description"`
-	Email       string `json:"email" valid:"email,optional"`
+	Email       string `json:"-" valid:"email,optional"`
 	Password    string `json:"-"`
 	Score       int    `json:"score"`
 }

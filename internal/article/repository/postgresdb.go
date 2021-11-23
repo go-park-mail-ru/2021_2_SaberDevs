@@ -125,8 +125,15 @@ func (m *psqlArticleRepository) addTags(ChunkData []amodels.Preview, funcName st
 		}
 		auths = append(auths, newAuth)
 	}
-	for i, article := range arts {
-		outArticle := previewConv(article, auths[i])
+	var author models.Author
+	for _, article := range arts {
+		for _, a := range auths {
+			if a.Login == article.AuthorName {
+				author = a
+				break
+			}
+		}
+		outArticle := previewConv(article, author)
 		ChunkData = append(ChunkData, outArticle)
 	}
 	ChunkData, err := m.uploadTags(ChunkData, funcName)
@@ -451,13 +458,15 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 }
 
 func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
-	query = "%" + query + "%"
-	schemaCount := `SELECT count(*) FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1;`
+	//query = "%" + query + "%"
+	//schemaCount := `SELECT count(*) FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1;`
+	schemaCount := `SELECT count(*) FROM ARTICLES WHERE en_tsvector(title, text) @@ plainto_tsquery('english', $1) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $1);`
+	//schemaCount := `SELECT count(*) FROM ARTICLES WHERE to_tsvector(title) || to_tsvector(text) @@ plainto_tsquery($1);` //it works if not well
 	chunkSize, ChunkData, overCount, err := m.limitChecker(schemaCount, from, chunkSize, query)
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1 ORDER BY Id LIMIT $2 OFFSET $3", query, chunkSize, from)
+	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE en_tsvector(title, text) @@ plainto_tsquery('english', $1) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $1) ORDER BY Id LIMIT $2 OFFSET $3", query, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
