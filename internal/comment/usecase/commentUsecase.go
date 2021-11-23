@@ -80,8 +80,6 @@ func (cu *commentUsecase) UpdateComment(ctx context.Context, comment *cmodels.Co
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/UpdateComment")
 	}
 
-	// login := ""
-
 	commentInRepo, err := cu.commentRepo.GetCommentByID(ctx, comment.Id)
 	if err != nil {
 		return cmodels.Response{}, errors.Wrap(err, "commentUsecase/UpdateComment")

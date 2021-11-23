@@ -123,6 +123,10 @@ func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID
 		}
 	}
 
+	if sqlComments == nil {
+		return []cmodels.PreparedComment{}, nil
+	}
+
 	var comments []cmodels.PreparedComment
 	for _, comment := range sqlComments {
 		comments = append(comments, cmodels.PreparedComment{
