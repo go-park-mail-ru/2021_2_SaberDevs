@@ -134,7 +134,7 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	cat := c.QueryParam("category")
 	id := c.QueryParam("idLastLoaded")
-	fmt.Println(id)
+	fmt.Println("!!!!!!!!!!!!!Id = ", id)
 	ctx := c.Request().Context()
 	ChunkData, err := api.UseCase.GetByCategory(ctx, cat, id, chunkSize)
 	if err != nil {
