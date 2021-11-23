@@ -125,8 +125,15 @@ func (m *psqlArticleRepository) addTags(ChunkData []amodels.Preview, funcName st
 		}
 		auths = append(auths, newAuth)
 	}
-	for i, article := range arts {
-		outArticle := previewConv(article, auths[i])
+	var author models.Author
+	for _, article := range arts {
+		for _, a := range auths {
+			if a.Login == article.AuthorName {
+				author = a
+				break
+			}
+		}
+		outArticle := previewConv(article, author)
 		ChunkData = append(ChunkData, outArticle)
 	}
 	ChunkData, err := m.uploadTags(ChunkData, funcName)

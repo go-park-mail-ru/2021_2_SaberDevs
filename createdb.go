@@ -240,7 +240,16 @@ func Testing() {
 	}
 
 	fmt.Println()
-	newresult, err = myRepo.FindArticles(context.TODO(), "Prog", 0, 4)
+	newresult, err = myRepo.FindArticles(context.TODO(), "Prog", 0, 5)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+
+	fmt.Println("WOWERROR")
+	newresult, err = myRepo.FindArticles(context.TODO(), "Program", 100, 15)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -249,7 +258,17 @@ func Testing() {
 	}
 
 	fmt.Println()
-	newresult, err = myRepo.FindByTag(context.TODO(), "in", 0, 10)
+	newresult, err = myRepo.FindByTag(context.TODO(), "", 0, 10)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range newresult {
+		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
+	}
+
+	fmt.Println()
+
+	newresult, err = myRepo.FindByTag(context.TODO(), "in", 12, 10)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -259,6 +278,15 @@ func Testing() {
 
 	fmt.Println()
 	authr, err := myRepo.FindAuthors(context.TODO(), "en", 0, 10)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, result := range authr {
+		fmt.Print(result.Id, " ", result.Login, " ", result.Name, " ", result.Surname, " ", "\n")
+	}
+
+	fmt.Println()
+	authr, err = myRepo.FindAuthors(context.TODO(), "en", 10, 10)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
