@@ -127,6 +127,22 @@ func (m *ArticleManager) FindArticles(ctx context.Context, q *app.Queries) (*app
 	}
 	return &retval, err
 }
+
+func (m *ArticleManager) FindByTag(ctx context.Context, q *app.Queries) (*app.Repview, error) {
+	ch := int(q.Chunk.ChunkSize)
+	id := q.Chunk.IdLastLoaded
+	query := q.Query
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.FindByTag(ctx, query, id, ch)
+	retval := app.Repview{}
+	for _, a := range res {
+		val := previewConv(a)
+		retval.Preview = append(retval.Preview, val)
+	}
+	return &retval, err
+}
+
 func auConv(a models.Author) *app.Author {
 	thor := new(app.Author)
 	thor.Id = int64(a.Id)
