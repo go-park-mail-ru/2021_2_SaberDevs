@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"time"
 
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
@@ -25,7 +26,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/tarantool/go-tarantool"
-
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -144,6 +145,23 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	search.GET("/tags", articlesAPI.FindByTag)
 }
 
+// // WithRqId returns a context which knows its request ID
+// func WithRqId(ctx context.Context, rqIdKey, rqId string) context.Context {
+// 	return context.WithValue(ctx, rqIdKey, rqId)
+// }
+
+// // Logger returns a zap logger with as much context as possible
+// func Logger(ctx context.Context) zap.Logger {
+// 	var rqIdKey = "rqIdKey"
+// 	newLogger := zap.NewExample()
+// 	if ctx != nil {
+// 		if ctxRqId, ok := ctx.Value(rqIdKey).(string); ok {
+// 			newLogger = newLogger.With(zap.String("rqId", ctxRqId))
+// 		}
+// 	}
+// 	return newLogger
+// }
+
 func Run(address string) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -157,6 +175,20 @@ func Run(address string) {
 	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
 	// 	AllowCredentials: true,
 	// }))
+	logger := zap.NewExample() // or NewProduction, or NewDevelopment
+	defer logger.Sync()
+
+	const url = "http://example.com"
+
+	// In the unusual situations where every microsecond matters, use the
+	// Logger. It's even faster than the SugaredLogger, but only supports
+	// structured logging.
+	logger.Info("Failed to fetch URL.",
+		// Structured context as strongly typed fields.
+		zap.String("url", url),
+		zap.Int("attempt", 3),
+		zap.Duration("backoff", time.Second),
+	)
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -165,7 +197,7 @@ func Run(address string) {
 
 	db, err := DbConnect()
 	if err != nil {
-		e.Logger.Fatal(err)
+		logger.Fatal(err.Error())
 	}
 
 	tarantoolConn, err := TarantoolConnect()
@@ -177,7 +209,7 @@ func Run(address string) {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		e.Logger.Fatal(err)
+		logger.Fatal(err.Error())
 	}
 
 	defer grcpConn.Close()
@@ -188,5 +220,5 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager)
 
-	e.Logger.Fatal(e.Start(address))
+	logger.Fatal(e.Start(address).Error())
 }
