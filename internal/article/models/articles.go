@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"net/http"
 )
 
 //Представление записи
@@ -139,7 +138,7 @@ type ArticleUsecase interface {
 	FindAuthors(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Author, error)
 	FindArticles(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *ArticleUpdate) error
-	Store(ctx context.Context, c *http.Cookie, a *ArticleCreate) (int, error)
+	Store(ctx context.Context, c string, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, id string) error
 }
 

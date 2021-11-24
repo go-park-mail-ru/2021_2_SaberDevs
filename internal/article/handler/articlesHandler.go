@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 
+	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
@@ -14,11 +16,59 @@ import (
 )
 
 type ArticlesHandler struct {
-	UseCase amodels.ArticleUsecase
+	UseCase app.ArticleDeliveryClient
+}
+
+func reverseConv(a *app.Preview) *models.Preview {
+	val := new(models.Preview)
+	val.Category = a.Category
+	val.Comments = uint(a.Comments)
+	val.CommentsUrl = a.CommentsUrl
+	val.DateTime = a.DateTime
+	val.Id = a.Id
+	val.Likes = uint(a.Likes)
+	val.PreviewUrl = a.PreviewUrl
+	val.Tags = a.Tags
+	val.Text = a.Text
+	val.Title = a.Title
+	val.Author.Id = int(a.Author.Id)
+	val.Author.AvatarUrl = a.Author.AvatarUrl
+	val.Author.Description = a.Author.Description
+	val.Author.Email = a.Author.Email
+	val.Author.Login = a.Author.Login
+	val.Author.Name = a.Author.Name
+	val.Author.Password = a.Author.Password
+	val.Author.Score = int(a.Author.Score)
+	val.Author.Surname = a.Author.Surname
+	return val
+}
+
+func revFullConv(a *app.FullArticle) *models.FullArticle {
+	val := new(models.FullArticle)
+	val.Category = a.Category
+	val.Comments = uint(a.Comments)
+	val.CommentsUrl = a.CommentsUrl
+	val.DateTime = a.DateTime
+	val.Id = a.Id
+	val.Likes = uint(a.Likes)
+	val.PreviewUrl = a.PreviewUrl
+	val.Tags = a.Tags
+	val.Text = a.Text
+	val.Title = a.Title
+	val.Author.Id = int(a.Author.Id)
+	val.Author.AvatarUrl = a.Author.AvatarUrl
+	val.Author.Description = a.Author.Description
+	val.Author.Email = a.Author.Email
+	val.Author.Login = a.Author.Login
+	val.Author.Name = a.Author.Name
+	val.Author.Password = a.Author.Password
+	val.Author.Score = int(a.Author.Score)
+	val.Author.Surname = a.Author.Surname
+	return val
 }
 
 // NewArticleHandler will initialize the articles/ resources endpoint
-func NewArticlesHandler(us amodels.ArticleUsecase) ArticlesHandler {
+func NewArticlesHandler(us app.ArticleDeliveryClient) ArticlesHandler {
 	handler := &ArticlesHandler{
 		UseCase: us,
 	}
@@ -81,15 +131,56 @@ func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
 	return a
 }
 
+func upConv(a *models.ArticleUpdate) *app.ArticleUpdate {
+	ar := new(app.ArticleUpdate)
+	ar.Category = a.Category
+	ar.Img = a.Img
+	ar.Tags = a.Tags
+	ar.Text = a.Text
+	ar.Title = a.Title
+	ar.Id = a.Id
+	return ar
+}
+
+func auConv(a app.Author) *models.Author {
+	thor := new(models.Author)
+	thor.Id = int(a.Id)
+	thor.AvatarUrl = a.AvatarUrl
+	thor.Description = a.Description
+	thor.Email = a.Email
+	thor.Login = a.Login
+	thor.Name = a.Name
+	thor.Password = a.Password
+	thor.Score = int(a.Score)
+	thor.Surname = thor.Surname
+	return thor
+}
+
+func arConv(a *models.ArticleCreate) *app.ArticleCreate {
+	ar := new(app.ArticleCreate)
+	ar.Category = a.Category
+	ar.Img = a.Img
+	ar.Tags = a.Tags
+	ar.Text = a.Text
+	ar.Title = a.Title
+	return ar
+}
+
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.Fetch(ctx, id, chunkSize)
+	//	ChunkData, err := api.UseCase.Fetch(ctx, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
 	}
 	// Возвращаем записи
-
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
+	}
 	// формируем ответ
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -101,17 +192,18 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
 	ctx := c.Request().Context()
-	id, err := IdToStr(strId)
-	if err != nil {
-		return errors.Wrap(err, "articleHandler/getbyid")
-	}
-	Data, err := api.UseCase.GetByID(ctx, int64(id))
+	// id, err := IdToStr(strId)
+	// if err != nil {
+	// 	return errors.Wrap(err, "articleHandler/getbyid")
+	// }
+	myid := app.Id{Id: strId}
+	Data, err := api.UseCase.GetByID(ctx, &myid)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetbyID")
 	}
 	response := amodels.ArticleResponse{
 		Status: http.StatusOK,
-		Data:   Data,
+		Data:   *revFullConv(Data),
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -121,9 +213,16 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	login := c.QueryParam("login")
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByAuthor(ctx, login, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	authors := &app.Authors{Author: login, Chunk: a}
+	Data, err := api.UseCase.GetByAuthor(ctx, authors)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -134,11 +233,18 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	cat := c.QueryParam("category")
-	c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
+	//c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByCategory(ctx, cat, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	categories := &app.Categories{Category: cat, Chunk: a}
+	Data, err := api.UseCase.GetByCategory(ctx, categories)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -158,7 +264,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 	}
 	newArticle = SanitizeUpdate(newArticle)
 	ctx := c.Request().Context()
-	err = api.UseCase.Update(ctx, newArticle)
+	_, err = api.UseCase.Update(ctx, upConv(newArticle))
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
@@ -175,9 +281,16 @@ func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	tag := c.QueryParam("tag")
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByTag(ctx, tag, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	tags := &app.Tags{Tag: tag, Chunk: a}
+	Data, err := api.UseCase.GetByTag(ctx, tags)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -193,9 +306,16 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.FindArticles(ctx, q, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	query := &app.Queries{Query: q, Chunk: a}
+	Data, err := api.UseCase.FindArticles(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -211,9 +331,16 @@ func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.FindAuthors(ctx, q, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	query := &app.Queries{Query: q, Chunk: a}
+	Data, err := api.UseCase.FindAuthors(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Author
+	for _, a := range Data.Author {
+		val := *auConv(*a)
+		ChunkData = append(ChunkData, val)
 	}
 	response := amodels.AuthorsChunks{
 		Status:    http.StatusOK,
@@ -229,9 +356,16 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.FindByTag(ctx, q, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	query := &app.Queries{Query: q, Chunk: a}
+	Data, err := api.UseCase.FindByTag(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -257,8 +391,11 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 		}
 	}
 	tempArticle = SanitizeCreate(tempArticle)
+	cook := cookie.Value
 	ctx := c.Request().Context()
-	Id, err := api.UseCase.Store(ctx, cookie, tempArticle)
+	art := arConv(tempArticle)
+	cr := &app.Create{Art: art, Value: cook}
+	Id, err := api.UseCase.Store(ctx, cr)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
@@ -274,7 +411,8 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 func (api *ArticlesHandler) Delete(c echo.Context) error {
 	id := c.QueryParam("id")
 	ctx := c.Request().Context()
-	err := api.UseCase.Delete(ctx, id)
+	d := &app.Id{Id: id}
+	_, err := api.UseCase.Delete(ctx, d)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Delete")
 	}

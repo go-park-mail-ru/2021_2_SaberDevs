@@ -1,9 +1,11 @@
 package server
 
 import (
+	"net/http"
+
+	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
-	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
 	cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
@@ -23,7 +25,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/tarantool/go-tarantool"
+
 	"net/http"
+
+	"google.golang.org/grpc"
+
+	"github.com/labstack/echo/v4"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -69,7 +76,7 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient) {
 	//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 	//	TokenLookup: "header:X-XSRF-TOKEN",
 	//}))
@@ -87,8 +94,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection) {
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
 
-	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
-	articlesAPI := ahandler.NewArticlesHandler(articlesUsecase)
+	//articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
+	articlesAPI := ahandler.NewArticlesHandler(*a)
 
 	imageUsecase := iusecase.NewImageUsecase(imageRepo)
 	imageAPI := ihandler.NewImageHandler(imageUsecase)
@@ -169,10 +176,21 @@ func Run(address string) {
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
+	grcpConn, err := grpc.Dial(
+		"127.0.0.1:8079",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	defer grcpConn.Close()
+
+	sessManager := app.NewArticleDeliveryClient(grcpConn)
 
 	defer DbClose(db)
 
-	router(e, db, tarantoolConn)
+	router(e, db, tarantoolConn, &sessManager)
 
 	e.Logger.Fatal(e.Start(address))
 }
