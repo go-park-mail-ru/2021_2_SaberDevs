@@ -98,6 +98,19 @@ func previewConv(a models.Preview) *app.Preview {
 	val.Author.Surname = a.Author.Surname
 	return val
 }
+func auConv(a models.Author) *app.Author {
+	thor := new(app.Author)
+	thor.Id = int64(a.Id)
+	thor.AvatarUrl = a.AvatarUrl
+	thor.Description = a.Description
+	thor.Email = a.Email
+	thor.Login = a.Login
+	thor.Name = a.Name
+	thor.Password = a.Password
+	thor.Score = int64(a.Score)
+	thor.Surname = thor.Surname
+	return thor
+}
 
 func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repview, error) {
 	ch := int(chunk.ChunkSize)
@@ -143,18 +156,47 @@ func (m *ArticleManager) FindByTag(ctx context.Context, q *app.Queries) (*app.Re
 	return &retval, err
 }
 
-func auConv(a models.Author) *app.Author {
-	thor := new(app.Author)
-	thor.Id = int64(a.Id)
-	thor.AvatarUrl = a.AvatarUrl
-	thor.Description = a.Description
-	thor.Email = a.Email
-	thor.Login = a.Login
-	thor.Name = a.Name
-	thor.Password = a.Password
-	thor.Score = int64(a.Score)
-	thor.Surname = thor.Surname
-	return thor
+func (m *ArticleManager) GetByAuthor(ctx context.Context, au *app.Authors) (*app.Repview, error) {
+	ch := int(au.Chunk.ChunkSize)
+	id := au.Chunk.IdLastLoaded
+	author := au.Author
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.GetByAuthor(ctx, author, id, ch)
+	retval := app.Repview{}
+	for _, a := range res {
+		val := previewConv(a)
+		retval.Preview = append(retval.Preview, val)
+	}
+	return &retval, err
+}
+
+func (m *ArticleManager) GetByCategory(ctx context.Context, cat *app.Categories) (*app.Repview, error) {
+	ch := int(cat.Chunk.ChunkSize)
+	id := cat.Chunk.IdLastLoaded
+	category := cat.Category
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.GetByCategory(ctx, category, id, ch)
+	retval := app.Repview{}
+	for _, a := range res {
+		val := previewConv(a)
+		retval.Preview = append(retval.Preview, val)
+	}
+	return &retval, err
+}
+
+func (m *ArticleManager) GetById(ctx context.Context, id *app.Id) (*app.Repview, error) {
+	nId := id.Id
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.GetByID(ctx, category, nId)
+	retval := app.Repview{}
+	for _, a := range res {
+		val := previewConv(a)
+		retval.Preview = append(retval.Preview, val)
+	}
+	return &retval, err
 }
 
 func (m *ArticleManager) FindAuthors(ctx context.Context, q *app.Queries) (*app.AView, error) {
