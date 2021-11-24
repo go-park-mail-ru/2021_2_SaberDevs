@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	lis, err := net.Listen("tcp", ":8081")
+	lis, err := net.Listen("tcp", ":8079")
 	if err != nil {
 		log.Fatalln("cant listen port", err)
 	}

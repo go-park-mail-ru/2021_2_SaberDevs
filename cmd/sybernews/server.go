@@ -167,7 +167,7 @@ func Run(address string) {
 		e.Logger.Fatal(err)
 	}
 	grcpConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		"127.0.0.1:8079",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
