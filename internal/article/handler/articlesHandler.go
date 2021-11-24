@@ -131,6 +131,31 @@ func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
 	return a
 }
 
+func upConv(a *models.ArticleUpdate) *app.ArticleUpdate {
+	ar := new(app.ArticleUpdate)
+	ar.Category = a.Category
+	ar.Img = a.Img
+	ar.Tags = a.Tags
+	ar.Text = a.Text
+	ar.Title = a.Title
+	ar.Id = a.Id
+	return ar
+}
+
+func auConv(a app.Author) *models.Author {
+	thor := new(models.Author)
+	thor.Id = int(a.Id)
+	thor.AvatarUrl = a.AvatarUrl
+	thor.Description = a.Description
+	thor.Email = a.Email
+	thor.Login = a.Login
+	thor.Name = a.Name
+	thor.Password = a.Password
+	thor.Score = int(a.Score)
+	thor.Surname = thor.Surname
+	return thor
+}
+
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
@@ -229,7 +254,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 	}
 	newArticle = SanitizeUpdate(newArticle)
 	ctx := c.Request().Context()
-	_, err = api.UseCase.Update(ctx, newArticle)
+	_, err = api.UseCase.Update(ctx, upConv(newArticle))
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
@@ -246,9 +271,16 @@ func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	tag := c.QueryParam("tag")
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByTag(ctx, tag, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	tags := &app.Tags{Tag: tag, Chunk: a}
+	Data, err := api.UseCase.GetByTag(ctx, tags)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -264,9 +296,16 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.FindArticles(ctx, q, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	query := &app.Queries{Query: q, Chunk: a}
+	Data, err := api.UseCase.FindArticles(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -282,9 +321,16 @@ func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.FindAuthors(ctx, q, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	query := &app.Queries{Query: q, Chunk: a}
+	Data, err := api.UseCase.FindAuthors(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Author
+	for _, a := range Data.Author {
+		val := *auConv(*a)
+		ChunkData = append(ChunkData, val)
 	}
 	response := amodels.AuthorsChunks{
 		Status:    http.StatusOK,
@@ -300,9 +346,16 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.FindByTag(ctx, q, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	query := &app.Queries{Query: q, Chunk: a}
+	Data, err := api.UseCase.FindByTag(ctx, query)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByTag")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -328,8 +381,11 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 		}
 	}
 	tempArticle = SanitizeCreate(tempArticle)
+	c:= cookie.Value
 	ctx := c.Request().Context()
-	Id, err := api.UseCase.Store(ctx, cookie.Value, tempArticle)
+	
+	query := &app.Create{Art}
+	Id, err := api.UseCase.Store(ctx, , tempArticle)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
