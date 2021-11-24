@@ -6,7 +6,9 @@ import (
 	"net"
 
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
-	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
+	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
+	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
+	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 
 	"google.golang.org/grpc"
 )
@@ -18,9 +20,22 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	handler := &ahandler.ArticlesHandler{}
+	db, err := DbConnect()
+	if err != nil {
+		// e.Logger.Fatal(err)
+	}
 
-	app.RegisterArticleDeliveryServer(server, NewArticleManager(handler))
+	tarantoolConn, err := TarantoolConnect()
+	if err != nil {
+		// e.Logger.Fatal(err)
+	}
+
+	defer DbClose(db)
+
+	articleRepo := arepo.NewArticleRepository(db)
+	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
+	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
+	app.RegisterArticleDeliveryServer(server, NewArticleManager(articlesUsecase))
 
 	fmt.Println("starting server at :8081")
 	server.Serve(lis)

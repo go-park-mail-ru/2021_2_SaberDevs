@@ -6,6 +6,7 @@ import (
 
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
@@ -72,4 +73,42 @@ func (m *ArticleManager) Delete(ctx context.Context, id *app.Id) (*app.Nothing, 
 	defer m.mu.Unlock()
 	err := m.handler.Delete(ctx, myid)
 	return &app.Nothing{Dummy: true}, err
+}
+
+func previewConv(a models.Preview) *app.Preview {
+	val := new(app.Preview)
+	val.Category = a.Category
+	val.Comments = int64(a.Comments)
+	val.CommentsUrl = a.CommentsUrl
+	val.DateTime = a.DateTime
+	val.Id = a.Id
+	val.Likes = int64(a.Likes)
+	val.PreviewUrl = a.PreviewUrl
+	val.Tags = a.Tags
+	val.Text = a.Text
+	val.Title = a.Title
+	val.Author.Id = int64(a.Author.Id)
+	val.Author.AvatarUrl = a.Author.AvatarUrl
+	val.Author.Description = a.Author.Description
+	val.Author.Email = a.Author.Email
+	val.Author.Login = a.Author.Login
+	val.Author.Name = a.Author.Name
+	val.Author.Password = a.Author.Password
+	val.Author.Score = int64(a.Author.Score)
+	val.Author.Surname = a.Author.Surname
+	return val
+}
+
+func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repview, error) {
+	ch := int(chunk.ChunkSize)
+	id := chunk.IdLastLoaded
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.Fetch(ctx, id, ch)
+	retval := app.Repview{}
+	for _, a := range res {
+		val := previewConv(a)
+		retval.Preview = append(retval.Preview, val)
+	}
+	return &retval, err
 }
