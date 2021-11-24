@@ -353,10 +353,10 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, fro
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx(`select a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
+	rows, err := m.Db.Queryx(`select DISTINCT a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag LIKE $1 LIMIT $2 OFFSET $3`, query, chunkSize, from)
+	where c.tag LIKE $1 ORDER BY ID LIMIT $2 OFFSET $3`, query, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),

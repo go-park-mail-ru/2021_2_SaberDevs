@@ -256,7 +256,7 @@ func Testing() {
 		fmt.Print(result.Id, " ", result.Title, " ", result.Category, " ", result.Author.Name, " ", result.Tags, " ", result.Text, " ", result.Likes, "\n")
 	}
 
-	fmt.Println()
+	fmt.Println("TAGS")
 	newresult, err = myRepo.FindByTag(context.TODO(), "", 0, 10)
 	if err != nil {
 		fmt.Println(err.Error())
