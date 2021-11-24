@@ -6,10 +6,11 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang/mock v1.6.0
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.1.2
+	github.com/gorilla/websocket v1.4.2
 	github.com/jmoiron/sqlx v1.3.4
-	github.com/kolesa-team/go-webp v1.0.1 // indirect
+	github.com/kolesa-team/go-webp v1.0.1
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/labstack/gommon v0.3.0
 	github.com/lib/pq v1.10.3
@@ -24,6 +25,6 @@ require (
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9 // indirect
 	golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
-	google.golang.org/grpc v1.42.0 // indirect
+	google.golang.org/grpc v1.42.0
 
 )
