@@ -395,6 +395,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	ctx := c.Request().Context()
 	art := arConv(tempArticle)
 	cr := &app.Create{Art: art, Value: cook}
+	c.Logger().Error("!!!!!!", tempArticle.Category)
 	Id, err := api.UseCase.Store(ctx, cr)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
