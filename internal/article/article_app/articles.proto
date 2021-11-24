@@ -47,7 +47,6 @@ message FullArticle  {
 
 message Repview  {
     repeated Preview Preview = 1;
-    Error error = 2;
 }
 message Error  {
     int64 status  = 1;
@@ -76,7 +75,7 @@ message Queries  {
 }
 
 message Id  {
-    int64 id = 1;
+    string id = 1;
 }
 
 message chunk {
@@ -90,16 +89,15 @@ message Nothing {
 
 message Created {
     int64 id = 1;
-    Error error = 2;
-  }
+}
 
-  message ArticleCreate {
+message ArticleCreate {
     string Img            = 3;
-	repeated string Tags  = 4;
-	string Title          = 5;
-	string Category       = 6;
-	string Text           = 7;
-  }
+    repeated string Tags  = 4;
+    string Title          = 5;
+    string Category       = 6;
+    string Text           = 7;
+}
 
   message ArticleUpdate {
     string Id             = 2;
@@ -109,8 +107,6 @@ message Created {
 	string Category       = 6;
 	string Text           = 7;
   }
-
-
 
 
 // ArticleDelivery вызывает методы по gRPC
@@ -123,7 +119,7 @@ service ArticleDelivery {
 	rpc FindByTag(Queries)  returns (Repview){}
 	rpc FindAuthors(Queries)  returns (Repview){}
 	rpc FindArticles(Queries) returns  (Repview){}
-	rpc Update(ArticleUpdate) returns  (Error){}
+	rpc Update(ArticleUpdate) returns  (Nothing){}
 	rpc Store(ArticleCreate)  returns (Created){}
-	rpc Delete(Id) returns  (Error){}
+	rpc Delete(Id) returns  (Nothing){}
 }
