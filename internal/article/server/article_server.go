@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
@@ -16,18 +15,18 @@ import (
 func main() {
 	lis, err := net.Listen("tcp", ":8079")
 	if err != nil {
-		log.Fatalln("cant listen port", err)
+		fmt.Println("cant listen port", err)
 	}
 
 	server := grpc.NewServer()
 	db, err := DbConnect()
 	if err != nil {
-		// e.Logger.Fatal(err)
+		fmt.Println(err)
 	}
 
 	tarantoolConn, err := TarantoolConnect()
 	if err != nil {
-		// e.Logger.Fatal(err)
+		fmt.Println(err)
 	}
 
 	defer DbClose(db)
@@ -37,6 +36,6 @@ func main() {
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	app.RegisterArticleDeliveryServer(server, NewArticleManager(articlesUsecase))
 
-	fmt.Println("starting server at :8081")
+	fmt.Println("starting server at :8079")
 	server.Serve(lis)
 }

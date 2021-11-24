@@ -171,8 +171,9 @@ func Run(address string) {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		e.Logger.Fatal("cant connect to grpc")
+		e.Logger.Fatal(err)
 	}
+
 	defer grcpConn.Close()
 
 	sessManager := app.NewArticleDeliveryClient(grcpConn)
