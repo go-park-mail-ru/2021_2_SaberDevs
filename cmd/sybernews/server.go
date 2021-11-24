@@ -171,7 +171,7 @@ func Run(address string) {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalf("cant connect to grpc")
+		e.Logger.Fatal("cant connect to grpc")
 	}
 	defer grcpConn.Close()
 
