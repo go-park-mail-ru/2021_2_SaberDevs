@@ -25,12 +25,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/tarantool/go-tarantool"
-
 	"net/http"
-
 	"google.golang.org/grpc"
-
-	"github.com/labstack/echo/v4"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
