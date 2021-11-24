@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -175,6 +176,7 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	res, err := m.handler.Fetch(ctx, id, ch)
 	retval := app.Repview{}
 	for _, a := range res {
+		fmt.Println("here is an error")
 		val := previewConv(a)
 		retval.Preview = append(retval.Preview, val)
 	}
