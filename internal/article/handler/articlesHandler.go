@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 
+	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
@@ -14,11 +16,35 @@ import (
 )
 
 type ArticlesHandler struct {
-	UseCase amodels.ArticleUsecase
+	UseCase app.ArticleDeliveryClient
+}
+
+func reverseConv(a *app.Preview) *models.Preview {
+	val := new(models.Preview)
+	val.Category = a.Category
+	val.Comments = uint(a.Comments)
+	val.CommentsUrl = a.CommentsUrl
+	val.DateTime = a.DateTime
+	val.Id = a.Id
+	val.Likes = uint(a.Likes)
+	val.PreviewUrl = a.PreviewUrl
+	val.Tags = a.Tags
+	val.Text = a.Text
+	val.Title = a.Title
+	val.Author.Id = int(a.Author.Id)
+	val.Author.AvatarUrl = a.Author.AvatarUrl
+	val.Author.Description = a.Author.Description
+	val.Author.Email = a.Author.Email
+	val.Author.Login = a.Author.Login
+	val.Author.Name = a.Author.Name
+	val.Author.Password = a.Author.Password
+	val.Author.Score = int(a.Author.Score)
+	val.Author.Surname = a.Author.Surname
+	return val
 }
 
 // NewArticleHandler will initialize the articles/ resources endpoint
-func NewArticlesHandler(us amodels.ArticleUsecase) ArticlesHandler {
+func NewArticlesHandler(us app.ArticleDeliveryClient) ArticlesHandler {
 	handler := &ArticlesHandler{
 		UseCase: us,
 	}
@@ -84,12 +110,18 @@ func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.Fetch(ctx, id, chunkSize)
+	//	ChunkData, err := api.UseCase.Fetch(ctx, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
 	}
 	// Возвращаем записи
-
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
+	}
 	// формируем ответ
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
