@@ -103,6 +103,11 @@ message ArticleCreate {
     string Text           = 7;
 }
 
+message create {
+    ArticleCreate Art            = 1;
+    string value            = 1;
+}
+
   message ArticleUpdate {
     string Id             = 2;
     string Img            = 3;
@@ -124,6 +129,6 @@ service ArticleDelivery {
 	rpc FindAuthors(Queries)  returns (AView){}
 	rpc FindArticles(Queries) returns  (Repview){}
 	rpc Update(ArticleUpdate) returns  (Nothing){}
-	rpc Store(ArticleCreate)  returns (Created){}
+	rpc Store(create)  returns (Created){}
 	rpc Delete(Id) returns  (Nothing){}
 }
