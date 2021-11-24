@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
@@ -22,7 +24,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/tarantool/go-tarantool"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -149,12 +150,6 @@ func Run(address string) {
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
-
-	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins:     []string{"*"},
-	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
-	// 	AllowCredentials: true,
-	// }))
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB

@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package article_server;
+
+
+message Author  {
+	int64 Id             = 1;     
+	string Login       = 2;
+	string Name        = 3;
+	string Surname     = 4;
+	string AvatarUrl   = 5;
+	string Description = 6;
+	string Email       = 7;
+	string Password    = 8;
+    int64  Score       = 10;
+}
+
+message Preview  {
+	string Id             = 1;     
+	string DateTime       = 2;
+	string PreviewUrl     = 3;
+	repeated string Tags  = 4;
+	string Title          = 5;
+	string Category       = 6;
+	string Text           = 7;
+	Author Author         = 8;
+	string CommentsUrl    = 9;
+    int64  Comments       = 10;
+    int64  Likes          = 11;
+}
+
+message FullArticle  {
+	string Id             = 1;     
+	string DateTime       = 2;
+	string PreviewUrl     = 3;
+	repeated string Tags  = 4;
+	string Title          = 5;
+	string Category       = 6;
+	string Text           = 7;
+	Author Author         = 8;
+	string CommentsUrl    = 9;
+    int64  Comments       = 10;
+    int64  Likes          = 11;
+}
+
+message Repview  {
+    repeated Preview Preview = 1;
+    Error error = 2;
+}
+message Error  {
+    int64 status  = 1;
+    string msg  = 2;
+}
+
+
+message Tags  {
+    string tag = 1;
+    chunk chunk = 2;
+}
+
+message Authors  {
+    string author = 1;
+    chunk chunk = 2;
+}
+
+message Categories  {
+    string category = 1;
+    chunk chunk = 2;
+}
+
+message Queries  {
+    string query = 1;
+    chunk chunk = 2;
+}
+
+message Id  {
+    int64 id = 1;
+}
+
+message chunk {
+  string idLastLoaded = 1;
+  int64 chunkSize = 2;
+}
+
+message Nothing {
+  bool dummy = 1;
+}
+
+message Created {
+    int64 id = 1;
+    Error error = 2;
+  }
+
+  message ArticleCreate {
+    string Img            = 3;
+	repeated string Tags  = 4;
+	string Title          = 5;
+	string Category       = 6;
+	string Text           = 7;
+  }
+
+  message ArticleUpdate {
+    string Id             = 2;
+    string Img            = 3;
+	repeated string Tags  = 4;
+	string Title          = 5;
+	string Category       = 6;
+	string Text           = 7;
+  }
+
+
+
+
+// ArticleDelivery вызывает методы по gRPC
+service ArticleDelivery {
+	rpc Fetch(chunk) returns (Repview) {}
+	rpc GetByID(Id)  returns (FullArticle){}
+	rpc GetByTag(chunk)  returns (Repview){}
+	rpc GetByAuthor(Authors)  returns (Repview){}
+	rpc GetByCategory(Categories) returns  (Repview){}
+	rpc FindByTag(Queries)  returns (Repview){}
+	rpc FindAuthors(Queries)  returns (Repview){}
+	rpc FindArticles(Queries) returns  (Repview){}
+	rpc Update(ArticleUpdate) returns  (Error){}
+	rpc Store(ArticleCreate)  returns (Created){}
+	rpc Delete(Id) returns  (Error){}
+}
