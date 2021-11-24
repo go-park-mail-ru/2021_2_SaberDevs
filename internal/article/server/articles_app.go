@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strconv"
 	"sync"
 
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
@@ -55,6 +56,14 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
+func IdToString(id string) (int, error) {
+	if id == "" {
+		id = "0"
+	}
+	idInt, err := strconv.Atoi(id)
+	return idInt, err
+}
+
 type ArticleManager struct {
 	mu      sync.RWMutex
 	handler amodels.ArticleUsecase
@@ -98,6 +107,31 @@ func previewConv(a models.Preview) *app.Preview {
 	val.Author.Surname = a.Author.Surname
 	return val
 }
+
+func fullConv(a models.FullArticle) *app.FullArticle {
+	val := new(app.FullArticle)
+	val.Category = a.Category
+	val.Comments = int64(a.Comments)
+	val.CommentsUrl = a.CommentsUrl
+	val.DateTime = a.DateTime
+	val.Id = a.Id
+	val.Likes = int64(a.Likes)
+	val.PreviewUrl = a.PreviewUrl
+	val.Tags = a.Tags
+	val.Text = a.Text
+	val.Title = a.Title
+	val.Author.Id = int64(a.Author.Id)
+	val.Author.AvatarUrl = a.Author.AvatarUrl
+	val.Author.Description = a.Author.Description
+	val.Author.Email = a.Author.Email
+	val.Author.Login = a.Author.Login
+	val.Author.Name = a.Author.Name
+	val.Author.Password = a.Author.Password
+	val.Author.Score = int64(a.Author.Score)
+	val.Author.Surname = a.Author.Surname
+	return val
+}
+
 func auConv(a models.Author) *app.Author {
 	thor := new(app.Author)
 	thor.Id = int64(a.Id)
@@ -186,16 +220,31 @@ func (m *ArticleManager) GetByCategory(ctx context.Context, cat *app.Categories)
 	return &retval, err
 }
 
-func (m *ArticleManager) GetById(ctx context.Context, id *app.Id) (*app.Repview, error) {
-	nId := id.Id
+func (m *ArticleManager) GetByTag(ctx context.Context, cat *app.Tags) (*app.Repview, error) {
+	ch := int(cat.Chunk.ChunkSize)
+	id := cat.Chunk.IdLastLoaded
+	tag := cat.Tag
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByID(ctx, category, nId)
+	res, err := m.handler.GetByTag(ctx, tag, id, ch)
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
 		retval.Preview = append(retval.Preview, val)
 	}
+	return &retval, err
+}
+
+func (m *ArticleManager) GetByID(ctx context.Context, id *app.Id) (*app.FullArticle, error) {
+	nId, err := IdToString(id.Id)
+	retval := app.FullArticle{}
+	if err != nil {
+		return &retval, err
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.GetByID(ctx, int64(nId))
+	retval = *fullConv(res)
 	return &retval, err
 }
 
