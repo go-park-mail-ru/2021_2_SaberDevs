@@ -112,3 +112,46 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	}
 	return &retval, err
 }
+
+func (m *ArticleManager) FindArticles(ctx context.Context, q *app.Queries) (*app.Repview, error) {
+	ch := int(q.Chunk.ChunkSize)
+	id := q.Chunk.IdLastLoaded
+	query := q.Query
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.FindArticles(ctx, query, id, ch)
+	retval := app.Repview{}
+	for _, a := range res {
+		val := previewConv(a)
+		retval.Preview = append(retval.Preview, val)
+	}
+	return &retval, err
+}
+func auConv(a models.Author) *app.Author {
+	thor := new(app.Author)
+	thor.Id = int64(a.Id)
+	thor.AvatarUrl = a.AvatarUrl
+	thor.Description = a.Description
+	thor.Email = a.Email
+	thor.Login = a.Login
+	thor.Name = a.Name
+	thor.Password = a.Password
+	thor.Score = int64(a.Score)
+	thor.Surname = thor.Surname
+	return thor
+}
+
+func (m *ArticleManager) FindAuthors(ctx context.Context, q *app.Queries) (*app.AView, error) {
+	ch := int(q.Chunk.ChunkSize)
+	id := q.Chunk.IdLastLoaded
+	query := q.Query
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	res, err := m.handler.FindAuthors(ctx, query, id, ch)
+	retval := app.AView{}
+	for _, a := range res {
+		val := auConv(a)
+		retval.Author = append(retval.Author, val)
+	}
+	return &retval, err
+}

@@ -48,6 +48,10 @@ message FullArticle  {
 message Repview  {
     repeated Preview Preview = 1;
 }
+
+message AView  {
+    repeated Author Author = 1;
+}
 message Error  {
     int64 status  = 1;
     string msg  = 2;
@@ -113,11 +117,11 @@ message ArticleCreate {
 service ArticleDelivery {
 	rpc Fetch(chunk) returns (Repview) {}
 	rpc GetByID(Id)  returns (FullArticle){}
-	rpc GetByTag(chunk)  returns (Repview){}
+	rpc GetByTag(Tags)  returns (Repview){}
 	rpc GetByAuthor(Authors)  returns (Repview){}
 	rpc GetByCategory(Categories) returns  (Repview){}
 	rpc FindByTag(Queries)  returns (Repview){}
-	rpc FindAuthors(Queries)  returns (Repview){}
+	rpc FindAuthors(Queries)  returns (AView){}
 	rpc FindArticles(Queries) returns  (Repview){}
 	rpc Update(ArticleUpdate) returns  (Nothing){}
 	rpc Store(ArticleCreate)  returns (Created){}
