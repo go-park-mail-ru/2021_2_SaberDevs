@@ -43,6 +43,30 @@ func reverseConv(a *app.Preview) *models.Preview {
 	return val
 }
 
+func revFullConv(a *app.FullArticle) *models.FullArticle {
+	val := new(models.FullArticle)
+	val.Category = a.Category
+	val.Comments = uint(a.Comments)
+	val.CommentsUrl = a.CommentsUrl
+	val.DateTime = a.DateTime
+	val.Id = a.Id
+	val.Likes = uint(a.Likes)
+	val.PreviewUrl = a.PreviewUrl
+	val.Tags = a.Tags
+	val.Text = a.Text
+	val.Title = a.Title
+	val.Author.Id = int(a.Author.Id)
+	val.Author.AvatarUrl = a.Author.AvatarUrl
+	val.Author.Description = a.Author.Description
+	val.Author.Email = a.Author.Email
+	val.Author.Login = a.Author.Login
+	val.Author.Name = a.Author.Name
+	val.Author.Password = a.Author.Password
+	val.Author.Score = int(a.Author.Score)
+	val.Author.Surname = a.Author.Surname
+	return val
+}
+
 // NewArticleHandler will initialize the articles/ resources endpoint
 func NewArticlesHandler(us app.ArticleDeliveryClient) ArticlesHandler {
 	handler := &ArticlesHandler{
@@ -133,17 +157,18 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
 	ctx := c.Request().Context()
-	id, err := IdToStr(strId)
-	if err != nil {
-		return errors.Wrap(err, "articleHandler/getbyid")
-	}
-	Data, err := api.UseCase.GetByID(ctx, int64(id))
+	// id, err := IdToStr(strId)
+	// if err != nil {
+	// 	return errors.Wrap(err, "articleHandler/getbyid")
+	// }
+	myid := app.Id{Id: strId}
+	Data, err := api.UseCase.GetByID(ctx, &myid)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetbyID")
 	}
 	response := amodels.ArticleResponse{
 		Status: http.StatusOK,
-		Data:   Data,
+		Data:   *revFullConv(Data),
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -153,9 +178,16 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	login := c.QueryParam("login")
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByAuthor(ctx, login, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	authors := &app.Authors{Author: login, Chunk: a}
+	Data, err := api.UseCase.GetByAuthor(ctx, authors)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -166,11 +198,18 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	cat := c.QueryParam("category")
-	c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
+	//c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
 	ctx := c.Request().Context()
-	ChunkData, err := api.UseCase.GetByCategory(ctx, cat, id, chunkSize)
+	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	categories := &app.Categories{Category: cat, Chunk: a}
+	Data, err := api.UseCase.GetByCategory(ctx, categories)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
+	}
+	var ChunkData []amodels.Preview
+	for _, a := range Data.Preview {
+		val := reverseConv(a)
+		ChunkData = append(ChunkData, *val)
 	}
 	response := amodels.ChunkResponse{
 		Status:    http.StatusOK,
@@ -190,7 +229,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 	}
 	newArticle = SanitizeUpdate(newArticle)
 	ctx := c.Request().Context()
-	err = api.UseCase.Update(ctx, newArticle)
+	_, err = api.UseCase.Update(ctx, newArticle)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
