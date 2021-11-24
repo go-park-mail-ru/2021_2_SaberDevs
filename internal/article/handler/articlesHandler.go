@@ -156,6 +156,16 @@ func auConv(a app.Author) *models.Author {
 	return thor
 }
 
+func arConv(a *models.ArticleCreate) *app.ArticleCreate {
+	ar := new(app.ArticleCreate)
+	ar.Category = a.Category
+	ar.Img = a.Img
+	ar.Tags = a.Tags
+	ar.Text = a.Text
+	ar.Title = a.Title
+	return ar
+}
+
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
@@ -381,11 +391,11 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 		}
 	}
 	tempArticle = SanitizeCreate(tempArticle)
-	c:= cookie.Value
+	cook := cookie.Value
 	ctx := c.Request().Context()
-	
-	query := &app.Create{Art}
-	Id, err := api.UseCase.Store(ctx, , tempArticle)
+	art := arConv(tempArticle)
+	cr := &app.Create{Art: art, Value: cook}
+	Id, err := api.UseCase.Store(ctx, cr)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
@@ -401,7 +411,8 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 func (api *ArticlesHandler) Delete(c echo.Context) error {
 	id := c.QueryParam("id")
 	ctx := c.Request().Context()
-	err := api.UseCase.Delete(ctx, id)
+	d := &app.Id{Id: id}
+	_, err := api.UseCase.Delete(ctx, d)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Delete")
 	}
