@@ -152,6 +152,12 @@ func Run(address string) {
 		AllowCredentials: true,
 	}))
 
+	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// 	AllowOrigins:     []string{"*"},
+	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
+	// 	AllowCredentials: true,
+	// }))
+
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
 		LogLevel:  log.ERROR,

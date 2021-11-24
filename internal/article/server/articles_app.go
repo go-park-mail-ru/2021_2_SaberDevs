@@ -97,15 +97,7 @@ func previewConv(a models.Preview) *app.Preview {
 	val.Tags = a.Tags
 	val.Text = a.Text
 	val.Title = a.Title
-	val.Author.Id = int64(a.Author.Id)
-	val.Author.AvatarUrl = a.Author.AvatarUrl
-	val.Author.Description = a.Author.Description
-	val.Author.Email = a.Author.Email
-	val.Author.Login = a.Author.Login
-	val.Author.Name = a.Author.Name
-	val.Author.Password = a.Author.Password
-	val.Author.Score = int64(a.Author.Score)
-	val.Author.Surname = a.Author.Surname
+	val.Author = auConv(a.Author)
 	return val
 }
 
@@ -121,15 +113,7 @@ func fullConv(a models.FullArticle) *app.FullArticle {
 	val.Tags = a.Tags
 	val.Text = a.Text
 	val.Title = a.Title
-	val.Author.Id = int64(a.Author.Id)
-	val.Author.AvatarUrl = a.Author.AvatarUrl
-	val.Author.Description = a.Author.Description
-	val.Author.Email = a.Author.Email
-	val.Author.Login = a.Author.Login
-	val.Author.Name = a.Author.Name
-	val.Author.Password = a.Author.Password
-	val.Author.Score = int64(a.Author.Score)
-	val.Author.Surname = a.Author.Surname
+	val.Author = auConv(a.Author)
 	return val
 }
 
