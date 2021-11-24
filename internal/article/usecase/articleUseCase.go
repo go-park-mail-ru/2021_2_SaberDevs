@@ -2,7 +2,6 @@ package article
 
 import (
 	"context"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -115,7 +114,7 @@ func (m *articleUsecase) FindArticles(ctx context.Context, category string, idLa
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 
-func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.ArticleCreate) (int, error) {
+func (m *articleUsecase) Store(ctx context.Context, c string, a *amodels.ArticleCreate) (int, error) {
 	newArticle := amodels.Article{}
 	newArticle.Text = a.Text
 	newArticle.Tags = a.Tags
@@ -124,7 +123,7 @@ func (m *articleUsecase) Store(ctx context.Context, c *http.Cookie, a *amodels.A
 	newArticle.PreviewUrl = a.Img
 	newArticle.DateTime = time.Now().Format("2006/1/2 15:04")
 
-	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c.Value)
+	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "articleUsecase/Delete")
 	}

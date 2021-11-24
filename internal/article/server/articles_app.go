@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"sync"
 
@@ -11,6 +12,7 @@ import (
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
+	"google.golang.org/grpc/metadata"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -146,6 +148,16 @@ func auConv(a models.Author) *app.Author {
 	return thor
 }
 
+func arConv(a *app.ArticleCreate) *models.ArticleCreate {
+	ar := new(models.ArticleCreate)
+	ar.Category = a.Category
+	ar.Img = a.Img
+	ar.Tags = a.Tags
+	ar.Text = a.Text
+	ar.Title = a.Title
+	return ar
+}
+
 func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repview, error) {
 	ch := int(chunk.ChunkSize)
 	id := chunk.IdLastLoaded
@@ -246,6 +258,19 @@ func (m *ArticleManager) GetByID(ctx context.Context, id *app.Id) (*app.FullArti
 	res, err := m.handler.GetByID(ctx, int64(nId))
 	retval = *fullConv(res)
 	return &retval, err
+}
+
+func (m *ArticleManager) Store(ctx context.Context, a *app.ArticleCreate) (*app.Created, error) {
+	ar := arConv(a)
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		values := md.Get("session")
+	}
+	res, err := m.handler.Store(ctx, *http.Cookie(values[0]), ar)
+
+	return &app.Created{Id: int64(res)}, err
 }
 
 func (m *ArticleManager) FindAuthors(ctx context.Context, q *app.Queries) (*app.AView, error) {

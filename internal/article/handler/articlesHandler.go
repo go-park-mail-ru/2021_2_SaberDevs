@@ -258,7 +258,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	}
 	tempArticle = SanitizeCreate(tempArticle)
 	ctx := c.Request().Context()
-	Id, err := api.UseCase.Store(ctx, cookie, tempArticle)
+	Id, err := api.UseCase.Store(ctx, cookie.Value, tempArticle)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
 	}
