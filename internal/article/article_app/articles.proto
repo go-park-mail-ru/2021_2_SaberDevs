@@ -104,8 +104,8 @@ message ArticleCreate {
 }
 
 message create {
-    ArticleCreate Art            = 1;
-    string value            = 1;
+    ArticleCreate Art       = 1;
+    string value            = 2;
 }
 
   message ArticleUpdate {
