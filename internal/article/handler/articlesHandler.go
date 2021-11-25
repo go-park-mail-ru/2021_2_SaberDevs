@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/metadata"
 )
 
 type ArticlesHandler struct {
@@ -170,7 +171,8 @@ func arConv(a *models.ArticleCreate) *app.ArticleCreate {
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-
+	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
+	metadata.AppendToOutgoingContext(ctx, "X-Request-ID", reqID)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
@@ -242,7 +244,7 @@ func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	//c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
 	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	metadata.AppendToOutgoingContext(ctx, "X-Request-ID", reqID)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	categories := &app.Categories{Category: cat, Chunk: a}
 	Data, err := api.UseCase.GetByCategory(ctx, categories)

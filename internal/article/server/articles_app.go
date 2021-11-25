@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -11,6 +12,7 @@ import (
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
+	"google.golang.org/grpc/metadata"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -157,6 +159,11 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.Fetch(ctx, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
