@@ -1,17 +1,10 @@
 package commentStream
 
 import (
+	cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
 )
-
-type Comment struct {
-	Type        string `json:"type"`
-	Id          int64  `json:"id"  db:"id"`
-	Text        string `json:"text" db:"text"`
-	ArticleId   int64  `json:"articleId" db:"articleid"`
-	ArticleName string `json:"articleName"`
-}
 
 type commentStreamHandler struct {
 	pub *Publisher
@@ -36,7 +29,7 @@ func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 	sub := &Subscriber{
 		pub:  api.pub,
 		conn: conn,
-		send: make(chan []Comment),
+		send: make(chan []cmodels.StreamComment),
 	}
 	sub.pub.register <- sub
 

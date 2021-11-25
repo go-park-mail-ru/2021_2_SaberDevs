@@ -87,6 +87,9 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db)
 
+	streamCommetChecker := commentWS.NewRepoChecker(publisher, commentsRepo)
+	go streamCommetChecker.Run()
+
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
 

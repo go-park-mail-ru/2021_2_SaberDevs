@@ -1,16 +1,18 @@
 package commentStream
 
+import cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
+
 type Publisher struct {
 	subscribers map[*Subscriber]bool
 	// канал для получения последних коментариев
-	broadcast  chan []Comment // // todo поменять на коменты
+	broadcast  chan []cmodels.StreamComment // // todo поменять на коменты
 	register   chan *Subscriber
 	unregister chan *Subscriber
 }
 
 func NewPublisher() *Publisher {
 	return &Publisher{
-		broadcast:   make(chan []Comment),
+		broadcast:   make(chan []cmodels.StreamComment),
 		register:    make(chan *Subscriber),
 		unregister:  make(chan *Subscriber),
 		subscribers: make(map[*Subscriber]bool),

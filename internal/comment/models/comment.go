@@ -38,6 +38,23 @@ type Response struct {
 
 // -----------------------------------------------
 
+type StreamComment struct {
+	Id          int64  `json:"Id"  db:"id"`
+	Text        string `json:"text" db:"text"`
+	ArticleId   int64  `json:"articleId" db:"articleid"`
+	ArticleName string `json:"articleName" db:"title"`
+	author      `json:"author"`
+}
+
+type author struct {
+	Login     string `json:"login" db:"login"`
+	Surname   string `json:"lastName" db:"surname"`
+	Name      string `json:"firstName" db:"name"`
+	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
+}
+
+// -----------------------------------------------
+
 type CommentUsecase interface {
 	CreateComment(ctx context.Context, comment *Comment, sessionID string) (Response, error)
 	UpdateComment(ctx context.Context, comment *Comment, sessionID string) (Response, error)
@@ -49,4 +66,5 @@ type CommentRepository interface {
 	UpdateComment(ctx context.Context, comment *Comment) (Comment, error)
 	GetCommentsByArticleID(ctx context.Context, articleID int64, lastCommentID int64) ([]PreparedComment, error)
 	GetCommentByID(ctx context.Context, commentID int64) (Comment, error)
+	GetCommentsStream(lastCommentID int64) ([]StreamComment, error)
 }

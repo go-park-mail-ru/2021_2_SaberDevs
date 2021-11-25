@@ -1,10 +1,10 @@
 package commentStream
 
 import (
+	cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 const (
@@ -26,7 +26,7 @@ type Subscriber struct {
 	pub  *Publisher
 	conn *websocket.Conn
 	// канал для получения последних коментариев от publisher
-	send chan []Comment // todo поменять на коменты
+	send chan []cmodels.StreamComment // todo поменять на коменты
 }
 
 func (sub *Subscriber) readWS() {
