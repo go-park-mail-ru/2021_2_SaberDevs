@@ -23,9 +23,11 @@ import (
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
+	// "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
@@ -108,8 +110,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 	commentsAPi := chandler.NewCommentHandler(commentUsecase)
-	metrics := e.Group("/metrics")
-	metrics.Any("", echo.WrapHandler(promhttp.Handler()))
+	// metrics := e.Group("/metrics")
+	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
+	e.Any("/metrics", echo.WrapHandler(promhttp.Handler()))
+	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
 
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
