@@ -86,7 +86,9 @@ func (sub *Subscriber) writeWS(lastComment int64) {
 
 			if lastComment > message[0].Id {
 				lastComment = message[0].Id
-				for _, comment := range message {
+				for i, _ := range message {
+					// отправляем в обратном порядке
+					comment := message[len(message) - 1 - i]
 					articleNameSlice := strings.Split(comment.ArticleName, "")[:25]
 					err = sub.conn.WriteJSON(streamComment{
 						Type:        "stream-comment",
