@@ -38,7 +38,11 @@ func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 
 		for i, _ := range comments {
 			comment := comments[len(comments) - 1 - i]
-			articleNameSlice := strings.Split(comment.ArticleName, "")[:25]
+			length := 25
+			if 25 > len(comment.ArticleName) {
+				length = len(comment.ArticleName)
+			}
+			articleNameSlice := strings.Split(comment.ArticleName, "")[:length]
 			err = conn.WriteJSON(streamComment{
 				Type:        "stream-comment",
 				Id:          comment.Id,
