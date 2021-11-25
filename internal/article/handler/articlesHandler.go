@@ -22,14 +22,19 @@ type ArticlesHandler struct {
 	UseCase app.ArticleDeliveryClient
 }
 
-var FooCount = prometheus.NewCounter(prometheus.CounterOpts{
-	Name: "foo_total",
-	Help: "Number of foo successfully processed.",
-})
-
 var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "hits",
+}, []string{"layer", "path"})
+
+var Errors = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
 }, []string{"status", "path"})
+
+var Duration = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
+
+var layer = "delivery"
 
 func reverseConv(a *app.Preview) *models.Preview {
 	val := new(models.Preview)
@@ -180,9 +185,8 @@ func arConv(a *models.ArticleCreate) *app.ArticleCreate {
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
-
-	Hits.WithLabelValues("200", c.Request().URL.RawPath).Inc()
-	FooCount.Add(1)
+	fPath := "/api/v1/articles/feed"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -207,6 +211,8 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
+	fPath := "/api/v1/article/:id"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -226,6 +232,8 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	login := c.QueryParam("login")
 	id := c.QueryParam("idLastLoaded")
+	fPath := "/api/v1/articles/author"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -249,6 +257,8 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	cat := c.QueryParam("category")
+	fPath := "/api/v1/articles/category"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	if cat == "" {
 		return sbErr.ErrNoContent{
 			Reason:   "empty Category",
@@ -277,6 +287,8 @@ func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 }
 
 func (api *ArticlesHandler) Update(c echo.Context) error {
+	fPath := "/api/v1/articles/update"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	newArticle := new(amodels.ArticleUpdate)
 	err := c.Bind(newArticle)
 	if (err != nil) || (newArticle == new(amodels.ArticleUpdate)) {
@@ -305,6 +317,8 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	tag := c.QueryParam("tag")
 	id := c.QueryParam("idLastLoaded")
+	fPath := "/api/v1/articles/tag"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -332,6 +346,8 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	s := bluemonday.StrictPolicy()
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
+	fPath := "/api/v1/articles/query"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -359,6 +375,8 @@ func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
 	s := bluemonday.StrictPolicy()
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
+	fPath := "/api/v1/articles/query"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -386,6 +404,8 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	s := bluemonday.StrictPolicy()
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
+	fPath := "/api/v1/articles/query"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -409,6 +429,8 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 
 func (api *ArticlesHandler) Create(c echo.Context) error {
 	tempArticle := new(amodels.ArticleCreate)
+	fPath := "/api/v1/articles/create"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	err := c.Bind(tempArticle)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
@@ -446,6 +468,8 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 
 func (api *ArticlesHandler) Delete(c echo.Context) error {
 	id := c.QueryParam("id")
+	fPath := "/api/v1/articles/delete"
+	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)

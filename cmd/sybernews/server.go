@@ -78,10 +78,6 @@ func DbClose(db *sqlx.DB) error {
 }
 
 func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient) {
-	//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-	//	TokenLookup: "header:X-XSRF-TOKEN",
-	//}))
-
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
@@ -177,7 +173,7 @@ func Run(address string) {
 		AllowCredentials: true,
 	}))
 
-	prometheus.MustRegister(ahandler.FooCount, ahandler.Hits)
+	prometheus.MustRegister(ahandler.Hits)
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
