@@ -170,9 +170,9 @@ func arConv(a *models.ArticleCreate) *app.ArticleCreate {
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	metadata.AppendToOutgoingContext(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
@@ -194,8 +194,9 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
-	ctx := c.Request().Context()
-
+	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	myid := app.Id{Id: strId}
 	Data, err := api.UseCase.GetByID(ctx, &myid)
 	if err != nil {
@@ -212,9 +213,9 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	login := c.QueryParam("login")
 	id := c.QueryParam("idLastLoaded")
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	authors := &app.Authors{Author: login, Chunk: a}
 	Data, err := api.UseCase.GetByAuthor(ctx, authors)
@@ -241,10 +242,9 @@ func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 			Function: "articlesHandler/GetByCategory",
 		}
 	}
-	//c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	metadata.AppendToOutgoingContext(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	categories := &app.Categories{Category: cat, Chunk: a}
 	Data, err := api.UseCase.GetByCategory(ctx, categories)
@@ -273,9 +273,9 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 		}
 	}
 	newArticle = SanitizeUpdate(newArticle)
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	_, err = api.UseCase.Update(ctx, upConv(newArticle))
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Update")
@@ -292,9 +292,9 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	tag := c.QueryParam("tag")
 	id := c.QueryParam("idLastLoaded")
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	tags := &app.Tags{Tag: tag, Chunk: a}
 	Data, err := api.UseCase.GetByTag(ctx, tags)
@@ -319,9 +319,9 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	s := bluemonday.StrictPolicy()
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindArticles(ctx, query)
@@ -346,9 +346,9 @@ func (api *ArticlesHandler) FindAuthors(c echo.Context) error {
 	s := bluemonday.StrictPolicy()
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindAuthors(ctx, query)
@@ -373,9 +373,9 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	s := bluemonday.StrictPolicy()
 	id = s.Sanitize(id)
 	q = s.Sanitize(q)
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindByTag(ctx, query)
@@ -412,9 +412,9 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	}
 	tempArticle = SanitizeCreate(tempArticle)
 	cook := cookie.Value
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	art := arConv(tempArticle)
 	cr := &app.Create{Art: art, Value: cook}
 	c.Logger().Error("!!!!!!", tempArticle.Category)
@@ -433,9 +433,9 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 
 func (api *ArticlesHandler) Delete(c echo.Context) error {
 	id := c.QueryParam("id")
-	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+	md := metadata.New(map[string]string{"X-Request-ID": reqID})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	d := &app.Id{Id: id}
 	_, err := api.UseCase.Delete(ctx, d)
 	if err != nil {

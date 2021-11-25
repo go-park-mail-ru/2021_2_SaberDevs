@@ -179,6 +179,11 @@ func (m *ArticleManager) FindArticles(ctx context.Context, q *app.Queries) (*app
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.FindArticles(ctx, query, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
@@ -194,6 +199,11 @@ func (m *ArticleManager) FindByTag(ctx context.Context, q *app.Queries) (*app.Re
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.FindByTag(ctx, query, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
@@ -209,6 +219,11 @@ func (m *ArticleManager) GetByAuthor(ctx context.Context, au *app.Authors) (*app
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByAuthor(ctx, author, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
@@ -224,6 +239,11 @@ func (m *ArticleManager) GetByCategory(ctx context.Context, cat *app.Categories)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByCategory(ctx, category, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
@@ -239,6 +259,11 @@ func (m *ArticleManager) GetByTag(ctx context.Context, cat *app.Tags) (*app.Repv
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByTag(ctx, tag, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
@@ -256,6 +281,11 @@ func (m *ArticleManager) GetByID(ctx context.Context, id *app.Id) (*app.FullArti
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByID(ctx, int64(nId))
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval = *fullConv(res)
 	return &retval, err
 }
@@ -265,6 +295,11 @@ func (m *ArticleManager) Store(ctx context.Context, a *app.Create) (*app.Created
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.Store(ctx, a.Value, ar)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 
 	return &app.Created{Id: int64(res)}, err
 }
@@ -274,6 +309,11 @@ func (m *ArticleManager) Update(ctx context.Context, a *app.ArticleUpdate) (*app
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	err := m.handler.Update(ctx, ar)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	return &app.Nothing{Dummy: true}, err
 }
 func (m *ArticleManager) FindAuthors(ctx context.Context, q *app.Queries) (*app.AView, error) {
@@ -283,6 +323,11 @@ func (m *ArticleManager) FindAuthors(ctx context.Context, q *app.Queries) (*app.
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.FindAuthors(ctx, query, id, ch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["X-Request-ID"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.AView{}
 	for _, a := range res {
 		val := auConv(a)
