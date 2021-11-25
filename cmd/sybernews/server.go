@@ -22,7 +22,9 @@ import (
 
 	"net/http"
 
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
+
 	// "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -191,8 +193,9 @@ func Run(address string) {
 	}
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
-		grpc.WithInsecure(),
-	)
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
