@@ -160,7 +160,7 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	defer m.mu.Unlock()
 	res, err := m.handler.Fetch(ctx, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -180,7 +180,7 @@ func (m *ArticleManager) FindArticles(ctx context.Context, q *app.Queries) (*app
 	defer m.mu.Unlock()
 	res, err := m.handler.FindArticles(ctx, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -200,7 +200,7 @@ func (m *ArticleManager) FindByTag(ctx context.Context, q *app.Queries) (*app.Re
 	defer m.mu.Unlock()
 	res, err := m.handler.FindByTag(ctx, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -220,7 +220,7 @@ func (m *ArticleManager) GetByAuthor(ctx context.Context, au *app.Authors) (*app
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByAuthor(ctx, author, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -240,7 +240,7 @@ func (m *ArticleManager) GetByCategory(ctx context.Context, cat *app.Categories)
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByCategory(ctx, category, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -260,7 +260,7 @@ func (m *ArticleManager) GetByTag(ctx context.Context, cat *app.Tags) (*app.Repv
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByTag(ctx, tag, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -282,7 +282,7 @@ func (m *ArticleManager) GetByID(ctx context.Context, id *app.Id) (*app.FullArti
 	defer m.mu.Unlock()
 	res, err := m.handler.GetByID(ctx, int64(nId))
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -296,7 +296,7 @@ func (m *ArticleManager) Store(ctx context.Context, a *app.Create) (*app.Created
 	defer m.mu.Unlock()
 	res, err := m.handler.Store(ctx, a.Value, ar)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -310,7 +310,7 @@ func (m *ArticleManager) Update(ctx context.Context, a *app.ArticleUpdate) (*app
 	defer m.mu.Unlock()
 	err := m.handler.Update(ctx, ar)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
@@ -324,7 +324,7 @@ func (m *ArticleManager) FindAuthors(ctx context.Context, q *app.Queries) (*app.
 	defer m.mu.Unlock()
 	res, err := m.handler.FindAuthors(ctx, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
-	value := md["X-Request-ID"]
+	value := md["x-request-id"]
 	if ok {
 		fmt.Println(value)
 	}
