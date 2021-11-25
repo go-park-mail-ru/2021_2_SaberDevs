@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 
@@ -41,11 +42,12 @@ func main() {
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	app.RegisterArticleDeliveryServer(server, NewArticleManager(articlesUsecase))
-	prometheus.MustRegister(arepo.Hits)
 	grpc_prometheus.Register(server)
+	prometheus.MustRegister(arepo.Hits)
 	// Register Prometheus metrics handler.
 	http.Handle("/metrics", promhttp.Handler())
 	fmt.Println("starting server at :8079")
+	go log.Fatal(http.ListenAndServe(":8078", nil))
 	server.Serve(lis)
 
 }
