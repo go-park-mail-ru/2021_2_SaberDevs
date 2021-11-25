@@ -182,9 +182,7 @@ func Run(address string) {
 
 	prometheus.MustRegister(fooCount, hits)
 
-	http.Handle("/metrics", promhttp.Handler())
-
-	//e.GET("/metrics", promhttp.Handler())
+	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -210,6 +208,12 @@ func Run(address string) {
 
 	defer grcpConn.Close()
 
+	// e.GET("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	hits.WithLabelValues("200", r.URL.String()).Inc()
+	// 	fooCount.Add(1)
+	// 	fmt.Fprintf(w, "foo_total increased")
+	// })
+
 	sessManager := app.NewArticleDeliveryClient(grcpConn)
 
 	defer DbClose(db)
@@ -217,4 +221,5 @@ func Run(address string) {
 	router(e, db, tarantoolConn, &sessManager)
 
 	e.Logger.Fatal(e.Start(address))
+
 }
