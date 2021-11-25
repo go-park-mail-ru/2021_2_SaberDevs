@@ -16,7 +16,7 @@ const (
 )
 
 type streamComment struct {
-	Type string `json:"type"`
+	Type        string `json:"type"`
 	Id          int64  `json:"Id"  db:"id"`
 	Text        string `json:"text" db:"text"`
 	ArticleId   int64  `json:"articleId" db:"articleid"`
@@ -50,7 +50,7 @@ func (sub *Subscriber) readWS() {
 	if err != nil {
 		return
 	}
-	
+
 	sub.conn.SetPongHandler(func(string) error {
 		sub.conn.SetReadDeadline(time.Now().Add(pongWait))
 		return nil

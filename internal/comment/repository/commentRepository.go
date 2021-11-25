@@ -171,7 +171,7 @@ func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) 
 	}, nil
 }
 
-func (cr *commentPsqlRepo)GetCommentsStream(lastCommentID int64) ([]cmodels.StreamComment, error) {
+func (cr *commentPsqlRepo) GetCommentsStream(lastCommentID int64) ([]cmodels.StreamComment, error) {
 	var sqlComments []cmodels.StreamComment
 	schema := `select c.id, c.articleid, c.text,  a.login, a.surname, a.name, a.avatarurl, a2.title
                from comments c join author a on a.login = c.AuthorLogin join articles a2 on c.articleid = a2.id where c.id > $1 order by c.id desc limit 5`

@@ -10,14 +10,14 @@ import (
 const firstComment = 0
 
 type commentStreamHandler struct {
-	pub *Publisher
+	pub         *Publisher
 	commentRepo cmodels.CommentRepository
 }
 
 func NewCommentStreamHandler(p *Publisher, cr cmodels.CommentRepository) *commentStreamHandler {
 	return &commentStreamHandler{
-		pub: p,
-		commentRepo:  cr,
+		pub:         p,
+		commentRepo: cr,
 	}
 }
 

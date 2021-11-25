@@ -6,10 +6,9 @@ import (
 )
 
 type repoChecker struct {
-	pub *Publisher
+	pub         *Publisher
 	commentRepo cmodels.CommentRepository
 }
-
 
 type sqlPreparedComment struct {
 	Id          int64  `json:"Id"  db:"id"`
@@ -30,8 +29,8 @@ const checkWait = 5 * time.Second
 
 func NewRepoChecker(p *Publisher, cr cmodels.CommentRepository) *repoChecker {
 	return &repoChecker{
-		pub: p,
-		commentRepo:  cr,
+		pub:         p,
+		commentRepo: cr,
 	}
 }
 
