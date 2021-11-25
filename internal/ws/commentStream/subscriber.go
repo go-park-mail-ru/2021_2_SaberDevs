@@ -64,7 +64,7 @@ func (sub *Subscriber) readWS() {
 	}
 }
 
-func (sub *Subscriber) writeWS() {
+func (sub *Subscriber) writeWS(lastComment int64) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -83,31 +83,29 @@ func (sub *Subscriber) writeWS() {
 				sub.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			
-			for _, comment := range message {
-				articleNameSlice := strings.Split(comment.ArticleName, "")[:25]
-				err = sub.conn.WriteJSON(streamComment{
-					Type:        "stream-comment",
-					Id:          comment.Id,
-					Text:        comment.Text,
-					ArticleId:   comment.ArticleId,
-					ArticleName: strings.Join(articleNameSlice, ""),
-					author:      author{
-						Login:     comment.Login,
-						Surname:   comment.Surname,
-						Name:      comment.Name,
-						AvatarURL: comment.AvatarURL,
-					},
-				})
-				if err != nil {
-					return
+
+			if lastComment > message[0].Id {
+				lastComment = message[0].Id
+				for _, comment := range message {
+					articleNameSlice := strings.Split(comment.ArticleName, "")[:25]
+					err = sub.conn.WriteJSON(streamComment{
+						Type:        "stream-comment",
+						Id:          comment.Id,
+						Text:        comment.Text,
+						ArticleId:   comment.ArticleId,
+						ArticleName: strings.Join(articleNameSlice, ""),
+						author: author{
+							Login:     comment.Login,
+							Surname:   comment.Surname,
+							Name:      comment.Name,
+							AvatarURL: comment.AvatarURL,
+						},
+					})
+					if err != nil {
+						return
+					}
 				}
 			}
-
-			// err = sub.conn.WriteJSON(message)
-			// if err != nil {
-			// 	return
-			// }
 
 		case <-ticker.C:
 			err := sub.conn.SetWriteDeadline(time.Now().Add(writeWait)) // всегда err = nil

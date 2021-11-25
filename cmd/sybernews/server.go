@@ -76,9 +76,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	//	TokenLookup: "header:X-XSRF-TOKEN",
 	//}))
 
-	publisher := commentWS.NewPublisher()
-	go publisher.Run()
-	commentWSAPI := commentWS.NewCommentStreamHandler(publisher)
 
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
@@ -86,6 +83,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	articleRepo := arepo.NewArticleRepository(db)
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db)
+
+	publisher := commentWS.NewPublisher()
+	go publisher.Run()
+	commentWSAPI := commentWS.NewCommentStreamHandler(publisher, commentsRepo)
 
 	streamCommetChecker := commentWS.NewRepoChecker(publisher, commentsRepo)
 	go streamCommetChecker.Run()
