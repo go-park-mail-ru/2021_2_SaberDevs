@@ -233,6 +233,12 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	cat := c.QueryParam("category")
+	if cat == "" {
+		return sbErr.ErrNoContent{
+			Reason:   "empty Category",
+			Function: "articlesHandler/GetByCategory",
+		}
+	}
 	//c.Logger().Info("!!!!!!!!!!!!!Id =%s", id)
 	ctx := c.Request().Context()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
