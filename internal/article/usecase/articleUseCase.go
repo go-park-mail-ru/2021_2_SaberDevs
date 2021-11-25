@@ -122,7 +122,6 @@ func (m *articleUsecase) Store(ctx context.Context, c string, a *amodels.Article
 	newArticle.Category = a.Category
 	newArticle.PreviewUrl = a.Img
 	newArticle.DateTime = time.Now().Format("2006/1/2 15:04")
-
 	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
 		return 0, errors.Wrap(err, "articleUsecase/Delete")
