@@ -6,7 +6,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang/mock v1.6.0
-	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/websocket v1.4.2
 	github.com/jmoiron/sqlx v1.3.4
@@ -16,6 +15,7 @@ require (
 	github.com/lib/pq v1.10.3
 	github.com/microcosm-cc/bluemonday v1.0.16
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
@@ -29,5 +29,6 @@ require (
 	golang.org/x/sys v0.0.0-20211123173158-ef496fb156ab // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
 	google.golang.org/grpc v1.42.0
+	google.golang.org/protobuf v1.27.1 // indirect
 
 )

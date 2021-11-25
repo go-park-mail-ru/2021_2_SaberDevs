@@ -19,14 +19,27 @@ import (
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	commentWS "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/ws/commentStream"
+
+	"net/http"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
-	"net/http"
 )
+
+var fooCount = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "foo_total",
+	Help: "Number of foo successfully processed.",
+})
+
+var hits = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
 
 func TarantoolConnect() (*tarantool.Connection, error) {
 	user, pass, addr, err := TarantoolConfig()
@@ -152,7 +165,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	search.GET("/tags", articlesAPI.FindByTag)
 }
 
-
 func Run(address string) {
 	e := echo.New()
 
@@ -167,6 +179,12 @@ func Run(address string) {
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
+
+	prometheus.MustRegister(fooCount, hits)
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	//e.GET("/metrics", promhttp.Handler())
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
