@@ -1,8 +1,6 @@
 package server
 
 import (
-	"net/http"
-
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
@@ -20,12 +18,14 @@ import (
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	commentWS "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/ws/commentStream"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
+	"net/http"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -83,6 +83,13 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db)
 
+	publisher := commentWS.NewPublisher()
+	go publisher.Run()
+	commentWSAPI := commentWS.NewCommentStreamHandler(publisher, commentsRepo)
+
+	streamCommetChecker := commentWS.NewRepoChecker(publisher, commentsRepo)
+	go streamCommetChecker.Run()
+
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 	userAPI := uhandler.NewUserHandler(userUsecase)
 
@@ -114,6 +121,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
 
+	e.GET("api/v1/ws", commentWSAPI.HandleWS)
+
 	e.GET("api/v1/img/:name", imageAPI.GetImage)
 	e.POST("api/v1/img/upload", imageAPI.SaveImage, authMiddleware.CheckAuth)
 
@@ -143,25 +152,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	search.GET("/tags", articlesAPI.FindByTag)
 }
 
-// // WithRqId returns a context which knows its request ID
-// func WithRqId(ctx context.Context, rqIdKey, rqId string) context.Context {
-// 	return context.WithValue(ctx, rqIdKey, rqId)
-// }
-
-// // Logger returns a zap logger with as much context as possible
-// func Logger(ctx context.Context) zap.Logger {
-// 	var rqIdKey = "rqIdKey"
-// 	newLogger := zap.NewExample()
-// 	if ctx != nil {
-// 		if ctxRqId, ok := ctx.Value(rqIdKey).(string); ok {
-// 			newLogger = newLogger.With(zap.String("rqId", ctxRqId))
-// 		}
-// 	}
-// 	return newLogger
-// }
 
 func Run(address string) {
 	e := echo.New()
+
 	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
 	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},

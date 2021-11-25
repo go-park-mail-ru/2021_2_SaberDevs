@@ -39,7 +39,7 @@ var ErrAuthorised = ErrorResponse{
 
 var ErrNotLoggedin = ErrorResponse{
 	Status:   http.StatusUnauthorized,
-	ErrorMsg: "Not logged in",
+	ErrorMsg: "Не авторизован",
 }
 
 var ErrNotFeedNumber = ErrorResponse{
@@ -69,7 +69,7 @@ var ErrDbFailure = ErrorResponse{
 
 var ErrNoSession = ErrorResponse{
 	Status:   http.StatusUnauthorized,
-	ErrorMsg: "Несуществует сессии",
+	ErrorMsg: "Cессия устарела",
 }
 
 var ErrUnauthorized = ErrorResponse{

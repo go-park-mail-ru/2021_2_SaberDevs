@@ -170,9 +170,7 @@ func arConv(a *models.ArticleCreate) *app.ArticleCreate {
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
 	ctx := c.Request().Context()
-	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
-	ctx = context.WithValue(ctx, "loggerlevel", c.Logger().Level())
+
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
 	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
@@ -195,8 +193,7 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
 	ctx := c.Request().Context()
-	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
-	ctx = context.WithValue(ctx, "X-Request-ID", reqID)
+
 	myid := app.Id{Id: strId}
 	Data, err := api.UseCase.GetByID(ctx, &myid)
 	if err != nil {
