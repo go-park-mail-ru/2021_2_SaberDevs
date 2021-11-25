@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/websocket v1.4.2
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/kolesa-team/go-webp v1.0.1
 	github.com/labstack/echo-contrib v0.11.0 // indirect

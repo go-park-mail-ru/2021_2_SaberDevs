@@ -13,6 +13,7 @@ import (
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type psqlArticleRepository struct {
@@ -22,6 +23,18 @@ type psqlArticleRepository struct {
 func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
+
+var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"layer", "path"})
+
+var Errors = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
+
+var Duration = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
 
 var PreviewLength = 50
 
