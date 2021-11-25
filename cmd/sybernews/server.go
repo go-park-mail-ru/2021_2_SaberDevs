@@ -32,15 +32,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var fooCount = prometheus.NewCounter(prometheus.CounterOpts{
-	Name: "foo_total",
-	Help: "Number of foo successfully processed.",
-})
-
-var hits = prometheus.NewCounterVec(prometheus.CounterOpts{
-	Name: "hits",
-}, []string{"status", "path"})
-
 func TarantoolConnect() (*tarantool.Connection, error) {
 	user, pass, addr, err := TarantoolConfig()
 	if err != nil {
@@ -117,6 +108,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 	commentsAPi := chandler.NewCommentHandler(commentUsecase)
+	metrics := e.Group("/metrics")
+	metrics.Any("", echo.WrapHandler(promhttp.Handler()))
 
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
@@ -180,9 +173,7 @@ func Run(address string) {
 		AllowCredentials: true,
 	}))
 
-	prometheus.MustRegister(fooCount, hits)
-
-	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
+	prometheus.MustRegister(ahandler.FooCount, ahandler.Hits)
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -207,12 +198,6 @@ func Run(address string) {
 	}
 
 	defer grcpConn.Close()
-
-	// e.GET("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	hits.WithLabelValues("200", r.URL.String()).Inc()
-	// 	fooCount.Add(1)
-	// 	fmt.Fprintf(w, "foo_total increased")
-	// })
 
 	sessManager := app.NewArticleDeliveryClient(grcpConn)
 

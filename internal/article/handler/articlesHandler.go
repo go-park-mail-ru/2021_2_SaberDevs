@@ -14,12 +14,22 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc/metadata"
 )
 
 type ArticlesHandler struct {
 	UseCase app.ArticleDeliveryClient
 }
+
+var FooCount = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "foo_total",
+	Help: "Number of foo successfully processed.",
+})
+
+var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
 
 func reverseConv(a *app.Preview) *models.Preview {
 	val := new(models.Preview)
@@ -170,6 +180,9 @@ func arConv(a *models.ArticleCreate) *app.ArticleCreate {
 
 func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	id := c.QueryParam("idLastLoaded")
+
+	Hits.WithLabelValues("200", c.Request().URL.RawPath).Inc()
+	FooCount.Add(1)
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
