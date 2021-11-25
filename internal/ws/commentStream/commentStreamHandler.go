@@ -1,49 +1,46 @@
 package commentStream
 
 import (
+	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
-	"log"
-	"net/http"
 )
+
+type Comment struct {
+	Type        string `json:"type"`
+	Id          int64  `json:"id"  db:"id"`
+	Text        string `json:"text" db:"text"`
+	ArticleId   int64  `json:"articleId" db:"articleid"`
+	ArticleName string `json:"articleName"`
+}
 
 type commentStreamHandler struct {
 	pub *Publisher
 }
 
-// func serveWs(pub *Publisher, w http.ResponseWriter, r *http.Request) error {
-// 	conn, err := upgrader.Upgrade(w, r, nil)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
-// 	client := &Subscriber{
-// 		pub: pub,
-// 		conn: conn,
-// 		send: make(chan []string),
-// 	}
-// 	client.hub.register <- client
-//
-// 	// Allow collection of memory referenced by the caller by doing all work in
-// 	// new goroutines.
-// 	go client.writePump()
-// 	go client.readPump()
-// }
+func NewCommentStreamHandler(p *Publisher) *commentStreamHandler {
+	return &commentStreamHandler{
+		pub: p,
+	}
+}
 
 func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	// коннект закрывается в горутинах
 	if err != nil {
-		return err
+		return sbErr.ErrInternal{
+			Reason:   err.Error(),
+			Function: "ws/commentStreamHandler/HandleWS",
+		}
 	}
 
 	sub := &Subscriber{
-		pub: api.pub,
+		pub:  api.pub,
 		conn: conn,
-		send: make(chan []string),
+		send: make(chan []Comment),
 	}
 	sub.pub.register <- sub
 
-
 	go sub.writeWS()
 	go sub.readWS()
+	return nil
 }

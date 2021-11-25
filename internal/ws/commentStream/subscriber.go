@@ -1,7 +1,6 @@
 package commentStream
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -10,26 +9,24 @@ import (
 
 const (
 	writeWait      = 10 * time.Second
-	pongWait       = 60 * time.Second
-	pingPeriod     = (pongWait * 9) / 10
+	pongWait       = 11 * time.Second
+	pingPeriod     = (pongWait * 8) / 10
 	maxMessageSize = 512
-)
-
-var (
-	newline = []byte{'\n'}
-	space   = []byte{' '}
 )
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 type Subscriber struct {
 	pub  *Publisher
 	conn *websocket.Conn
 	// канал для получения последних коментариев от publisher
-	send chan []string // todo поменять на коменты
+	send chan []Comment // todo поменять на коменты
 }
 
 func (sub *Subscriber) readWS() {
@@ -37,9 +34,21 @@ func (sub *Subscriber) readWS() {
 		sub.pub.unregister <- sub
 		sub.conn.Close()
 	}()
+	// var c []Comment
+	// c = append(c, Comment{
+	// 	Type:        "stream-comment",
+	// 	Id:          0,
+	// 	Text:        "",
+	// 	ArticleId:   0,
+	// 	ArticleName: "",
+	// })
+	// sub.pub.broadcast <- c
 
 	sub.conn.SetReadLimit(maxMessageSize)
-	sub.conn.SetReadDeadline(time.Now().Add(pongWait))
+	err := sub.conn.SetReadDeadline(time.Now().Add(pongWait))
+	if err != nil {
+		return
+	}
 	sub.conn.SetPongHandler(func(string) error {
 		sub.conn.SetReadDeadline(time.Now().Add(pongWait))
 		return nil
@@ -89,24 +98,5 @@ func (sub *Subscriber) writeWS() {
 			}
 		}
 	}
-}
 
-
-func serveWs(pub *Publisher, w http.ResponseWriter, r *http.Request) error {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	client := &Subscriber{
-		pub: pub,
-		conn: conn,
-		send: make(chan []string),
-	}
-	client.hub.register <- client
-
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
-	go client.writePump()
-	go client.readPump()
 }

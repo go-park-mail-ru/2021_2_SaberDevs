@@ -3,21 +3,21 @@ package commentStream
 type Publisher struct {
 	subscribers map[*Subscriber]bool
 	// канал для получения последних коментариев
-	broadcast  chan []string // // todo поменять на коменты
+	broadcast  chan []Comment // // todo поменять на коменты
 	register   chan *Subscriber
 	unregister chan *Subscriber
 }
 
-func newPublisher() *Publisher {
+func NewPublisher() *Publisher {
 	return &Publisher{
-		broadcast:   make(chan []string),
+		broadcast:   make(chan []Comment),
 		register:    make(chan *Subscriber),
 		unregister:  make(chan *Subscriber),
 		subscribers: make(map[*Subscriber]bool),
 	}
 }
 
-func (pub *Publisher) run() {
+func (pub *Publisher) Run() {
 	for {
 		select {
 		case subscriber := <-pub.register:
