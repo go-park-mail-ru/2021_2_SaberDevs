@@ -29,17 +29,17 @@ func (pub *Publisher) Run() {
 		case subscriber := <-pub.unregister:
 			if _, ok := pub.subscribers[subscriber]; ok {
 				delete(pub.subscribers, subscriber)
-				close(subscriber.send)
+				close(subscriber.commentChan)
 			}
 
 		case message := <-pub.broadcast:
 			for subscriber := range pub.subscribers {
 				select {
 
-				case subscriber.send <- message:
+				case subscriber.commentChan <- message:
 
 				default:
-					close(subscriber.send)
+					close(subscriber.commentChan)
 					delete(pub.subscribers, subscriber)
 				}
 			}

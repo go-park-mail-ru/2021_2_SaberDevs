@@ -59,9 +59,9 @@ func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 		}
 	}
 	sub := &Subscriber{
-		pub:  api.pub,
-		conn: conn,
-		send: make(chan []cmodels.StreamComment),
+		pub:         api.pub,
+		conn:        conn,
+		commentChan: make(chan []cmodels.StreamComment),
 	}
 	sub.pub.register <- sub
 
