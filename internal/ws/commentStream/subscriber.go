@@ -86,16 +86,18 @@ func (sub *Subscriber) writeWS(lastComment int64) {
 
 			if lastComment < message[0].Id {
 				lastComment = message[0].Id
-				for i, _ := range message {
-					// не отправляем ненужные комментарии
-					if message[len(message)-1-i].Id < lastComment {
+
+				for  i := len(message) - 1; i >= 0 ; i--  {
+					if message[i].Id < lastComment {
 						continue
 					}
-					comment := message[len(message)-1-i]
-					length := 25
-					if 25 > len(comment.ArticleName) {
-						length = len(comment.ArticleName)
+
+					comment := message[i]
+					length := 0
+					if len([]rune(comment.ArticleName)) < defaultMinLength {
+						length = len([]rune(comment.ArticleName))
 					}
+
 					articleNameSlice := strings.Split(comment.ArticleName, "")[:length]
 					err = sub.conn.WriteJSON(streamComment{
 						Type:        "stream-comment",
