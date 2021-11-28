@@ -25,7 +25,7 @@ type author struct {
 	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
 }
 
-const checkWait = 5 * time.Second
+const checkWait = 15 * time.Second
 
 func NewRepoChecker(p *Publisher, cr cmodels.CommentRepository) *repoChecker {
 	return &repoChecker{
@@ -36,18 +36,18 @@ func NewRepoChecker(p *Publisher, cr cmodels.CommentRepository) *repoChecker {
 
 func (check *repoChecker) Run() {
 	ticker := time.NewTicker(checkWait)
-	var lastId int64 = 0
+	// var lastId int64 = 0
 
 	for {
 		select {
 		case <-ticker.C:
-			comments, err := check.commentRepo.GetCommentsStream(lastId)
+			comments, err := check.commentRepo.GetCommentsStream(0)
 			if err != nil || len(comments) == 0 {
 				continue
 			}
-			if lastId < comments[0].Id {
-				lastId = comments[0].Id
-			}
+			// if lastId < comments[0].Id {
+			// 	lastId = comments[0].Id
+			// }
 			check.pub.broadcast <- comments
 		}
 	}

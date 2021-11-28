@@ -21,6 +21,8 @@ func NewCommentStreamHandler(p *Publisher, cr cmodels.CommentRepository) *commen
 	}
 }
 
+const defaultMinLength = 25
+
 func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	// коннект закрывается в горутинах
@@ -31,13 +33,20 @@ func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 		}
 	}
 
+	// отправляем первую партию комментов вне основного цикла рассылки
 	var lastComment int64 = 0
 	comments, err := api.commentRepo.GetCommentsStream(lastComment)
 	if len(comments) != 0 {
 		lastComment = comments[0].Id
 
-		for _, comment := range comments {
-			articleNameSlice := strings.Split(comment.ArticleName, "")[:25]
+		for  i := len(comments) - 1; i >= 0 ; i--  {
+			comment := comments[i]
+			length := 0
+			if len([]rune(comment.ArticleName)) < defaultMinLength {
+				length = len([]rune(comment.ArticleName))
+			}
+
+			articleNameSlice := strings.Split(comment.ArticleName, "")[:length]
 			err = conn.WriteJSON(streamComment{
 				Type:        "stream-comment",
 				Id:          comment.Id,
@@ -54,9 +63,9 @@ func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 		}
 	}
 	sub := &Subscriber{
-		pub:  api.pub,
-		conn: conn,
-		send: make(chan []cmodels.StreamComment),
+		pub:         api.pub,
+		conn:        conn,
+		commentChan: make(chan []cmodels.StreamComment),
 	}
 	sub.pub.register <- sub
 

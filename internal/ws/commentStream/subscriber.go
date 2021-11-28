@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	writeWait      = 10 * time.Second
-	pongWait       = 11 * time.Second
-	pingPeriod     = (pongWait * 8) / 10
+	writeWait      = 15 * time.Second
+	pongWait       = 25 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
 	maxMessageSize = 512
 )
 
@@ -36,7 +36,7 @@ type Subscriber struct {
 	pub  *Publisher
 	conn *websocket.Conn
 	// канал для получения последних коментариев от publisher
-	send chan []cmodels.StreamComment // todo поменять на коменты
+	commentChan chan []cmodels.StreamComment
 }
 
 func (sub *Subscriber) readWS() {
@@ -73,7 +73,7 @@ func (sub *Subscriber) writeWS(lastComment int64) {
 
 	for {
 		select {
-		case message, ok := <-sub.send:
+		case message, ok := <-sub.commentChan:
 			err := sub.conn.SetWriteDeadline(time.Now().Add(writeWait)) // всегда err = nil
 			if err != nil {
 				return
@@ -84,10 +84,21 @@ func (sub *Subscriber) writeWS(lastComment int64) {
 				return
 			}
 
-			if lastComment > message[0].Id {
+			if lastComment < message[0].Id {
 				lastComment = message[0].Id
-				for _, comment := range message {
-					articleNameSlice := strings.Split(comment.ArticleName, "")[:25]
+
+				for  i := len(message) - 1; i >= 0 ; i--  {
+					if message[i].Id < lastComment {
+						continue
+					}
+
+					comment := message[i]
+					length := 0
+					if len([]rune(comment.ArticleName)) < defaultMinLength {
+						length = len([]rune(comment.ArticleName))
+					}
+
+					articleNameSlice := strings.Split(comment.ArticleName, "")[:length]
 					err = sub.conn.WriteJSON(streamComment{
 						Type:        "stream-comment",
 						Id:          comment.Id,
