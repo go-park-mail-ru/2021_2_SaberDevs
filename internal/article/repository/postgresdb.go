@@ -478,19 +478,16 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		}
 		arts = append(arts, newArticle)
 	}
-	var newAuthor amodels.Author
-	err = m.Db.Get(newAuthor, "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", author, chunkSize, from)
-	fPath = "author"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	authors := []string{author}
+	authorRes, err := m.uploadAuthors(authors, "articleRepository/GetbyAuthor")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: byAuthor,
+			Function: byTag,
 		}
 	}
-	AuthorMap := make(map[string]amodels.Author)
-	AuthorMap[newAuthor.Login] = newAuthor
-	ChunkData, err = m.addTags(ChunkData, AuthorMap, byAuthor, rows, overCount, arts)
+	fPath = "author"
+	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
 
