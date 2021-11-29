@@ -19,13 +19,21 @@ import (
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	commentWS "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/ws/commentStream"
+
+	"net/http"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
+
+	// "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
-	"net/http"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -72,10 +80,6 @@ func DbClose(db *sqlx.DB) error {
 }
 
 func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient) {
-	//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-	//	TokenLookup: "header:X-XSRF-TOKEN",
-	//}))
-
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
 	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
@@ -104,6 +108,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 	commentsAPi := chandler.NewCommentHandler(commentUsecase)
+	// metrics := e.Group("/metrics")
+	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
+	e.Any("/metrics", echo.WrapHandler(promhttp.Handler()))
+	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
 
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
@@ -152,21 +160,21 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	search.GET("/tags", articlesAPI.FindByTag)
 }
 
-
 func Run(address string) {
 	e := echo.New()
 
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost},
-		AllowCredentials: true,
-	}))
-
 	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins:     []string{"*"},
+	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
 	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
 	// 	AllowCredentials: true,
 	// }))
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost},
+		AllowCredentials: true,
+	}))
+	prometheus.MustRegister(ahandler.Hits)
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -184,8 +192,9 @@ func Run(address string) {
 	}
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
-		grpc.WithInsecure(),
-	)
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
@@ -199,4 +208,5 @@ func Run(address string) {
 	router(e, db, tarantoolConn, &sessManager)
 
 	e.Logger.Fatal(e.Start(address))
+
 }
