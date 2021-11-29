@@ -40,7 +40,6 @@ func NewCommentRepository(db *sqlx.DB) cmodels.CommentRepository {
 func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 	schema := `INSERT INTO comments (AuthorLogin, ArticleId, ParentId, Text, IsEdited, DateTime) values ($1, $2, $3, $4, $5, $6) returning id;`
 	var result *sql.Rows
-	defer result.Close()
 
 	if comment.ParentId == 0 {
 		var err error
@@ -61,6 +60,7 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 			}
 		}
 	}
+	defer result.Close()
 
 	var commentID int64
 	for result.Next() {
