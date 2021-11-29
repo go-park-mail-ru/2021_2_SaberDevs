@@ -291,6 +291,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
+	var authors []string
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -300,19 +301,18 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 			}
 		}
 		arts = append(arts, newArticle)
+		authors = append(authors, newArticle.AuthorName)
 	}
 
-	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName ORDER BY AR.Id LIMIT $1 OFFSET $2", chunkSize, from)
-	fPath = "author"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
-
+	authorRes, err := m.uploadAuthors(authors, "articleRepository/Fetch")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Fetch",
+			Function: byTag,
 		}
 	}
-	ChunkData, err = m.addTags(ChunkData, toFetch, rows, overCount, arts)
+	fPath = "author"
+	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
 
@@ -396,7 +396,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		}
 	}
 	fPath = "author"
-	ChunkData, err = m.addTags(ChunkData, byTag, rows, overCount, arts)
+	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
 
@@ -425,6 +425,7 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, fro
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
+	var authors []string
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -434,21 +435,18 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, fro
 			}
 		}
 		arts = append(arts, newArticle)
+		authors = append(authors, newArticle.AuthorName)
 	}
 
-	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM tags c
-	inner join tags_articles ca  on c.Id = ca.tags_id
-	inner join articles a on a.Id = ca.articles_id
-	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.AUTHORNAME where c.tag LIKE $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, query, chunkSize, from)
-	fPath = "author"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	authorRes, err := m.uploadAuthors(authors, "articleRepository/FindbyTag")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: byTag,
 		}
 	}
-	ChunkData, err = m.addTags(ChunkData, byTag, rows, overCount, arts)
+	fPath = "author"
+	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
 
@@ -480,7 +478,8 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		}
 		arts = append(arts, newArticle)
 	}
-	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", author, chunkSize, from)
+	var newAuthor amodels.Author
+	err = m.Db.Get(newAuthor, "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", author, chunkSize, from)
 	fPath = "author"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
@@ -489,7 +488,9 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 			Function: byAuthor,
 		}
 	}
-	ChunkData, err = m.addTags(ChunkData, byAuthor, rows, overCount, arts)
+	AuthorMap := make(map[string]amodels.Author)
+	AuthorMap[newAuthor.Login] = newAuthor
+	ChunkData, err = m.addTags(ChunkData, AuthorMap, byAuthor, rows, overCount, arts)
 	return ChunkData, err
 }
 
@@ -550,6 +551,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
+	var authors []string
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -559,17 +561,18 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 			}
 		}
 		arts = append(arts, newArticle)
+		authors = append(authors, newArticle.AuthorName)
 	}
-	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", newArticle.AuthorName, chunkSize, from)
-	fPath = "getbyid"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+
+	authorRes, err := m.uploadAuthors(authors, "articleRepository/FindbyTag")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: fArticles,
+			Function: byTag,
 		}
 	}
-	ChunkData, err = m.addTags(ChunkData, fArticles, rows, overCount, arts)
+	fPath = "author"
+	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
 
@@ -591,6 +594,7 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category stri
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
+	var authors []string
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -600,17 +604,17 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category stri
 			}
 		}
 		arts = append(arts, newArticle)
+		authors = append(authors, newArticle.AuthorName)
 	}
-	rows, err = m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AR JOIN AUTHOR AU ON AU.LOGIN = AR.AUTHORNAME  WHERE AU.LOGIN = $1 ORDER BY AR.Id LIMIT $2 OFFSET $3", newArticle.AuthorName, chunkSize, from)
-	fPath = "author"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	authorRes, err := m.uploadAuthors(authors, "articleRepository/FindbyTag")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: byCategory,
+			Function: byTag,
 		}
 	}
-	ChunkData, err = m.addTags(ChunkData, byCategory, rows, overCount, arts)
+	fPath = "author"
+	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
 
