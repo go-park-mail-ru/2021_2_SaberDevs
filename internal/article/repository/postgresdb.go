@@ -133,16 +133,16 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 func (m *psqlArticleRepository) uploadAuthors(authors []string, funcName string) (map[string]amodels.Author, error) {
 	funcName = funcName + "/uploadAuthors"
 	ChunkData := make(map[string]amodels.Author)
-	schema := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM  AUTHOR AU   WHERE AU.LOGIN in ("
+	schema := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM  AUTHOR AU   WHERE AU.LOGIN IN ("
 	var ids []interface{}
 	for i, data := range authors {
 		ids = append(ids, data)
 		schema = schema + `$` + fmt.Sprint(i+1)
-		if i < len(ChunkData)-1 {
-			schema = schema + `,`
+		if i < len(authors)-1 {
+			schema = schema + ","
 		}
 	}
-	schema = schema + `);`
+	schema = schema + ");"
 
 	rows, err := m.Db.Queryx(schema, ids...)
 	fPath := "uploadTags"
@@ -155,7 +155,7 @@ func (m *psqlArticleRepository) uploadAuthors(authors []string, funcName string)
 	}
 	var newAuthor amodels.Author
 	for rows.Next() {
-		err = rows.Scan(&newAuthor)
+		err = rows.StructScan(&newAuthor)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
@@ -529,9 +529,8 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 }
 
 func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
-	fPath := "getbyauthor"
 	fArticles := "findArticles"
-	Hits.WithLabelValues(layer, fPath).Inc()
+	//Hits.WithLabelValues(layer, fPath).Inc()
 	//query = "%" + query + "%"
 	//schemaCount := `SELECT count(*) FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1;`
 	schemaCount := `SELECT count(*) FROM ARTICLES WHERE en_tsvector(title, text) @@ plainto_tsquery('english', $1) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $1);`
@@ -541,8 +540,8 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 		return ChunkData, err
 	}
 	rows, err := m.Db.Queryx("SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE en_tsvector(title, text) @@ plainto_tsquery('english', $1) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $1) ORDER BY Id LIMIT $2 OFFSET $3", query, chunkSize, from)
-	fPath = "getbyid"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	//fPath = "getbyid"
+	//	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -571,7 +570,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 			Function: byTag,
 		}
 	}
-	fPath = "author"
+	//	fPath = "author"
 	ChunkData, err = m.addTags(ChunkData, authorRes, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
