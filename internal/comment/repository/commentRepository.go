@@ -40,6 +40,7 @@ func NewCommentRepository(db *sqlx.DB) cmodels.CommentRepository {
 func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 	schema := `INSERT INTO comments (AuthorLogin, ArticleId, ParentId, Text, IsEdited, DateTime) values ($1, $2, $3, $4, $5, $6) returning id;`
 	var result *sql.Rows
+	defer result.Close()
 
 	if comment.ParentId == 0 {
 		var err error
@@ -78,22 +79,23 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 }
 
 func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
-	result, err := cr.Db.Query(`UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, ParentId, Text, IsEdited, DateTime`,
+	result, err := cr.Db.Queryx(`UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, ParentId, Text, IsEdited, DateTime`,
 		comment.Text, comment.IsEdited, comment.Id)
 	if err != nil {
 		return cmodels.Comment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
-			Function: "commentRepository/StoreComment",
+			Function: "commentRepository/UpdateComment",
 		}
 	}
+	defer result.Close()
 
 	var editedComment sqlComment
 	for result.Next() {
-		err = result.Scan(&editedComment)
+		err = result.StructScan(&editedComment)
 		if err != nil {
 			return cmodels.Comment{}, sbErr.ErrInternal{
 				Reason:   err.Error(),
-				Function: "commentRepository/StoreComment",
+				Function: "commentRepository/UpdateComment",
 			}
 		}
 	}
@@ -156,7 +158,7 @@ func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) 
 	if err != nil {
 		return cmodels.Comment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
-			Function: "commentRepository/StoreComment",
+			Function: "commentRepository/GetCommentByID",
 		}
 	}
 
