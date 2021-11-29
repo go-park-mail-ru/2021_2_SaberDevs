@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 
@@ -47,7 +46,7 @@ func main() {
 	// Register Prometheus metrics handler.
 	http.Handle("/metrics", promhttp.Handler())
 	fmt.Println("starting server at :8079")
-	go log.Fatal(http.ListenAndServe(":8078", nil))
+	// go log.Fatal(http.ListenAndServe(":8078", nil))
 	server.Serve(lis)
 
 }

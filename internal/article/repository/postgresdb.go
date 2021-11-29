@@ -130,29 +130,47 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 	return ChunkData, nil
 }
 
-func (m *psqlArticleRepository) addTags(ChunkData []amodels.Preview, funcName string, rows *sqlx.Rows, overCount bool, arts []amodels.DbArticle) ([]amodels.Preview, error) {
-	funcName = funcName + "/addTags"
-	var auths []amodels.Author
-	var newAuth amodels.Author
+func (m *psqlArticleRepository) uploadAuthors(authors []string, funcName string) (map[string]amodels.Author, error) {
+	funcName = funcName + "/uploadAuthors"
+	ChunkData := make(map[string]amodels.Author)
+	schema := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM  AUTHOR AU   WHERE AU.LOGIN in ("
+	var ids []interface{}
+	for i, data := range authors {
+		ids = append(ids, data)
+		schema = schema + `$` + fmt.Sprint(i+1)
+		if i < len(ChunkData)-1 {
+			schema = schema + `,`
+		}
+	}
+	schema = schema + `);`
+
+	rows, err := m.Db.Queryx(schema, ids...)
+	fPath := "uploadTags"
+	Hits.WithLabelValues(dblayer, fPath).Inc()
+	if err != nil {
+		return ChunkData, sbErr.ErrDbError{
+			Reason:   err.Error(),
+			Function: funcName,
+		}
+	}
+	var newAuthor amodels.Author
 	for rows.Next() {
-		err := rows.StructScan(&newAuth)
+		err = rows.Scan(&newAuthor)
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
 				Function: funcName,
 			}
 		}
-		auths = append(auths, newAuth)
+		ChunkData[newAuthor.Login] = newAuthor
 	}
-	var author models.Author
+	return ChunkData, nil
+}
+
+func (m *psqlArticleRepository) addTags(ChunkData []amodels.Preview, authors map[string]amodels.Author, funcName string, rows *sqlx.Rows, overCount bool, arts []amodels.DbArticle) ([]amodels.Preview, error) {
+	funcName = funcName + "/addTags"
 	for _, article := range arts {
-		for _, a := range auths {
-			if a.Login == article.AuthorName {
-				author = a
-				break
-			}
-		}
-		outArticle := previewConv(article, author)
+		outArticle := previewConv(article, authors[article.AuthorName])
 		ChunkData = append(ChunkData, outArticle)
 	}
 	ChunkData, err := m.uploadTags(ChunkData, funcName)
@@ -357,6 +375,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	}
 	var newArticle amodels.DbArticle
 	var arts []amodels.DbArticle
+	var authors []string
 	for rows.Next() {
 		err = rows.StructScan(&newArticle)
 		if err != nil {
@@ -366,20 +385,17 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 			}
 		}
 		arts = append(arts, newArticle)
+		authors = append(authors, newArticle.AuthorName)
 	}
 
-	rows, err = m.Db.Queryx(`SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM tags c
-	inner join tags_articles ca  on c.Id = ca.tags_id
-	inner join articles a on a.Id = ca.articles_id
-	INNER JOIN AUTHOR AS AU ON AU.LOGIN = A.AUTHORNAME where c.tag = $1 ORDER BY a.Id LIMIT $2 OFFSET $3`, tag, chunkSize, from)
-	fPath = "author"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	authorRes, err := m.uploadAuthors(authors, "getByTag")
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: byTag,
 		}
 	}
+	fPath = "author"
 	ChunkData, err = m.addTags(ChunkData, byTag, rows, overCount, arts)
 	return ChunkData, err
 }
@@ -513,6 +529,7 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 
 func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fPath := "getbyauthor"
+	fArticles := "findArticles"
 	Hits.WithLabelValues(layer, fPath).Inc()
 	//query = "%" + query + "%"
 	//schemaCount := `SELECT count(*) FROM ARTICLES WHERE TITLE LIKE $1 OR TEXT LIKE $1;`
@@ -528,7 +545,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: byCategory,
+			Function: fArticles,
 		}
 	}
 	var newArticle amodels.DbArticle
@@ -538,7 +555,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: byCategory,
+				Function: fArticles,
 			}
 		}
 		arts = append(arts, newArticle)
@@ -549,10 +566,10 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: byCategory,
+			Function: fArticles,
 		}
 	}
-	ChunkData, err = m.addTags(ChunkData, byCategory, rows, overCount, arts)
+	ChunkData, err = m.addTags(ChunkData, fArticles, rows, overCount, arts)
 	return ChunkData, err
 }
 
