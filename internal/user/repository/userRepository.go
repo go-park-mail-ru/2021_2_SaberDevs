@@ -161,7 +161,7 @@ func (r *userPsqlRepo) GetByLogin(ctx context.Context, login string) (umodels.Us
 func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.User, error) {
 	var login string
 
-	err := r.Db.Get(&login, "SELECT Email FROM author WHERE Email = $1", user.Login)
+	err := r.Db.Get(&login, "SELECT login FROM author WHERE login = $1", user.Login)
 	if login != "" {
 		return umodels.User{}, sbErr.ErrUserExists{
 			Reason:   "login already in use",
