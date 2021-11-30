@@ -170,7 +170,7 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	}
 
 	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "user.jpg", "")
+	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "", "")
 	if err != nil {
 		return umodels.User{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
