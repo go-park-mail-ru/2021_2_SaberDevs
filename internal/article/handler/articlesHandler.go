@@ -460,7 +460,7 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 
 	response := amodels.GenericResponse{
 		Status: http.StatusOK,
-		Data:   fmt.Sprint(Id),
+		Data:   fmt.Sprint(Id.Id),
 	}
 
 	return c.JSON(http.StatusOK, response)
