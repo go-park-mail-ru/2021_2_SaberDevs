@@ -93,7 +93,8 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 			schema = schema + `,`
 		}
 	}
-	schema = schema + `) order by a.Id, c.tag;`
+	//fmt.Println(len(ChunkData))
+	schema = schema + `) order by a.Id;`
 
 	rows, err := m.Db.Queryx(schema, ids...)
 	fPath := "uploadTags"
@@ -106,7 +107,7 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 	}
 	var newtag string
 	var id int
-	i := 0
+	Tags := make(map[int][]string)
 	for rows.Next() {
 		err = rows.Scan(&id, &newtag)
 		if err != nil {
@@ -115,13 +116,14 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 				Function: funcName,
 			}
 		}
+		//fmt.Println(id, "  ", newtag)
+		slice := Tags[id]
+		slice = append(slice, newtag)
+		Tags[id] = slice
+	}
+	for i := range ChunkData {
 		myid, _ := strconv.Atoi(ChunkData[i].Id)
-		if myid == id {
-			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
-		} else {
-			i++
-			ChunkData[i].Tags = append(ChunkData[i].Tags, newtag)
-		}
+		ChunkData[i].Tags = Tags[myid]
 	}
 	return ChunkData, nil
 }
