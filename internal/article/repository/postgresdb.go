@@ -70,6 +70,7 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	article.Category = val.Category
 	article.PreviewUrl = val.PreviewUrl
 	article.Title = val.Title
+	article.Tags = []string{""}
 	temp := strings.Split(val.Text, " ")
 	previewLen := PreviewLength
 	if len(temp) <= previewLen {
@@ -124,6 +125,9 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 	for i := range ChunkData {
 		myid, _ := strconv.Atoi(ChunkData[i].Id)
 		ChunkData[i].Tags = Tags[myid]
+		if len(ChunkData[i].Tags) == 0 {
+			ChunkData[i].Tags = []string{""}
+		}
 	}
 	return ChunkData, nil
 }
@@ -205,6 +209,7 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 			Function: "articleRepository/fullArticleConv",
 		}
 	}
+	article.Tags = make([]string, 1)
 	var mytag string
 	for rows.Next() {
 		err = rows.Scan(&mytag)
