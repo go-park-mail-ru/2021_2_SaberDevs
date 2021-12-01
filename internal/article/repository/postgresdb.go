@@ -250,7 +250,7 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 	Hits.WithLabelValues(layer, fName).Inc()
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, "SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE Id > $1 ORDER BY Id LIMIT $2", from, chunkSize)
+	err = m.Db.Select(&arts, "SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE Id < $1 ORDER BY Id LIMIT $2", from, chunkSize)
 	Hits.WithLabelValues(dblayer, fName).Inc()
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
@@ -322,7 +322,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 	a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag = $1 and a.Id > $2 ORDER BY Id LIMIT $3`, tag, from, chunkSize)
+	where c.tag = $1 and a.Id < $2 ORDER BY Id LIMIT $3`, tag, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -357,7 +357,7 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, fro
 	a.Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag LIKE $1 and a.Id > $2 ORDER BY ID LIMIT $3`, query, from, chunkSize)
+	where c.tag LIKE $1 and a.Id < $2 ORDER BY ID LIMIT $3`, query, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -388,7 +388,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 	fName := "articleRepository/GetByAuthor"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 and articles.Id > $2 ORDER BY Id LIMIT $3", author, from, chunkSize)
+	err = m.Db.Select(&arts, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 and articles.Id < $2 ORDER BY Id LIMIT $3", author, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -455,7 +455,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
 	err = m.Db.Select(&arts, `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, 
-	Comments, Likes FROM ARTICLES WHERE articles.Id > $1 and
+	Comments, Likes FROM ARTICLES WHERE articles.Id < $1 and
 	(en_tsvector(title, text) @@ plainto_tsquery('english', $2) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $2)) 
 	ORDER BY Id LIMIT $3`, from, query, chunkSize)
 	if err != nil {
@@ -490,7 +490,7 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category stri
 	var ChunkData []amodels.Preview
 	err = m.Db.Select(&arts, `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  
 	CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Category = $1
-	and articles.Id > $2 ORDER BY Id LIMIT $3`, category, from, chunkSize)
+	and articles.Id < $2 ORDER BY Id LIMIT $3`, category, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),

@@ -22,7 +22,7 @@ func NewArticleUsecase(articleRepo amodels.ArticleRepository, sessionRepo smodel
 
 func IdToString(id string) (int, error) {
 	if id == "" {
-		id = "0"
+		id = "999999"
 	}
 	idInt, err := strconv.Atoi(id)
 	return idInt, err
