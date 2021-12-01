@@ -98,7 +98,7 @@ const chunkSize = 5
 
 func IdToStr(strId string) (int, error) {
 	if strId == "" {
-		strId = "0"
+		strId = "999999"
 	}
 	id, err := strconv.Atoi(strId)
 	return id, err
