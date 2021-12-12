@@ -124,7 +124,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	//likes
 	repoAr := lrepo.NewArLikesRepository(db)
-	useAr := luse.NewArLikeUsecase(repoAr)
+	useAr := luse.NewArLikeUsecase(repoAr, sessionRepo)
 	useCm := luse.NewComLikeUsecase()
 	like := likes.NewLikesHandler(useAr, useCm)
 
