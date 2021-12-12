@@ -7,7 +7,7 @@ import (
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	uCase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/usecase"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
-	echo "github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 )
 
@@ -37,7 +37,7 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 		}
 	}
 	cVal := cookie.Value
-	ctx := c.context.context()
+	ctx := c.Request().Context()
 	Id, err := api.arUseCase.Rating(ctx, like, cVal)
 	if err != nil {
 		return errors.Wrap(err, "likesHandler/Rate")
