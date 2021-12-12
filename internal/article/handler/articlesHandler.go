@@ -22,6 +22,8 @@ type ArticlesHandler struct {
 	UseCase app.ArticleDeliveryClient
 }
 
+var maxNum = "999999"
+
 var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "hits",
 }, []string{"layer", "path"})
@@ -98,7 +100,7 @@ const chunkSize = 5
 
 func IdToStr(strId string) (int, error) {
 	if strId == "" {
-		strId = "999999"
+		strId = maxNum
 	}
 	id, err := strconv.Atoi(strId)
 	return id, err
