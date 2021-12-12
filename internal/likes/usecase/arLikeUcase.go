@@ -7,10 +7,11 @@ import (
 )
 
 type arLikeUCase struct {
+	rep amodels.LikesRepository
 }
 
-func NewArLikeUsecase() amodels.LikesUsecase {
-	return &arLikeUCase{}
+func NewArLikeUsecase(rep amodels.LikesRepository) amodels.LikesUsecase {
+	return &arLikeUCase{rep}
 }
 
 func (m *arLikeUCase) Rating(ctx context.Context, a *amodels.LikeData, cValue string) (int, error) {

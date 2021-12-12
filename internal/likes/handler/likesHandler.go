@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
-	uCase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/usecase"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
@@ -16,8 +15,8 @@ type LikesHandler struct {
 	comUseCase amodels.LikesUsecase
 }
 
-func NewLikesHandler() *LikesHandler {
-	return &LikesHandler{uCase.NewArLikeUsecase(), uCase.NewComLikeUsecase()}
+func NewLikesHandler(arUseCase amodels.LikesUsecase, comUseCase amodels.LikesUsecase) *LikesHandler {
+	return &LikesHandler{arUseCase, comUseCase}
 }
 
 func (api *LikesHandler) Rate(c echo.Context) error {

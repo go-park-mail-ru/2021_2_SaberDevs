@@ -12,6 +12,8 @@ import (
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
 	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	likes "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/handler"
+	lrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/repository"
+	luse "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/usecase"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -121,7 +123,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	//likes
-	like := likes.NewLikesHandler()
+	repoAr := lrepo.NewArLikesRepository(db)
+	useAr := luse.NewArLikeUsecase(repoAr)
+	useCm := luse.NewComLikeUsecase()
+	like := likes.NewLikesHandler(useAr, useCm)
 
 	e.Use(syberMiddleware.ValidateRequestBody)
 
