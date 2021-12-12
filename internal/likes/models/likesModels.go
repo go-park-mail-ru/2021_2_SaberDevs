@@ -10,9 +10,9 @@ type LikeData struct {
 }
 
 type LikeDb struct {
-	Id        int `json:"id"`
-	ArticleId int `json:"articleid"`
-	Signum    int `json:"sign"`
+	Login     string `json:"login"`
+	ArticleId int    `json:"articleid"`
+	Signum    int    `json:"sign"`
 }
 
 type GenericResponse struct {
@@ -25,7 +25,7 @@ type LikesUsecase interface {
 }
 
 type LikesRepository interface {
-	Like(ctx context.Context, a *LikeData) (int, error)
-	Dislike(ctx context.Context, a *LikeData) (int, error)
-	Cancel(ctx context.Context, id int64) (int, error)
+	Like(ctx context.Context, a *LikeDb) (int, error)
+	Dislike(ctx context.Context, a *LikeDb) (int, error)
+	Cancel(ctx context.Context, a *LikeDb) (int, error)
 }

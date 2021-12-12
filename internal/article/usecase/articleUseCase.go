@@ -143,12 +143,12 @@ func (m *articleUsecase) Delete(ctx context.Context, id string) error {
 func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) error {
 	idInt, err := IdToString(a.Id)
 	if err != nil {
-		return errors.Wrap(err, "articleUsecase/Delete")
+		return errors.Wrap(err, "articleUsecase/Update")
 	}
 	newArticle, err := m.GetByID(ctx, int64(idInt))
 	upArt := artOut(&newArticle)
 	if err != nil {
-		return errors.Wrap(err, "articleUsecase/Delete")
+		return errors.Wrap(err, "articleUsecase/Update")
 	}
 	upArt.Category = a.Category
 	upArt.PreviewUrl = a.Img
