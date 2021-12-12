@@ -208,8 +208,9 @@ func Run(address string) {
 	defer DbClose(db)
 
 	router(e, db, tarantoolConn, &sessManager)
-
-	e.Logger.Fatal(e.StartAutoTLS(address))
+	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
 	//e.Logger.Fatal(e.Start(address))
 
 }
