@@ -38,14 +38,28 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 	}
 	cVal := cookie.Value
 	ctx := c.Request().Context()
-	Id, err := api.arUseCase.Rating(ctx, like, cVal)
-	if err != nil {
-		return errors.Wrap(err, "likesHandler/Rate")
+	num := -1
+	if like.Ltype == 0 {
+		num, err = api.arUseCase.Rating(ctx, like, cVal)
+		if err != nil {
+			return errors.Wrap(err, "likesHandler/Rate")
+		}
 	}
-
+	if like.Ltype == 1 {
+		num, err = api.comUseCase.Rating(ctx, like, cVal)
+		if err != nil {
+			return errors.Wrap(err, "likesHandler/Rate")
+		}
+	}
+	if num == -1 {
+		return sbErr.ErrNotFeedNumber{
+			Reason:   err.Error(),
+			Function: "likesHandler/Rate",
+		}
+	}
 	response := amodels.GenericResponse{
 		Status: http.StatusOK,
-		Data:   fmt.Sprint(Id),
+		Data:   fmt.Sprint(num),
 	}
 
 	return c.JSON(http.StatusOK, response)

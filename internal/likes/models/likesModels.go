@@ -4,16 +4,16 @@ import "context"
 
 //Представление лайка
 type LikeData struct {
-	ltype int `json:"type"`
-	sign  int `json:"sign"`
-	id    int `json:"id"`
+	Ltype int `json:"type"`
+	Sign  int `json:"sign"`
+	Id    int `json:"id"`
 }
 
 type LikeDb struct {
-	ltype  int `json:"type"`
-	sign   int `json:"sign"`
-	id     int `json:"id"`
-	userId int `json:"id"`
+	Ltype  int `json:"type"`
+	Sign   int `json:"sign"`
+	Id     int `json:"id"`
+	UserId int `json:"userid"`
 }
 
 type GenericResponse struct {
