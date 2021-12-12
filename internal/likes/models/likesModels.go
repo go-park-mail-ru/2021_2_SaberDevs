@@ -10,10 +10,9 @@ type LikeData struct {
 }
 
 type LikeDb struct {
-	Ltype  int `json:"type"`
-	Sign   int `json:"sign"`
-	Id     int `json:"id"`
-	UserId int `json:"userid"`
+	Id        int `json:"id"`
+	ArticleId int `json:"articleid"`
+	Signum    int `json:"sign"`
 }
 
 type GenericResponse struct {
