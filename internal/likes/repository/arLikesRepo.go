@@ -56,21 +56,24 @@ func (m *ArLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error
 }
 
 func (m *ArLikesRepository) Check(ctx context.Context, a *amodels.LikeDb) (int, error) {
-	sign := -3
 	check := `select signum from article_likes  WHERE articleId = $1 and login = $2;`
-	err := m.Db.Get(&sign, check, a.ArticleId, a.Login)
+	var sign []int
+	err := m.Db.Select(&sign, check, a.ArticleId, a.Login)
 	if err != nil {
-		return 0, sbErr.ErrBadImage{
+		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "/check",
+			Function: "/update",
 		}
 	}
-	return sign, nil
+	if len(sign) == 0 {
+		return 0, nil
+	}
+	return sign[0], nil
 }
 
 func (m *ArLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int, error) {
 	sign, err := m.Check(ctx, a)
-	if err != nil || sign == -3 {
+	if err != nil || sign == 0 {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
 			Function: "/cancel",
@@ -95,15 +98,23 @@ func (m *ArLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int,
 
 func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (int, error) {
 	sign, err := m.Check(ctx, a)
-	if sign != a.Signum && err == nil {
+	if err != nil || sign == a.Signum {
+		return 0, sbErr.ErrNoContent{
+			Reason:   err.Error(),
+			Function: "inslike",
+		}
+	}
+
+	if sign != 0 {
 		err = m.Delete(ctx, a)
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
-				Function: "inslike",
+				Function: "cancel",
 			}
 		}
 	}
+
 	err = m.Insert(ctx, a)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
@@ -111,6 +122,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 			Function: "inslike",
 		}
 	}
+
 	likes, err := m.UpdateCount(ctx, a.ArticleId, sign)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
