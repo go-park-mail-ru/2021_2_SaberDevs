@@ -131,19 +131,27 @@ func (m *articleUsecase) Store(ctx context.Context, c string, a *amodels.Article
 	return Id, errors.Wrap(err, "articleUsecase/Store")
 }
 
-func (m *articleUsecase) Delete(ctx context.Context, id string) error {
+func (m *articleUsecase) Delete(ctx context.Context, c string, id string) error {
 	idInt, err := IdToString(id)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
-	err = m.articleRepo.Delete(ctx, int64(idInt))
+	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return errors.Wrap(err, "articleUsecase/Delete")
+	}
+	err = m.articleRepo.Delete(ctx, AuthorName, int64(idInt))
 	return errors.Wrap(err, "articleUsecase/Delete")
 }
 
-func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) error {
+func (m *articleUsecase) Update(ctx context.Context, c string, a *amodels.ArticleUpdate) error {
 	idInt, err := IdToString(a.Id)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Update")
+	}
+	AuthorName, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return errors.Wrap(err, "articleUsecase/Delete")
 	}
 	newArticle, err := m.GetByID(ctx, int64(idInt))
 	upArt := artOut(&newArticle)
@@ -155,6 +163,7 @@ func (m *articleUsecase) Update(ctx context.Context, a *amodels.ArticleUpdate) e
 	upArt.Text = a.Text
 	upArt.Tags = a.Tags
 	upArt.Title = a.Title
+	upArt.AuthorName = AuthorName
 	err = m.articleRepo.Update(ctx, upArt)
 	return errors.Wrap(err, "articleUsecase/Update")
 }

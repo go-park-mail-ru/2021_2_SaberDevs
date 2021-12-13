@@ -82,7 +82,7 @@ func (m *ArticleManager) Delete(ctx context.Context, id *app.Id) (*app.Nothing, 
 	myid := id.GetId()
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	err := m.handler.Delete(ctx, myid)
+	err := m.handler.Delete(ctx, id.Value, myid)
 	return &app.Nothing{Dummy: true}, err
 }
 
@@ -308,7 +308,7 @@ func (m *ArticleManager) Update(ctx context.Context, a *app.ArticleUpdate) (*app
 	ar := upConv(a)
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	err := m.handler.Update(ctx, ar)
+	err := m.handler.Update(ctx, a.Value, ar)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {

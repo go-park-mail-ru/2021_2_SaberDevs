@@ -137,9 +137,9 @@ type ArticleUsecase interface {
 	FindByTag(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	FindAuthors(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Author, error)
 	FindArticles(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
-	Update(ctx context.Context, a *ArticleUpdate) error
+	Update(ctx context.Context, c string, a *ArticleUpdate) error
 	Store(ctx context.Context, c string, a *ArticleCreate) (int, error)
-	Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, c string, id string) error
 }
 
 // ArticleRepository represent the article's repository contract
@@ -154,5 +154,5 @@ type ArticleRepository interface {
 	FindArticles(ctx context.Context, query string, from, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, author string, id int64) error
 }

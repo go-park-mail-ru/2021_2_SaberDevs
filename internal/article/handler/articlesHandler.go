@@ -300,10 +300,20 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 		}
 	}
 	newArticle = SanitizeUpdate(newArticle)
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	cook := cookie.Value
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	_, err = api.UseCase.Update(ctx, upConv(newArticle))
+	ar := upConv(newArticle)
+	ar.Value = cook
+	_, err = api.UseCase.Update(ctx, ar)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Update")
 	}
@@ -454,7 +464,6 @@ func (api *ArticlesHandler) Create(c echo.Context) error {
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	art := arConv(tempArticle)
 	cr := &app.Create{Art: art, Value: cook}
-	c.Logger().Error("!!!!!!", tempArticle.Category)
 	Id, err := api.UseCase.Store(ctx, cr)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Create")
@@ -473,10 +482,18 @@ func (api *ArticlesHandler) Delete(c echo.Context) error {
 	fPath := "/api/v1/articles/delete"
 	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	cook := cookie.Value
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	d := &app.Id{Id: id}
-	_, err := api.UseCase.Delete(ctx, d)
+	d := &app.Id{Id: id, Value: cook}
+	_, err = api.UseCase.Delete(ctx, d)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/Delete")
 	}
