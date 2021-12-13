@@ -18,13 +18,13 @@ func NewArLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 }
 
 func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int, change int) (int, error) {
-	updateArticle := `UPDATE articles SET Likes = Likes + $  WHERE articles.Id  = $2 RETURNING Likes;`
+	updateArticle := `UPDATE articles SET Likes = Likes + $1  WHERE articles.Id = $2 RETURNING Likes;`
 	var Likes int
-	err := m.Db.Get(&Likes, updateArticle)
+	err := m.Db.Get(&Likes, updateArticle, change, articlesid)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "articleRepository/Store",
+			Function: "/update",
 		}
 	}
 
@@ -32,8 +32,7 @@ func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int, cha
 }
 
 func (m *ArLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) (int, error) {
-	ins := `INSERT INTO articles_likes(login, article_id, signum) VALUES
-	($1, $2, $3) ON CONFLICT DO NOTHING;`
+	ins := `INSERT INTO article_likes(login, articleId, signum) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`
 	_, err := m.Db.Exec(ins, a.Login, a.ArticleId, a.Signum)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
@@ -45,7 +44,7 @@ func (m *ArLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) (int,
 }
 
 func (m *ArLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error {
-	delete := `delete from article_likes  WHERE article_id = $1 and login = $2;`
+	delete := `delete from article_likes  WHERE articleId = $1 and login = $2;`
 	_, err := m.Db.Exec(delete, a.ArticleId, a.Login)
 	if err != nil {
 		return sbErr.ErrDbError{
@@ -58,12 +57,12 @@ func (m *ArLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error
 
 func (m *ArLikesRepository) Check(ctx context.Context, a *amodels.LikeDb) (int, error) {
 	sign := -3
-	check := `signum from article_likes  WHERE article_id = $1 and login = $2;`
+	check := `select signum from article_likes  WHERE articleId = $1 and login = $2;`
 	err := m.Db.Get(&sign, check, a.ArticleId, a.Login)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
-			Function: "articleRepository/Store",
+			Function: "/check",
 		}
 	}
 	return sign, nil
@@ -74,21 +73,21 @@ func (m *ArLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int,
 	if err != nil || sign == -3 {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
-			Function: "articleRepository/Store",
+			Function: "/cancel",
 		}
 	}
 	err = m.Delete(ctx, a)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
-			Function: "articleRepository/Store",
+			Function: "cancel",
 		}
 	}
 	likes, err := m.UpdateCount(ctx, a.ArticleId, -sign)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
-			Function: "articleRepository/Store",
+			Function: "cancel",
 		}
 	}
 	return likes, nil
@@ -96,25 +95,21 @@ func (m *ArLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int,
 
 func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (int, error) {
 	sign, err := m.Check(ctx, a)
-	if err != nil || sign == -3 {
-		return 0, sbErr.ErrBadImage{
-			Reason:   err.Error(),
-			Function: "articleRepository/Store",
-		}
-	}
 	if sign != a.Signum {
-		err = m.Delete(ctx, a)
-		if err != nil {
-			return 0, sbErr.ErrBadImage{
-				Reason:   err.Error(),
-				Function: "articleRepository/Store",
+		if err == nil {
+			err = m.Delete(ctx, a)
+			if err != nil {
+				return 0, sbErr.ErrBadImage{
+					Reason:   err.Error(),
+					Function: "inslike",
+				}
 			}
 		}
-		likes, err := m.UpdateCount(ctx, a.ArticleId, -sign)
+		likes, err := m.UpdateCount(ctx, a.ArticleId, sign)
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
-				Function: "articleRepository/Store",
+				Function: "inslike",
 			}
 		}
 		return likes, nil
