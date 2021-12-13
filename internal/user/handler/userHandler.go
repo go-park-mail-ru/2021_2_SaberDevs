@@ -8,19 +8,20 @@ import (
 
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
+	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 	"github.com/labstack/echo/v4"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 )
 
 type UserHandler struct {
-	UserUsecase models.UserUsecase
+	UserUsecase app.UserDeliveryClient
 }
 
-func NewUserHandler(uu models.UserUsecase) *UserHandler {
+func NewUserHandler(uu app.UserDeliveryClient) *UserHandler {
 	return &UserHandler{uu}
 }
-func SanitizeUser(a *models.User) *models.User {
+func SanitizeUser(a *app.User) *app.User {
 	s := bluemonday.StrictPolicy()
 	a.Email = s.Sanitize(a.Email)
 	a.Login = s.Sanitize(a.Login)
@@ -59,7 +60,10 @@ func (api *UserHandler) UserProfile(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	response, err := api.UserUsecase.GetUserProfile(ctx, sessionID.Value)
+	grpcSessionID := &app.SessionID{
+		SesionID:             sessionID.Value,
+	}
+	response, err := api.UserUsecase.GetUserProfile(ctx, grpcSessionID)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/UserProfile")
 	}
@@ -70,10 +74,25 @@ func (api *UserHandler) UserProfile(c echo.Context) error {
 func (api *UserHandler) AuthorProfile(c echo.Context) error {
 	authorName := c.QueryParam("user")
 	ctx := c.Request().Context()
+	grpcAuthorName := &app.Author{Author: authorName}
 
-	response, err := api.UserUsecase.GetAuthorProfile(ctx, authorName)
+	grpcResponse, err := api.UserUsecase.GetAuthorProfile(ctx, grpcAuthorName)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/AuthorProfile")
+	}
+
+	response := models.LoginResponse{
+		Status: uint(grpcResponse.Status),
+		Data:   models.LoginData{
+			Login:       grpcResponse.Data.Login,
+			Name:        grpcResponse.Data.Name,
+			Surname:     grpcResponse.Data.Surname,
+			Email:       grpcResponse.Data.Email,
+			Score:       int(grpcResponse.Data.Score),
+			AvatarURL:   grpcResponse.Data.AvatarUrl,
+			Description: grpcResponse.Data.Description,
+		},
+		Msg:    grpcResponse.Msg,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -105,8 +124,19 @@ func (api *UserHandler) UpdateProfile(c echo.Context) error {
 		}
 	}
 
+	grpcUpdateInput := &app.UpdateInput{
+		User:                 &app.User{
+			Name:                 requestUser.Name,
+			Surname:              requestUser.Surname,
+			Password:             requestUser.Password,
+			AvatarUrl:            requestUser.AvatarURL,
+			Description:          requestUser.Description,
+		},
+		SesionID:             sessionID.Value,
+	}
+
 	ctx := c.Request().Context()
-	response, err := api.UserUsecase.UpdateProfile(ctx, requestUser, sessionID.Value)
+	response, err := api.UserUsecase.UpdateProfile(ctx, grpcUpdateInput)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/UpdateProfile")
 	}
@@ -115,7 +145,7 @@ func (api *UserHandler) UpdateProfile(c echo.Context) error {
 }
 
 func (api *UserHandler) Login(c echo.Context) error {
-	requestUser := new(models.User)
+	requestUser := new(app.User)
 	err := c.Bind(requestUser)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
@@ -125,19 +155,20 @@ func (api *UserHandler) Login(c echo.Context) error {
 	}
 	requestUser = SanitizeUser(requestUser)
 	ctx := c.Request().Context()
-	response, sessionID, err := api.UserUsecase.LoginUser(ctx, requestUser)
+	grpcResponse, err := api.UserUsecase.LoginUser(ctx, requestUser)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/Login")
 	}
 
-	cookie := formCookie(sessionID)
+	cookie := formCookie(grpcResponse.SessionID)
 	c.SetCookie(cookie)
+	grpcResponse.SessionID = ""
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, grpcResponse)
 }
 
 func (api *UserHandler) Register(c echo.Context) error {
-	newUser := new(models.User)
+	newUser := new(app.User)
 	err := c.Bind(newUser)
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
@@ -156,15 +187,16 @@ func (api *UserHandler) Register(c echo.Context) error {
 
 	newUser = SanitizeUser(newUser)
 	ctx := c.Request().Context()
-	response, sessionID, err := api.UserUsecase.Signup(ctx, newUser)
+	grpcResponse, err := api.UserUsecase.Signup(ctx, newUser)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/Register")
 	}
 
-	cookie := formCookie(sessionID)
+	cookie := formCookie(grpcResponse.SessionID)
 	c.SetCookie(cookie)
+	grpcResponse.SessionID = ""
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, grpcResponse)
 }
 
 func (api *UserHandler) Logout(c echo.Context) error {
@@ -172,7 +204,11 @@ func (api *UserHandler) Logout(c echo.Context) error {
 	// TODO middleware
 
 	ctx := c.Request().Context()
-	err := api.UserUsecase.Logout(ctx, cookie.Value)
+	grpcSessionID := &app.CookieValue{
+		CookieValue:             cookie.Value,
+	}
+
+	_, err := api.UserUsecase.Logout(ctx, grpcSessionID)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/Logout")
 	}

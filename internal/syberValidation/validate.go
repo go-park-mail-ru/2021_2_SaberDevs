@@ -1,6 +1,7 @@
 package syberValidation
 
 import (
+	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,7 +18,7 @@ const nameInvalidMsg = "имя должно быть от 4 до 20 символ
 const surnameInvalidMsg = "фамилия должна быть от 4 до 20 символов русского, английского алфавита и цифры"
 const loginInvalidMsg = "логин должен быть от 4 до 20 символов английского алфавита и цифры"
 
-func ValidateSignUp(user umodels.User) error {
+func ValidateSignUp(user app.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Login, validation.Required.Error("Логин это обязательное поле"),
 			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")).Error(loginInvalidMsg)),

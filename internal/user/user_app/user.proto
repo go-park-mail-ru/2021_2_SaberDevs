@@ -5,32 +5,33 @@ syntax = "proto3";
 package user_server;
 
 message User {
-  string Login = 1;
-  string Name = 2;
-  string Surname = 3;
-  string Email = 4;
-  string Password = 5;
-  int32 Score = 6;
-  string AvatarURL = 7;
-  string Description = 8;
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  string password = 5;
+  int32 score = 6;
+  string avatarUrl = 7;
+  string description = 8;
 }
 
 //----------------------------------------
 
 message LoginData {
-  string Login = 1;
-  string Name = 2;
-  string Surname = 3;
-  string Email = 4;
-  int32 Score = 5;
-  string AvatarURL = 6;
-  string Description = 7;
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  int32 score = 5;
+  string avatarUrl = 6;
+  string description = 7;
 }
 
 message LoginResponse {
   uint32 status = 1;
   LoginData data = 2;
-  string Msg = 3;
+  string msg = 3;
+  string sessionID = 4;
 }
 
 //----------------------------------------
@@ -44,42 +45,44 @@ message UpdateInput {
 
 message LogoutResponse {
   uint32 status = 1;
-  string GoodbyeMsg = 2;
+  string goodbyeMsg = 2;
 }
 
 //----------------------------------------
 
 message GetUserData {
-  string Login = 1;
-  string Name = 2;
-  string Surname = 3;
-  int32 Score = 4;
-  string AvatarURL = 5;
-  string Description = 6;
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  int32 score = 5;
+  string avatarUrl = 6;
+  string description = 7;
 }
 
 message GetUserResponse {
   uint32 status = 1;
   GetUserData data = 2;
-  string Msg = 3;
+  string msg = 3;
 }
 
 //----------------------------------------
 
 message SignUpData {
-  string Login = 1;
-  string Name = 2;
-  string Surname = 3;
-  string Email = 4;
-  int32 Score = 5;
-  string AvatarURL = 6;
-  string Description = 7;
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  int32 score = 5;
+  string avatarUrl = 6;
+  string description = 7;
 }
 
 message SignupResponse {
   uint32 status = 1;
   SignUpData data = 2;
-  string Msg = 3;
+  string msg = 3;
+  string sessionID = 4;
 }
 
 //----------------------------------------

@@ -164,7 +164,7 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	err := r.Db.Get(&login, "SELECT login FROM author WHERE login = $1", user.Login)
 	if login != "" {
 		return umodels.User{}, sbErr.ErrUserExists{
-			Reason:   "login already in use",
+			Reason:   "Логин уже занят",
 			Function: "userRepository/Store",
 		}
 	}
