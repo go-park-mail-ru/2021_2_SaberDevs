@@ -31,16 +31,16 @@ func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int, cha
 	return Likes, nil
 }
 
-func (m *ArLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) (int, error) {
+func (m *ArLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) error {
 	ins := `INSERT INTO article_likes(login, articleId, signum) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`
 	_, err := m.Db.Exec(ins, a.Login, a.ArticleId, a.Signum)
 	if err != nil {
-		return 0, sbErr.ErrDbError{
+		return sbErr.ErrDbError{
 			Reason:   err.Error(),
 			Function: "/insert",
 		}
 	}
-	return 0, nil
+	return nil
 }
 
 func (m *ArLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error {
@@ -95,29 +95,30 @@ func (m *ArLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int,
 
 func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (int, error) {
 	sign, err := m.Check(ctx, a)
-	if sign != a.Signum {
-		if err == nil {
-			err = m.Delete(ctx, a)
-			if err != nil {
-				return 0, sbErr.ErrBadImage{
-					Reason:   err.Error(),
-					Function: "inslike",
-				}
-			}
-		}
-		likes, err := m.UpdateCount(ctx, a.ArticleId, sign)
+	if sign != a.Signum && err == nil {
+		err = m.Delete(ctx, a)
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
 				Function: "inslike",
 			}
 		}
-		return likes, nil
 	}
-	return 0, sbErr.ErrBadImage{
-		Reason:   err.Error(),
-		Function: "articleRepository/Store",
+	err = m.Insert(ctx, a)
+	if err != nil {
+		return 0, sbErr.ErrBadImage{
+			Reason:   err.Error(),
+			Function: "inslike",
+		}
 	}
+	likes, err := m.UpdateCount(ctx, a.ArticleId, sign)
+	if err != nil {
+		return 0, sbErr.ErrBadImage{
+			Reason:   err.Error(),
+			Function: "inslike",
+		}
+	}
+	return likes, nil
 }
 
 func (m *ArLikesRepository) Like(ctx context.Context, a *amodels.LikeDb) (int, error) {
