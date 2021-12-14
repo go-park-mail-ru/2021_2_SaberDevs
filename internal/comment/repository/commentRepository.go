@@ -83,7 +83,7 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 
 func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 
-	result, err := cr.Db.Query(`UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime`,
+	result, err := cr.Db.Queryx(`UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime`,
 
 		comment.Text, comment.IsEdited, comment.Id)
 	if err != nil {
@@ -111,7 +111,7 @@ func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.C
 		Text:        editedComment.Text,
 		AuthorLogin: editedComment.AuthorLogin,
 		ArticleId:   editedComment.ArticleId,
-		Likes:       editedComment.Likes,
+		Likes:       int(editedComment.Likes),
 		ParentId:    editedComment.ParentId.Int64,
 		IsEdited:    editedComment.IsEdited,
 	}, nil
@@ -142,7 +142,7 @@ func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID
 			DateTime:  comment.DateTime,
 			Text:      comment.Text,
 			ArticleId: comment.ArticleId,
-			Likes:     comment.Likes,
+			Likes:     int(comment.Likes),
 			ParentId:  comment.ParentId.Int64,
 			IsEdited:  comment.IsEdited,
 			Author: cmodels.Author{
@@ -175,7 +175,7 @@ func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) 
 		Text:        comment.Text,
 		AuthorLogin: comment.AuthorLogin,
 		ArticleId:   comment.ArticleId,
-		Likes:       comment.Likes,
+		Likes:       int(comment.Likes),
 		ParentId:    comment.ParentId.Int64,
 		IsEdited:    comment.IsEdited,
 	}, nil

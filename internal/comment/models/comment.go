@@ -8,7 +8,6 @@ type Comment struct {
 	Text        string `json:"text" db:"text"`
 	AuthorLogin string `json:"authorLogin" db:"authorlogin"`
 	ArticleId   int64  `json:"articleId" db:"articleid"`
-	Likes       int64  `json:"likes" db:"likes"`
 	ParentId    int64  `json:"parentId" db:"parentid"`
 	IsEdited    bool   `json:"isEdited" db:"isedited"`
 	Likes       int    `json:"likes" db:"likes"`
@@ -19,7 +18,6 @@ type PreparedComment struct {
 	DateTime  string `json:"dateTime" db:"datetime"`
 	Text      string `json:"text" db:"text"`
 	ArticleId int64  `json:"articleId" db:"articleid"`
-	Likes     int64  `json:"likes" db:"likes"`
 	ParentId  int64  `json:"parentId" db:"parentid"`
 	IsEdited  bool   `json:"isEdited" db:"isedited"`
 	Likes     int    `json:"likes" db:"likes"`
