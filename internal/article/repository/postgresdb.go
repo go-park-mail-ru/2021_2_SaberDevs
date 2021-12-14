@@ -245,6 +245,25 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 	return chunkSize, ChunkData, overCount, nil
 }
 
+func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels.Preview, error) {
+	var liked []int64
+	schema := `select signum from article_likes where articleId = $1 and Login = $2`
+	for i, data:= range chunkData {
+		err = m.Db.Select(&liked, schema, id, login)
+		if err != 0 {
+			return ChunkData, sbErr.ErrDbError{
+				Reason:   err.Error(),
+				Function: fName,
+			}
+		}
+		data.Liked = 0
+		if (len(liked)) > 0 {
+			data.Liked = 1
+		}
+	}
+	return chunkData, err
+}
+
 func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := toFetch
 	Hits.WithLabelValues(layer, fName).Inc()
@@ -275,6 +294,10 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, c
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData)
 	return ChunkData, err
 }
 
@@ -303,7 +326,6 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 			Function: fName,
 		}
 	}
-
 	outArticle, err = fullArticleConv(newArticle, m.Db, newAuth)
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -341,10 +363,10 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, login string, tag 
 		ChunkData = append(ChunkData, data.End)
 		return ChunkData, nil
 	}
-	var authors []string
 	for _, a := range arts {
 		authors = append(authors, a.AuthorName)
-	}
+	}var authors []string
+	f
 
 	authorRes, err := m.uploadAuthors(authors, fName)
 	if err != nil {
