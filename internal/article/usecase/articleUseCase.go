@@ -37,6 +37,7 @@ func artOut(a *amodels.FullArticle) *amodels.Article {
 	out.CommentsUrl = a.CommentsUrl
 	out.Id = a.Id
 	out.Likes = a.Likes
+	out.Liked = a.Liked
 	out.PreviewUrl = a.PreviewUrl
 	out.Tags = a.Tags
 	out.Text = a.Text

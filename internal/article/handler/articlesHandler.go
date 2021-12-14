@@ -46,6 +46,7 @@ func reverseConv(a *app.Preview) *models.Preview {
 	val.DateTime = a.DateTime
 	val.Id = a.Id
 	val.Likes = a.Likes
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
@@ -70,6 +71,7 @@ func revFullConv(a *app.FullArticle) *models.FullArticle {
 	val.DateTime = a.DateTime
 	val.Id = a.Id
 	val.Likes = a.Likes
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
