@@ -13,7 +13,6 @@ import (
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
 
-	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	likes "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/handler"
 	lrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/repository"
 	luse "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/usecase"
@@ -249,5 +248,5 @@ func Run(address string) {
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
-	//e.Logger.Fatal(e.Start(address))
+	// e.Logger.Fatal(e.Start(address))
 }
