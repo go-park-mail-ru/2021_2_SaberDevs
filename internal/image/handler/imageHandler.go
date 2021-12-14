@@ -33,17 +33,6 @@ func (api *ImageHandler) SaveImage(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
-
-	// if file.Size > MaxFileSize {
-	// 	// todo file tooo big
-	// }
-	//
-	// src, err := file.Open()
-	// if err != nil {
-	// 	// todo
-	// }
-	// defer src.Close()
-
 }
 
 func (api *ImageHandler) GetImage(c echo.Context) error {

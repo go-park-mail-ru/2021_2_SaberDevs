@@ -161,16 +161,16 @@ func (r *userPsqlRepo) GetByLogin(ctx context.Context, login string) (umodels.Us
 func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.User, error) {
 	var login string
 
-	err := r.Db.Get(&login, "SELECT Email FROM author WHERE Email = $1", user.Login)
+	err := r.Db.Get(&login, "SELECT login FROM author WHERE login = $1", user.Login)
 	if login != "" {
 		return umodels.User{}, sbErr.ErrUserExists{
-			Reason:   "login already in use",
+			Reason:   "Логин уже занят",
 			Function: "userRepository/Store",
 		}
 	}
 
 	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "user.jpg", "")
+	_, err = r.Db.Exec(schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "", "")
 	if err != nil {
 		return umodels.User{}, sbErr.ErrInternal{
 			Reason:   err.Error(),

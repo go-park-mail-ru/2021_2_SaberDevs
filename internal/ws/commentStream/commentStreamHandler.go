@@ -39,7 +39,7 @@ func (api *commentStreamHandler) HandleWS(c echo.Context) error {
 	if len(comments) != 0 {
 		lastComment = comments[0].Id
 
-		for  i := len(comments) - 1; i >= 0 ; i--  {
+		for i := len(comments) - 1; i >= 0; i-- {
 			comment := comments[i]
 			length := 0
 			if len([]rune(comment.ArticleName)) < defaultMinLength {
