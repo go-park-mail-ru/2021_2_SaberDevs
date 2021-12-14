@@ -163,7 +163,7 @@ func (api *CommentHandler) GetCommentsByArticleID(c echo.Context) error {
 			ParentId:  c.ParentId,
 			IsEdited:  c.IsEdited,
 			Likes:     int(c.Likes),
-			Author:    cmodels.Author{-
+			Author:    cmodels.Author{
 				Login:     c.Author.Login,
 				Surname:   c.Author.LastName,
 				Name:      c.Author.FirstName,
