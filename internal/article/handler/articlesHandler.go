@@ -205,9 +205,11 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
 	}
+
 	// Возвращаем записи
 	var ChunkData []amodels.Preview
 	for _, a := range Data.Preview {
+		fmt.Println(a.Liked)
 		val := reverseConv(a)
 		ChunkData = append(ChunkData, *val)
 	}
