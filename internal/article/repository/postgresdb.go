@@ -116,7 +116,6 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 				Function: funcName,
 			}
 		}
-		//fmt.Println(id, "  ", newtag)
 		slice := Tags[id]
 		slice = append(slice, newtag)
 		Tags[id] = slice
@@ -255,7 +254,7 @@ func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels
 		}
 		if len(liked) > 0 {
 			data.Liked = liked[0]
-			fmt.Println(data.Liked)
+			//	fmt.Println(data.Liked)
 		}
 	}
 	return chunkData, nil
