@@ -61,7 +61,7 @@ func (api *UserHandler) UserProfile(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	grpcSessionID := &app.SessionID{
-		SesionID:             sessionID.Value,
+		SesionID: sessionID.Value,
 	}
 	response, err := api.UserUsecase.GetUserProfile(ctx, grpcSessionID)
 	if err != nil {
@@ -83,7 +83,7 @@ func (api *UserHandler) AuthorProfile(c echo.Context) error {
 
 	response := models.LoginResponse{
 		Status: uint(grpcResponse.Status),
-		Data:   models.LoginData{
+		Data: models.LoginData{
 			Login:       grpcResponse.Data.Login,
 			Name:        grpcResponse.Data.Name,
 			Surname:     grpcResponse.Data.Surname,
@@ -92,7 +92,7 @@ func (api *UserHandler) AuthorProfile(c echo.Context) error {
 			AvatarURL:   grpcResponse.Data.AvatarUrl,
 			Description: grpcResponse.Data.Description,
 		},
-		Msg:    grpcResponse.Msg,
+		Msg: grpcResponse.Msg,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -125,14 +125,14 @@ func (api *UserHandler) UpdateProfile(c echo.Context) error {
 	}
 
 	grpcUpdateInput := &app.UpdateInput{
-		User:                 &app.User{
-			Name:                 requestUser.Name,
-			Surname:              requestUser.Surname,
-			Password:             requestUser.Password,
-			AvatarUrl:            requestUser.AvatarURL,
-			Description:          requestUser.Description,
+		User: &app.User{
+			Name:        requestUser.Name,
+			Surname:     requestUser.Surname,
+			Password:    requestUser.Password,
+			AvatarUrl:   requestUser.AvatarURL,
+			Description: requestUser.Description,
 		},
-		SesionID:             sessionID.Value,
+		SesionID: sessionID.Value,
 	}
 
 	ctx := c.Request().Context()
@@ -205,7 +205,7 @@ func (api *UserHandler) Logout(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	grpcSessionID := &app.CookieValue{
-		CookieValue:             cookie.Value,
+		CookieValue: cookie.Value,
 	}
 
 	_, err := api.UserUsecase.Logout(ctx, grpcSessionID)

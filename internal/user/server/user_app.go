@@ -35,7 +35,7 @@ func (m *UserManager) UpdateProfile(ctx context.Context, updateInput *app.Update
 
 	return &app.LoginResponse{
 		Status: uint32(response.Status),
-		Data:   &app.LoginData{
+		Data: &app.LoginData{
 			Login:       response.Data.Login,
 			Name:        response.Data.Name,
 			Surname:     response.Data.Surname,
@@ -44,7 +44,7 @@ func (m *UserManager) UpdateProfile(ctx context.Context, updateInput *app.Update
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
 		},
-		Msg:    response.Msg,
+		Msg: response.Msg,
 	}, errors.Wrap(err, "user_app/UpdateProfile")
 }
 
@@ -52,8 +52,8 @@ func (m *UserManager) GetAuthorProfile(ctx context.Context, author *app.Author) 
 	response, err := m.usecase.GetAuthorProfile(ctx, author.Author)
 
 	return &app.GetUserResponse{
-		Status:               uint32(response.Status),
-		Data:                 &app.GetUserData{
+		Status: uint32(response.Status),
+		Data: &app.GetUserData{
 			Login:       response.Data.Login,
 			Name:        response.Data.Name,
 			Surname:     response.Data.Surname,
@@ -61,7 +61,7 @@ func (m *UserManager) GetAuthorProfile(ctx context.Context, author *app.Author) 
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
 		},
-		Msg:                  response.Msg,
+		Msg: response.Msg,
 	}, errors.Wrap(err, "user_app/GetAuthorProfile")
 }
 
@@ -69,8 +69,8 @@ func (m *UserManager) GetUserProfile(ctx context.Context, sessionID *app.Session
 	response, err := m.usecase.GetUserProfile(ctx, sessionID.SesionID)
 
 	return &app.GetUserResponse{
-		Status:               uint32(response.Status),
-		Data:                 &app.GetUserData{
+		Status: uint32(response.Status),
+		Data: &app.GetUserData{
 			Login:       response.Data.Login,
 			Name:        response.Data.Name,
 			Surname:     response.Data.Surname,
@@ -78,16 +78,16 @@ func (m *UserManager) GetUserProfile(ctx context.Context, sessionID *app.Session
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
 		},
-		Msg:                  response.Msg,
-	} , errors.Wrap(err, "user_app/GetUserProfile")
+		Msg: response.Msg,
+	}, errors.Wrap(err, "user_app/GetUserProfile")
 }
 
 func (m *UserManager) LoginUser(ctx context.Context, user *app.User) (*app.LoginResponse, error) {
 	response, sessionID, err := m.usecase.LoginUser(ctx, convertToUserModel(*user))
 
 	return &app.LoginResponse{
-		Status:               uint32(response.Status),
-		Data:                 &app.LoginData{
+		Status: uint32(response.Status),
+		Data: &app.LoginData{
 			Login:       response.Data.Login,
 			Name:        response.Data.Name,
 			Surname:     response.Data.Surname,
@@ -96,8 +96,8 @@ func (m *UserManager) LoginUser(ctx context.Context, user *app.User) (*app.Login
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
 		},
-		Msg:                  response.Msg,
-		SessionID:            sessionID,
+		Msg:       response.Msg,
+		SessionID: sessionID,
 	}, errors.Wrap(err, "user_app/LoginUser")
 }
 
@@ -105,8 +105,8 @@ func (m *UserManager) Signup(ctx context.Context, user *app.User) (*app.SignupRe
 	response, sessionID, err := m.usecase.Signup(ctx, convertToUserModel(*user))
 
 	return &app.SignupResponse{
-		Status:               uint32(response.Status),
-		Data:                 &app.SignUpData{
+		Status: uint32(response.Status),
+		Data: &app.SignUpData{
 			Login:       response.Data.Login,
 			Name:        response.Data.Name,
 			Surname:     response.Data.Surname,
@@ -115,8 +115,8 @@ func (m *UserManager) Signup(ctx context.Context, user *app.User) (*app.SignupRe
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
 		},
-		Msg:                  response.Msg,
-		SessionID:            sessionID,
+		Msg:       response.Msg,
+		SessionID: sessionID,
 	}, err
 }
 

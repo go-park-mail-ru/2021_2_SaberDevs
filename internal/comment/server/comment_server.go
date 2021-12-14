@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
-	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
-	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
+	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
+	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
+	cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
-	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
-	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 	"github.com/jmoiron/sqlx"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
@@ -59,7 +58,7 @@ func DbClose(db *sqlx.DB) error {
 }
 
 func main() {
-	lis, err := net.Listen("tcp", ":8078")
+	lis, err := net.Listen("tcp", ":8077")
 	if err != nil {
 		fmt.Println("cant listen port", err)
 	}
@@ -79,13 +78,12 @@ func main() {
 
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
-	keyRepo := krepo.NewKeyRepository(tarantoolConn)
-	articleRepo := arepo.NewArticleRepository(db)
+	commentsRepo := crepo.NewCommentRepository(db)
 
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
+	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 
-	app.RegisterUserDeliveryServer(server, NewUserManager(userUsecase))
+	app.RegisterCommentDeliveryServer(server, NewCommentManager(commentUsecase))
 
-	fmt.Println("starting user server at :8078")
+	fmt.Println("starting comment server at :8077")
 	server.Serve(lis)
 }

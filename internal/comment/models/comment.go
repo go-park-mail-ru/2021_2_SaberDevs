@@ -10,6 +10,7 @@ type Comment struct {
 	ArticleId   int64  `json:"articleId" db:"articleid"`
 	ParentId    int64  `json:"parentId" db:"parentid"`
 	IsEdited    bool   `json:"isEdited" db:"isedited"`
+	Likes       int    `json:"likes" db:"likes"`
 }
 
 type PreparedComment struct {
@@ -19,6 +20,7 @@ type PreparedComment struct {
 	ArticleId int64  `json:"articleId" db:"articleid"`
 	ParentId  int64  `json:"parentId" db:"parentid"`
 	IsEdited  bool   `json:"isEdited" db:"isedited"`
+	Likes     int    `json:"likes" db:"likes"`
 	Author    Author `json:"author"`
 }
 
