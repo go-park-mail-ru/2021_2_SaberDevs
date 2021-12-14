@@ -15,7 +15,8 @@ type ArticleData struct {
 	AuthorAvatar string   `json:"authorAvatar"`
 	CommentsUrl  string   `json:"commentsUrl"`
 	Comments     uint     `json:"comments"`
-	Likes        uint     `json:"likes"`
+	Likes        int64    `json:"likes"`
+	Liked        int64    `json:"liked"`
 }
 
 type Article struct {
@@ -31,7 +32,8 @@ type Article struct {
 	AuthorAvatar string   `json:"authorAvatar"`
 	CommentsUrl  string   `json:"commentsUrl"`
 	Comments     uint     `json:"comments"`
-	Likes        uint     `json:"likes"`
+	Likes        int64    `json:"likes"`
+	Liked        int64    `json:"liked"`
 }
 type FullArticle struct {
 	Id          string   `json:"id"`
@@ -44,7 +46,8 @@ type FullArticle struct {
 	Author      Author   `json:"author"`
 	CommentsUrl string   `json:"commentsUrl"`
 	Comments    uint     `json:"comments"`
-	Likes       uint     `json:"likes"`
+	Likes       int64    `json:"likes"`
+	Liked       int64    `json:"liked"`
 }
 
 type Preview struct {
@@ -58,7 +61,8 @@ type Preview struct {
 	Author      Author   `json:"author"`
 	CommentsUrl string   `json:"commentsUrl"`
 	Comments    uint     `json:"comments"`
-	Likes       uint     `json:"likes"`
+	Likes       int64    `json:"likes"`
+	Liked       int64    `json:"liked"`
 }
 
 type DbArticle struct {
@@ -71,7 +75,7 @@ type DbArticle struct {
 	AuthorName  string `json:"authorName" db:"authorname"`
 	CommentsUrl string `json:"commentsUrl" db:"commentsurl"`
 	Comments    uint   `json:"comments" db:"comments"`
-	Likes       uint   `json:"likes" db:"likes"`
+	Likes       int64  `json:"likes" db:"likes"`
 }
 
 type ChunkResponse struct {
