@@ -161,20 +161,20 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	res, err := m.handler.Fetch(ctx, chunk.Value, id, ch)
-	//md, ok := metadata.FromIncomingContext(ctx)
-	//value := md["x-request-id"]
-	//if ok {
-	//fmt.Println(value)
-	//	}
+	md, ok := metadata.FromIncomingContext(ctx)
+	value := md["x-request-id"]
+	if ok {
+		fmt.Println(value)
+	}
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
 		// fmt.Println(val.Liked)
 		retval.Preview = append(retval.Preview, val)
 	}
-	for _, a := range retval.Preview {
-		fmt.Println(a.Liked)
-	}
+	// for _, a := range retval.Preview {
+	// 	//fmt.Println(a.Liked)
+	// }
 	return &retval, err
 }
 
