@@ -210,8 +210,8 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	var ChunkData []amodels.Preview
 	for _, a := range Data.Preview {
 		fmt.Println(a.Liked)
-		val := reverseConv(a)
-		ChunkData = append(ChunkData, *val)
+		val := *reverseConv(a)
+		ChunkData = append(ChunkData, val)
 	}
 	// формируем ответ
 	response := amodels.ChunkResponse{
