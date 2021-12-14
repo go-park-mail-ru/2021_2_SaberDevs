@@ -12,7 +12,12 @@ import (
 	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
-	// krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
+
+	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
+	likes "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/handler"
+	lrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/repository"
+	luse "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/usecase"
+
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
@@ -122,6 +127,17 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	search := e.Group("/api/v1/search")
 	search.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
+
+	//likes
+	repoAr := lrepo.NewArLikesRepository(db)
+	repoCom := lrepo.NewArLikesRepository(db)
+	useAr := luse.NewArLikeUsecase(repoAr, sessionRepo)
+	useCm := luse.NewComLikeUsecase(repoCom, sessionRepo)
+	like := likes.NewLikesHandler(useAr, useCm)
+
+	e.Use(syberMiddleware.ValidateRequestBody)
+
+	e.POST("api/v1/like", like.Rate)
 
 	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)

@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/pkg/errors"
-	"net/http"
-	"time"
 )
 
 type commentUsecase struct {
@@ -36,6 +37,7 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 		Text:        comment.Text,
 		AuthorLogin: login,
 		ArticleId:   comment.ArticleId,
+		Likes:       comment.Likes,
 		ParentId:    comment.ParentId,
 		IsEdited:    false,
 	}
@@ -55,6 +57,7 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 		DateTime:  storedComment.DateTime,
 		Text:      storedComment.Text,
 		ArticleId: storedComment.ArticleId,
+		Likes:     storedComment.Likes,
 		ParentId:  storedComment.ParentId,
 		IsEdited:  storedComment.IsEdited,
 		Author: cmodels.Author{
@@ -94,6 +97,7 @@ func (cu *commentUsecase) UpdateComment(ctx context.Context, comment *cmodels.Co
 	commentToUpdate := cmodels.Comment{
 		Id:          comment.Id,
 		Text:        comment.Text,
+		Likes:       comment.Likes,
 		AuthorLogin: login,
 		IsEdited:    true,
 	}
@@ -113,6 +117,7 @@ func (cu *commentUsecase) UpdateComment(ctx context.Context, comment *cmodels.Co
 		DateTime:  updatedComment.DateTime,
 		Text:      updatedComment.Text,
 		ArticleId: updatedComment.ArticleId,
+		Likes:     updatedComment.Likes,
 		ParentId:  updatedComment.ParentId,
 		IsEdited:  updatedComment.IsEdited,
 		Author: cmodels.Author{

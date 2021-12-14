@@ -569,10 +569,10 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 	return Id, nil
 }
 
-func (m *psqlArticleRepository) Delete(ctx context.Context, id int64) error {
+func (m *psqlArticleRepository) Delete(ctx context.Context, author string, id int64) error {
 	fPath := "delete"
 	Hits.WithLabelValues(layer, fPath).Inc()
-	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.Id = $1", id)
+	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2", id, author)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
@@ -592,8 +592,8 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 			Function: "articleRepository/Update",
 		}
 	}
-	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5  WHERE articles.Id  = $6;`
-	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId)
+	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5  WHERE articles.Id  = $6 and articles.Authorname = $7;`
+	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId, a.AuthorName)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
