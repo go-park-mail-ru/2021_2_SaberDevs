@@ -63,25 +63,21 @@ message Error  {
 message Tags  {
     string tag = 1;
     chunk chunk = 2;
-	string value = 3;
 }
 
 message Authors  {
     string author = 1;
     chunk chunk = 2;
-	string value = 3;
 }
 
 message Categories  {
     string category = 1;
     chunk chunk = 2;
-	string value = 3;
 }
 
 message Queries  {
     string query = 1;
     chunk chunk = 2;
-	string value = 3;
 }
 
 message Id  {

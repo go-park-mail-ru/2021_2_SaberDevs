@@ -178,7 +178,7 @@ func (m *ArticleManager) FindArticles(ctx context.Context, q *app.Queries) (*app
 	query := q.Query
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.FindArticles(ctx, q.Value, query, id, ch)
+	res, err := m.handler.FindArticles(ctx, q.Chunk.Value, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -198,7 +198,7 @@ func (m *ArticleManager) FindByTag(ctx context.Context, q *app.Queries) (*app.Re
 	query := q.Query
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.FindByTag(ctx, q.Value, query, id, ch)
+	res, err := m.handler.FindByTag(ctx, q.Chunk.Value, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -218,7 +218,7 @@ func (m *ArticleManager) GetByAuthor(ctx context.Context, au *app.Authors) (*app
 	author := au.Author
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByAuthor(ctx, au.Value, author, id, ch)
+	res, err := m.handler.GetByAuthor(ctx, au.Chunk.Value, author, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -238,7 +238,7 @@ func (m *ArticleManager) GetByCategory(ctx context.Context, cat *app.Categories)
 	category := cat.Category
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByCategory(ctx, cat.Value, category, id, ch)
+	res, err := m.handler.GetByCategory(ctx, cat.Chunk.Value, category, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -258,7 +258,7 @@ func (m *ArticleManager) GetByTag(ctx context.Context, cat *app.Tags) (*app.Repv
 	tag := cat.Tag
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByTag(ctx, cat.Value, tag, id, ch)
+	res, err := m.handler.GetByTag(ctx, cat.Chunk.Value, tag, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
