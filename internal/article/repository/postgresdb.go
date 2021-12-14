@@ -248,12 +248,12 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels.Preview, error) {
 	var liked []int64
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
-	for i, data:= range chunkData {
-		err = m.Db.Select(&liked, schema, id, login)
-		if err != 0 {
-			return ChunkData, sbErr.ErrDbError{
+	for _, data := range chunkData {
+		err := m.Db.Select(&liked, schema, data.Id, data.Author.Login)
+		if err != nil {
+			return chunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: fName,
+				Function: "addliked",
 			}
 		}
 		data.Liked = 0
@@ -261,7 +261,7 @@ func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels
 			data.Liked = 1
 		}
 	}
-	return chunkData, err
+	return chunkData, nil
 }
 
 func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, chunkSize int) (result []amodels.Preview, err error) {
@@ -336,6 +336,9 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 	var liked []int64
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
 	err = m.Db.Select(&liked, schema, id, login)
+	if err != nil {
+		return outArticle, err
+	}
 	outArticle.Liked = 0
 	if (len(liked)) > 0 {
 		outArticle.Liked = 1
@@ -363,10 +366,10 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, login string, tag 
 		ChunkData = append(ChunkData, data.End)
 		return ChunkData, nil
 	}
+	var authors []string
 	for _, a := range arts {
 		authors = append(authors, a.AuthorName)
-	}var authors []string
-	f
+	}
 
 	authorRes, err := m.uploadAuthors(authors, fName)
 	if err != nil {
@@ -376,6 +379,10 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, login string, tag 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData)
 	return ChunkData, err
 }
 
@@ -411,6 +418,10 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, login string, que
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData)
 	return ChunkData, err
 }
 
@@ -445,6 +456,10 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, login string, a
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData)
 	return ChunkData, err
 }
 
@@ -511,6 +526,10 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, login string, 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData)
 	return ChunkData, err
 }
 
@@ -544,6 +563,10 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, login string,
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData)
 	return ChunkData, err
 }
 
