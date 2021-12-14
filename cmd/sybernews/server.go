@@ -124,8 +124,9 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	//likes
 	repoAr := lrepo.NewArLikesRepository(db)
+	repoCom := lrepo.NewArLikesRepository(db)
 	useAr := luse.NewArLikeUsecase(repoAr, sessionRepo)
-	useCm := luse.NewComLikeUsecase()
+	useCm := luse.NewComLikeUsecase(repoCom, sessionRepo)
 	like := likes.NewLikesHandler(useAr, useCm)
 
 	e.Use(syberMiddleware.ValidateRequestBody)
