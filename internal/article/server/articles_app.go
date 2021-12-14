@@ -169,6 +169,7 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
+		fmt.Println(a.Liked)
 		retval.Preview = append(retval.Preview, val)
 	}
 	return &retval, err
