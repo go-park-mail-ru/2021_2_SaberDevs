@@ -3,21 +3,23 @@ package server
 import (
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
-	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
+	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
+	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
+	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
-	cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
+	// cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
 	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
-	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
+	// krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	syberMiddleware "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/middleware"
 	shandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/handler"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
-	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
+	// uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	commentWS "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/ws/commentStream"
 
 	"net/http"
@@ -81,11 +83,11 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient) {
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient, u *userApp.UserDeliveryClient, c *commentApp.CommentDeliveryClient) {
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
-	keyRepo := krepo.NewKeyRepository(sessionsDbConn)
-	articleRepo := arepo.NewArticleRepository(db)
+	// keyRepo := krepo.NewKeyRepository(sessionsDbConn)
+	// articleRepo := arepo.NewArticleRepository(db)
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db)
 
@@ -96,8 +98,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	streamCommetChecker := commentWS.NewRepoChecker(publisher, commentsRepo)
 	go streamCommetChecker.Run()
 
-	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
-	userAPI := uhandler.NewUserHandler(userUsecase)
+	// userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
+	userAPI := uhandler.NewUserHandler(*u)
 
 	sessionUsecase := susecase.NewsessionUsecase(userRepo, sessionRepo)
 	sessionAPI := shandler.NewSessionHandler(sessionUsecase)
@@ -108,8 +110,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	imageUsecase := iusecase.NewImageUsecase(imageRepo)
 	imageAPI := ihandler.NewImageHandler(imageUsecase)
 
-	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
-	commentsAPi := chandler.NewCommentHandler(commentUsecase)
+	// commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
+	commentsAPi := chandler.NewCommentHandler(*c)
 	// metrics := e.Group("/metrics")
 	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
 	e.Any("/metrics", echo.WrapHandler(promhttp.Handler()))
@@ -120,8 +122,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	search := e.Group("/api/v1/search")
 	search.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
-
-	e.Use(syberMiddleware.ValidateRequestBody)
 
 	//Logger.SetOutput() //to file
 	e.Logger.SetLevel(log.INFO)
@@ -196,21 +196,42 @@ func Run(address string) {
 		"127.0.0.1:8079",
 		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+	defer grcpConn.Close()
 
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 
-	defer grcpConn.Close()
+	grcpUserConn, err := grpc.Dial(
+		"127.0.0.1:8078",
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+	defer grcpUserConn.Close()
+
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	grcpCommentConn, err := grpc.Dial(
+		"127.0.0.1:8077",
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+	defer grcpCommentConn.Close()
+
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
 
 	sessManager := app.NewArticleDeliveryClient(grcpConn)
+	userManager := userApp.NewUserDeliveryClient(grcpUserConn)
+	commentManager := commentApp.NewCommentDeliveryClient(grcpCommentConn)
 
 	defer DbClose(db)
+  
+	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	router(e, db, tarantoolConn, &sessManager)
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 	//e.Logger.Fatal(e.Start(address))
-
 }

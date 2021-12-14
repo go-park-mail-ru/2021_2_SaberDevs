@@ -87,7 +87,7 @@ func (sub *Subscriber) writeWS(lastComment int64) {
 			if lastComment < message[0].Id {
 				lastComment = message[0].Id
 
-				for  i := len(message) - 1; i >= 0 ; i--  {
+				for i := len(message) - 1; i >= 0; i-- {
 					if message[i].Id < lastComment {
 						continue
 					}

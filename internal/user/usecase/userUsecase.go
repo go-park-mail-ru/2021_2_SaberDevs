@@ -128,7 +128,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 
 	if userInRepo.Password != user.Password {
 		return response, "", sbErr.ErrWrongPassword{
-			Reason:   "wrong password",
+			Reason:   "Неверный пароль",
 			Function: "userUsecase/LoginUser"}
 	}
 
