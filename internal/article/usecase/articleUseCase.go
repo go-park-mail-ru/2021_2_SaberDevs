@@ -52,7 +52,7 @@ func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded strin
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/Fetch")
+		login = ""
 	}
 	result, err = m.articleRepo.Fetch(ctx, login, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
@@ -61,7 +61,7 @@ func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded strin
 func (m *articleUsecase) GetByID(ctx context.Context, c string, id int64) (result amodels.FullArticle, err error) {
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return amodels.FullArticle{}, errors.Wrap(err, "articleUsecase/getbyid")
+		login = ""
 	}
 	result, err = m.articleRepo.GetByID(ctx, login, id)
 	return result, errors.Wrap(err, "articleUsecase/GetByID")
@@ -74,7 +74,7 @@ func (m *articleUsecase) GetByTag(ctx context.Context, c string, tag string, idL
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/getbytag")
+		login = ""
 	}
 	result, err = m.articleRepo.GetByTag(ctx, login, tag, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
@@ -87,7 +87,7 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, c string, author strin
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/getbyauthor")
+		login = ""
 	}
 	result, err = m.articleRepo.GetByAuthor(ctx, login, author, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
@@ -100,7 +100,7 @@ func (m *articleUsecase) GetByCategory(ctx context.Context, c string, category s
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/getbycategory")
+		login = ""
 	}
 	result, err = m.articleRepo.GetByCategory(ctx, login, category, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
@@ -113,7 +113,7 @@ func (m *articleUsecase) FindByTag(ctx context.Context, c string, category strin
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/FindByTag")
+		login = ""
 	}
 	result, err = m.articleRepo.FindByTag(ctx, login, category, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/FindByTag")
@@ -135,7 +135,7 @@ func (m *articleUsecase) FindArticles(ctx context.Context, c string, category st
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/FindArticles")
+		login = ""
 	}
 	result, err = m.articleRepo.FindArticles(ctx, login, category, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
