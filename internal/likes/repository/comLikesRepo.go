@@ -14,11 +14,11 @@ type ComLikesRepository struct {
 }
 
 func NewComLikesRepository(db *sqlx.DB) amodels.LikesRepository {
-	return &ArLikesRepository{db}
+	return &ComLikesRepository{db}
 }
 
 func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int, change int) (int, error) {
-	updateArticle := `UPDATE comments SET Likes = Likes + $1  WHERE articles.Id = $2 RETURNING Likes;`
+	updateArticle := `UPDATE comments SET Likes = Likes + $1  WHERE comments.Id = $2 RETURNING Likes;`
 	var Likes int
 	err := m.Db.Get(&Likes, updateArticle, change, articlesid)
 	if err != nil {
@@ -32,7 +32,7 @@ func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int, ch
 }
 
 func (m *ComLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) error {
-	ins := `INSERT INTO comments_likes(login, articleId, signum) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`
+	ins := `INSERT INTO comments_likes(login, commentId, signum) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`
 	_, err := m.Db.Exec(ins, a.Login, a.ArticleId, a.Signum)
 	if err != nil {
 		return sbErr.ErrDbError{
@@ -44,7 +44,7 @@ func (m *ComLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) erro
 }
 
 func (m *ComLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error {
-	delete := `delete from comments_likes  WHERE articleId = $1 and login = $2;`
+	delete := `delete from comments_likes  WHERE commentId = $1 and login = $2;`
 	_, err := m.Db.Exec(delete, a.ArticleId, a.Login)
 	if err != nil {
 		return sbErr.ErrDbError{
@@ -56,7 +56,7 @@ func (m *ComLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) erro
 }
 
 func (m *ComLikesRepository) Check(ctx context.Context, a *amodels.LikeDb) (int, error) {
-	check := `select signum from comments_likes  WHERE articleId = $1 and login = $2;`
+	check := `select signum from comments_likes  WHERE commentId = $1 and login = $2;`
 	var sign []int
 	err := m.Db.Select(&sign, check, a.ArticleId, a.Login)
 	if err != nil {

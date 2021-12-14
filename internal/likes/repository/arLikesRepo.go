@@ -18,7 +18,7 @@ func NewArLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 }
 
 func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int, change int) (int, error) {
-	updateArticle := `UPDATE articles SET Likes = Likes + $1  WHERE articles.Id = $2 RETURNING Likes;`
+	updateArticle := `UPDATE articles SET Likes = $1 + Likes  WHERE articles.Id = $2 RETURNING Likes;`
 	var Likes int
 	err := m.Db.Get(&Likes, updateArticle, change, articlesid)
 	if err != nil {
@@ -105,8 +105,15 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 		}
 	}
 
-	if sign != 0 {
+	if sign != 0 && sign != a.Signum {
 		err = m.Delete(ctx, a)
+		if err != nil {
+			return 0, sbErr.ErrBadImage{
+				Reason:   err.Error(),
+				Function: "cancel",
+			}
+		}
+		_, err = m.UpdateCount(ctx, a.ArticleId, -sign)
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
@@ -123,7 +130,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 		}
 	}
 
-	likes, err := m.UpdateCount(ctx, a.ArticleId, sign)
+	likes, err := m.UpdateCount(ctx, a.ArticleId, a.Signum)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
