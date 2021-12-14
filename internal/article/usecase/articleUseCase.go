@@ -51,12 +51,19 @@ func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded strin
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
 	}
 	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
-	result, err = m.articleRepo.Fetch(ctx, from, chunkSize)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/Fetch")
+	}
+	result, err = m.articleRepo.Fetch(ctx, login, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
 }
 
-func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.FullArticle, err error) {
-	result, err = m.articleRepo.GetByID(ctx, id)
+func (m *articleUsecase) GetByID(ctx context.Context, c string, id int64) (result amodels.FullArticle, err error) {
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return amodels.FullArticle{}, errors.Wrap(err, "articleUsecase/getbyid")
+	}
+	result, err = m.articleRepo.GetByID(ctx, login, id)
 	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
@@ -65,7 +72,11 @@ func (m *articleUsecase) GetByTag(ctx context.Context, c string, tag string, idL
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByTag")
 	}
-	result, err = m.articleRepo.GetByTag(ctx, tag, from, chunkSize)
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/getbytag")
+	}
+	result, err = m.articleRepo.GetByTag(ctx, login, tag, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 
@@ -74,7 +85,11 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, c string, author strin
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByAuthor")
 	}
-	result, err = m.articleRepo.GetByAuthor(ctx, author, from, chunkSize)
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/getbyauthor")
+	}
+	result, err = m.articleRepo.GetByAuthor(ctx, login, author, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
@@ -83,17 +98,25 @@ func (m *articleUsecase) GetByCategory(ctx context.Context, c string, category s
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
 	}
-	result, err = m.articleRepo.GetByCategory(ctx, category, from, chunkSize)
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/getbycategory")
+	}
+	result, err = m.articleRepo.GetByCategory(ctx, login, category, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 
 func (m *articleUsecase) FindByTag(ctx context.Context, c string, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
-		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
+		return nil, errors.Wrap(err, "articleUsecase/FindByTag")
 	}
-	result, err = m.articleRepo.FindByTag(ctx, category, from, chunkSize)
-	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/FindByTag")
+	}
+	result, err = m.articleRepo.FindByTag(ctx, login, category, from, chunkSize)
+	return result, errors.Wrap(err, "articleUsecase/FindByTag")
 }
 
 func (m *articleUsecase) FindAuthors(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Author, err error) {
@@ -110,7 +133,11 @@ func (m *articleUsecase) FindArticles(ctx context.Context, c string, category st
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
 	}
-	result, err = m.articleRepo.FindArticles(ctx, category, from, chunkSize)
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		return nil, errors.Wrap(err, "articleUsecase/FindArticles")
+	}
+	result, err = m.articleRepo.FindArticles(ctx, login, category, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 
@@ -153,7 +180,7 @@ func (m *articleUsecase) Update(ctx context.Context, c string, a *amodels.Articl
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Delete")
 	}
-	newArticle, err := m.GetByID(ctx, int64(idInt))
+	newArticle, err := m.GetByID(ctx, c, int64(idInt))
 	upArt := artOut(&newArticle)
 	if err != nil {
 		return errors.Wrap(err, "articleUsecase/Update")
