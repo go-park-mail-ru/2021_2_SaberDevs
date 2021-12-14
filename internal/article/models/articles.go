@@ -129,14 +129,14 @@ type Author struct {
 
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
-	Fetch(ctx context.Context, idLastLoaded string, chunkSize int) ([]Preview, error)
+	Fetch(ctx context.Context, c string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByID(ctx context.Context, id int64) (FullArticle, error)
-	GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
-	GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
-	GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) ([]Preview, error)
-	FindByTag(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByTag(ctx context.Context, c string, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByAuthor(ctx context.Context, c string, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	GetByCategory(ctx context.Context, c string, category string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	FindByTag(ctx context.Context, c string, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	FindAuthors(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Author, error)
-	FindArticles(ctx context.Context, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
+	FindArticles(ctx context.Context, c string, query string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, c string, a *ArticleUpdate) error
 	Store(ctx context.Context, c string, a *ArticleCreate) (int, error)
 	Delete(ctx context.Context, c string, id string) error

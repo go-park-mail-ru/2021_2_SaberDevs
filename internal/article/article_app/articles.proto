@@ -29,6 +29,7 @@ message Preview  {
 	string CommentsUrl    = 9;
     int64  Comments       = 10;
     int64  Likes          = 11;
+	int64  Liked          = 12;
 }
 
 message FullArticle  {
@@ -43,6 +44,7 @@ message FullArticle  {
 	string CommentsUrl    = 9;
     int64  Comments       = 10;
     int64  Likes          = 11;
+	int64  Liked          = 12;
 }
 
 message Repview  {
@@ -61,21 +63,25 @@ message Error  {
 message Tags  {
     string tag = 1;
     chunk chunk = 2;
+	string value = 3;
 }
 
 message Authors  {
     string author = 1;
     chunk chunk = 2;
+	string value = 3;
 }
 
 message Categories  {
     string category = 1;
     chunk chunk = 2;
+	string value = 3;
 }
 
 message Queries  {
     string query = 1;
     chunk chunk = 2;
+	string value = 3;
 }
 
 message Id  {
@@ -86,6 +92,7 @@ message Id  {
 message chunk {
   string idLastLoaded = 1;
   int64 chunkSize = 2;
+  string value    = 3;
 }
 
 message Nothing {

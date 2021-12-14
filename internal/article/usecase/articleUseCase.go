@@ -45,7 +45,7 @@ func artOut(a *amodels.FullArticle) *amodels.Article {
 	return &out
 }
 
-func (m *articleUsecase) Fetch(ctx context.Context, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
@@ -60,7 +60,7 @@ func (m *articleUsecase) GetByID(ctx context.Context, id int64) (result amodels.
 	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
-func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+func (m *articleUsecase) GetByTag(ctx context.Context, c string, tag string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByTag")
@@ -69,7 +69,7 @@ func (m *articleUsecase) GetByTag(ctx context.Context, tag string, idLastLoaded 
 	return result, errors.Wrap(err, "articleUsecase/GetByTag")
 }
 
-func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+func (m *articleUsecase) GetByAuthor(ctx context.Context, c string, author string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByAuthor")
@@ -78,7 +78,7 @@ func (m *articleUsecase) GetByAuthor(ctx context.Context, author string, idLastL
 	return result, errors.Wrap(err, "articleUsecase/GetByAuthor")
 }
 
-func (m *articleUsecase) GetByCategory(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+func (m *articleUsecase) GetByCategory(ctx context.Context, c string, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
@@ -87,7 +87,7 @@ func (m *articleUsecase) GetByCategory(ctx context.Context, category string, idL
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 
-func (m *articleUsecase) FindByTag(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+func (m *articleUsecase) FindByTag(ctx context.Context, c string, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
@@ -105,7 +105,7 @@ func (m *articleUsecase) FindAuthors(ctx context.Context, category string, idLas
 	return result, errors.Wrap(err, "articleUsecase/GetByCategory")
 }
 
-func (m *articleUsecase) FindArticles(ctx context.Context, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
+func (m *articleUsecase) FindArticles(ctx context.Context, c string, category string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/GetByCategory")
