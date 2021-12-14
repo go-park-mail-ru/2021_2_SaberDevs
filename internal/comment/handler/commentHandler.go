@@ -152,7 +152,7 @@ func (api *CommentHandler) GetCommentsByArticleID(c echo.Context) error {
 		return errors.Wrap(err, "commentHandler/GetCommentsByArticleID")
 	}
 
-	var prepComment []cmodels.PreparedComment
+	prepComment := []cmodels.PreparedComment{}
 
 	for _, c := range response.Data {
 		prepComment = append(prepComment, cmodels.PreparedComment{
@@ -163,7 +163,7 @@ func (api *CommentHandler) GetCommentsByArticleID(c echo.Context) error {
 			ParentId:  c.ParentId,
 			IsEdited:  c.IsEdited,
 			Likes:     int(c.Likes),
-			Author:    cmodels.Author{
+			Author:    cmodels.Author{-
 				Login:     c.Author.Login,
 				Surname:   c.Author.LastName,
 				Name:      c.Author.FirstName,
