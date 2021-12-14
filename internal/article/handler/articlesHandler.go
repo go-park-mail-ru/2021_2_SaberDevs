@@ -193,6 +193,14 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	a.Value = cookie.Value
 	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
@@ -240,6 +248,14 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	a.Value = cookie.Value
 	authors := &app.Authors{Author: login, Chunk: a}
 	Data, err := api.UseCase.GetByAuthor(ctx, authors)
 	if err != nil {
@@ -271,7 +287,16 @@ func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+
 	categories := &app.Categories{Category: cat, Chunk: a}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	a.Value = cookie.Value
 	Data, err := api.UseCase.GetByCategory(ctx, categories)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
@@ -335,6 +360,14 @@ func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	a.Value = cookie.Value
 	tags := &app.Tags{Tag: tag, Chunk: a}
 	Data, err := api.UseCase.GetByTag(ctx, tags)
 	if err != nil {
@@ -364,6 +397,14 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	a.Value = cookie.Value
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindArticles(ctx, query)
 	if err != nil {
@@ -422,6 +463,14 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	a.Value = cookie.Value
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindByTag(ctx, query)
 	if err != nil {
