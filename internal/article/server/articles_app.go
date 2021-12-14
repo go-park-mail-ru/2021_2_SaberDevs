@@ -93,7 +93,8 @@ func previewConv(a models.Preview) *app.Preview {
 	val.CommentsUrl = a.CommentsUrl
 	val.DateTime = a.DateTime
 	val.Id = a.Id
-	val.Likes = int64(a.Likes)
+	val.Likes = a.Likes
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
@@ -110,6 +111,7 @@ func fullConv(a models.FullArticle) *app.FullArticle {
 	val.DateTime = a.DateTime
 	val.Id = a.Id
 	val.Likes = int64(a.Likes)
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
