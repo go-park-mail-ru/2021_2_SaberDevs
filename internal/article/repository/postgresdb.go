@@ -294,6 +294,9 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, c
 		return ChunkData, err
 	}
 	ChunkData, err = m.addLiked(ChunkData)
+	for _, a := range ChunkData {
+		fmt.Println(a.Liked)
+	}
 	return ChunkData, err
 }
 
