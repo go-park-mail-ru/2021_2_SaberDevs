@@ -16,7 +16,6 @@ type ArticleData struct {
 	CommentsUrl  string   `json:"commentsUrl"`
 	Comments     uint     `json:"comments"`
 	Likes        int64    `json:"likes"`
-	Liked        int64    `json:"liked"`
 }
 
 type Article struct {
