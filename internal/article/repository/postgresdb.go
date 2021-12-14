@@ -250,15 +250,11 @@ func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
 	for _, data := range chunkData {
 		err := m.Db.Select(&liked, schema, data.Id, data.Author.Login)
-		if err != nil {
-			return chunkData, sbErr.ErrDbError{
-				Reason:   err.Error(),
-				Function: "addliked",
-			}
+		if err != nil || (len(liked)) == 0 {
+			data.Liked = 0
 		}
-		data.Liked = 0
-		if (len(liked)) > 0 {
-			data.Liked = 1
+		if len(liked) > 0 {
+			data.Liked = liked[0]
 		}
 	}
 	return chunkData, nil
