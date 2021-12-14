@@ -134,7 +134,7 @@ type Author struct {
 // ArticleUsecase represent the article's usecases
 type ArticleUsecase interface {
 	Fetch(ctx context.Context, c string, idLastLoaded string, chunkSize int) ([]Preview, error)
-	GetByID(ctx context.Context, id int64) (FullArticle, error)
+	GetByID(ctx context.Context, c string, id int64) (FullArticle, error)
 	GetByTag(ctx context.Context, c string, tag string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByAuthor(ctx context.Context, c string, author string, idLastLoaded string, chunkSize int) ([]Preview, error)
 	GetByCategory(ctx context.Context, c string, category string, idLastLoaded string, chunkSize int) ([]Preview, error)
@@ -148,14 +148,14 @@ type ArticleUsecase interface {
 
 // ArticleRepository represent the article's repository contract
 type ArticleRepository interface {
-	Fetch(ctx context.Context, from, chunkSize int) ([]Preview, error)
-	GetByID(ctx context.Context, id int64) (FullArticle, error)
-	GetByTag(ctx context.Context, tag string, from, chunkSize int) ([]Preview, error)
-	GetByAuthor(ctx context.Context, author string, from, chunkSize int) ([]Preview, error)
-	GetByCategory(ctx context.Context, category string, from, chunkSize int) ([]Preview, error)
-	FindByTag(ctx context.Context, query string, from, chunkSize int) ([]Preview, error)
+	Fetch(ctx context.Context, login string, from, chunkSize int) ([]Preview, error)
+	GetByID(ctx context.Context, login string, id int64) (FullArticle, error)
+	GetByTag(ctx context.Context, login string, tag string, from, chunkSize int) ([]Preview, error)
+	GetByAuthor(ctx context.Context, login string, author string, from, chunkSize int) ([]Preview, error)
+	GetByCategory(ctx context.Context, login string, category string, from, chunkSize int) ([]Preview, error)
+	FindByTag(ctx context.Context, login string, query string, from, chunkSize int) ([]Preview, error)
 	FindAuthors(ctx context.Context, query string, from, chunkSize int) ([]Author, error)
-	FindArticles(ctx context.Context, query string, from, chunkSize int) ([]Preview, error)
+	FindArticles(ctx context.Context, login string, query string, from, chunkSize int) ([]Preview, error)
 	Update(ctx context.Context, a *Article) error
 	Store(ctx context.Context, a *Article) (int, error)
 	Delete(ctx context.Context, author string, id int64) error

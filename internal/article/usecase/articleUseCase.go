@@ -50,7 +50,7 @@ func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded strin
 	if err != nil {
 		return nil, errors.Wrap(err, "articleUsecase/Fetch")
 	}
-
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
 	result, err = m.articleRepo.Fetch(ctx, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
 }

@@ -280,7 +280,7 @@ func (m *ArticleManager) GetByID(ctx context.Context, id *app.Id) (*app.FullArti
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByID(ctx, int64(nId))
+	res, err := m.handler.GetByID(ctx, id.Value, int64(nId))
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {

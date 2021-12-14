@@ -227,6 +227,14 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	myid := app.Id{Id: strId}
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrAuthorised{
+			Reason:   err.Error(),
+			Function: "articlesHandler/Delete",
+		}
+	}
+	myid.Value = cookie.Value
 	Data, err := api.UseCase.GetByID(ctx, &myid)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetbyID")
