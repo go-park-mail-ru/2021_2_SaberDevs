@@ -253,9 +253,9 @@ func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels
 		if err != nil || (len(liked)) == 0 {
 			data.Liked = 0
 		}
-		fmt.Println(liked)
 		if len(liked) > 0 {
 			data.Liked = liked[0]
+			fmt.Println(data.Liked)
 		}
 	}
 	return chunkData, nil
