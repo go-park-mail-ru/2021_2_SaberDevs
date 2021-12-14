@@ -2,6 +2,7 @@ package article
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -54,6 +55,7 @@ func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded strin
 	if err != nil {
 		login = ""
 	}
+	fmt.Println(login)
 	result, err = m.articleRepo.Fetch(ctx, login, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
 }
