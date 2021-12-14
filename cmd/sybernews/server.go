@@ -5,9 +5,11 @@ import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
+
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
+
 	// cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
 	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
@@ -23,6 +25,7 @@ import (
 	susecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/usecase"
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
+
 	// uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	commentWS "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/ws/commentStream"
 
@@ -129,7 +132,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	//likes
 	repoAr := lrepo.NewArLikesRepository(db)
-	repoCom := lrepo.NewArLikesRepository(db)
+	repoCom := lrepo.NewComLikesRepository(db)
 	useAr := luse.NewArLikeUsecase(repoAr, sessionRepo)
 	useCm := luse.NewComLikeUsecase(repoCom, sessionRepo)
 	like := likes.NewLikesHandler(useAr, useCm)
@@ -242,7 +245,7 @@ func Run(address string) {
 	commentManager := commentApp.NewCommentDeliveryClient(grcpCommentConn)
 
 	defer DbClose(db)
-  
+
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
