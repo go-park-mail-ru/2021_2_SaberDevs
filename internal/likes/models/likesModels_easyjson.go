@@ -17,87 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(in *jlexer.Lexer, out *LikeDb) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "login":
-			out.Login = string(in.String())
-		case "articleid":
-			out.ArticleId = int(in.Int())
-		case "sign":
-			out.Signum = int(in.Int())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(out *jwriter.Writer, in LikeDb) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"login\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Login))
-	}
-	{
-		const prefix string = ",\"articleid\":"
-		out.RawString(prefix)
-		out.Int(int(in.ArticleId))
-	}
-	{
-		const prefix string = ",\"sign\":"
-		out.RawString(prefix)
-		out.Int(int(in.Signum))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v LikeDb) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v LikeDb) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *LikeDb) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *LikeDb) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(l, v)
-}
-func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(in *jlexer.Lexer, out *LikeData) {
+func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(in *jlexer.Lexer, out *LikeData) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -132,7 +52,7 @@ func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModel
 		in.Consumed()
 	}
 }
-func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(out *jwriter.Writer, in LikeData) {
+func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(out *jwriter.Writer, in LikeData) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -157,27 +77,27 @@ func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModel
 // MarshalJSON supports json.Marshaler interface
 func (v LikeData) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(&w, v)
+	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v LikeData) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(w, v)
+	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *LikeData) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(&r, v)
+	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *LikeData) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(l, v)
+	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels(l, v)
 }
-func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels2(in *jlexer.Lexer, out *GenericResponse) {
+func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(in *jlexer.Lexer, out *GenericResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -210,7 +130,7 @@ func easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModel
 		in.Consumed()
 	}
 }
-func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels2(out *jwriter.Writer, in GenericResponse) {
+func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(out *jwriter.Writer, in GenericResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -230,23 +150,23 @@ func easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModel
 // MarshalJSON supports json.Marshaler interface
 func (v GenericResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels2(&w, v)
+	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v GenericResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels2(w, v)
+	easyjsonAb3363fcEncodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *GenericResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels2(&r, v)
+	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *GenericResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels2(l, v)
+	easyjsonAb3363fcDecodeGithubComGoParkMailRu20212SaberDevsInternalLikesModels1(l, v)
 }
