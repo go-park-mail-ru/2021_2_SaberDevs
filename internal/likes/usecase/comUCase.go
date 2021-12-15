@@ -2,6 +2,7 @@ package likes
 
 import (
 	"context"
+	"fmt"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
@@ -38,7 +39,7 @@ func (m *comLikeUCase) Rating(ctx context.Context, a *amodels.LikeData, cValue s
 		Id, err = m.rep.Dislike(ctx, &like)
 	}
 	if Id == -1 {
-		return Id, sbErr.ErrNotFeedNumber{}
+		return Id, sbErr.ErrNotFeedNumber{Reason: err.Error() + fmt.Sprint(Id)}
 	}
 	return Id, err
 }

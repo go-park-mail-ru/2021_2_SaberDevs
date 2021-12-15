@@ -37,7 +37,7 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 	}
 	cVal := cookie.Value
 	ctx := c.Request().Context()
-	num := -1
+	num := -2
 	if like.Ltype == 0 {
 		num, err = api.arUseCase.Rating(ctx, like, cVal)
 		if err != nil {
@@ -50,9 +50,9 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 			return errors.Wrap(err, "likesHandler/Rate")
 		}
 	}
-	if num == -1 {
+	if num == -2 {
 		return sbErr.ErrNotFeedNumber{
-			Reason:   err.Error(),
+			Reason:   err.Error() + fmt.Sprint(num),
 			Function: "likesHandler/Rate",
 		}
 	}
