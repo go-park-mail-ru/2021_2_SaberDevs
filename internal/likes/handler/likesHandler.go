@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
@@ -21,7 +22,17 @@ func NewLikesHandler(arUseCase amodels.LikesUsecase, comUseCase amodels.LikesUse
 
 func (api *LikesHandler) Rate(c echo.Context) error {
 	like := new(amodels.LikeData)
-	err := c.Bind(like)
+	// err := c.Bind(like)
+	a := c.Request()
+	body, err := ioutil.ReadAll(a.Body)
+	if err != nil {
+		return sbErr.ErrUnpackingJSON{
+			Reason:   err.Error(),
+			Function: "likesHandler/Rate",
+		}
+	}
+	like.UnmarshalJSON(body)
+
 	if err != nil {
 		return sbErr.ErrUnpackingJSON{
 			Reason:   err.Error(),
