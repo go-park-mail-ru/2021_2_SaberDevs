@@ -40,12 +40,12 @@ func (m *CommentManager) CreateComment(ctx context.Context, comment *app.CreateC
 			ArticleId: cmnt.ArticleId,
 			ParentId:  cmnt.ParentId,
 			IsEdited:  cmnt.IsEdited,
-			Author:    &app.Author{
-				Login:                cmnt.Author.Login,
-				LastName:             cmnt.Author.Surname,
-				FirstName:            cmnt.Author.Name,
-				Score:                int32(cmnt.Author.Score),
-				AvatarUrl:            cmnt.Author.AvatarURL,
+			Author: &app.Author{
+				Login:     cmnt.Author.Login,
+				LastName:  cmnt.Author.Surname,
+				FirstName: cmnt.Author.Name,
+				Score:     int32(cmnt.Author.Score),
+				AvatarUrl: cmnt.Author.AvatarURL,
 			},
 		},
 		Msg: response.Msg,
@@ -76,12 +76,12 @@ func (m *CommentManager) UpdateComment(ctx context.Context, comment *app.UpdateC
 			ArticleId: cmnt.ArticleId,
 			ParentId:  cmnt.ParentId,
 			IsEdited:  cmnt.IsEdited,
-			Author:    &app.Author{
-				Login:                cmnt.Author.Login,
-				LastName:             cmnt.Author.Surname,
-				FirstName:            cmnt.Author.Name,
-				Score:                int32(cmnt.Author.Score),
-				AvatarUrl:            cmnt.Author.AvatarURL,
+			Author: &app.Author{
+				Login:     cmnt.Author.Login,
+				LastName:  cmnt.Author.Surname,
+				FirstName: cmnt.Author.Name,
+				Score:     int32(cmnt.Author.Score),
+				AvatarUrl: cmnt.Author.AvatarURL,
 			},
 		},
 		Msg: response.Msg,
@@ -97,26 +97,26 @@ func (m *CommentManager) GetCommentsByArticleID(ctx context.Context, articleID *
 
 	for _, c := range convertedResponse {
 		preparedComment = append(preparedComment, &app.PreparedComment{
-			Id:                   c.Id,
-			DateTime:             c.DateTime,
-			Text:                 c.Text,
-			ArticleId:            c.ArticleId,
-			ParentId:             c.ParentId,
-			IsEdited:             c.IsEdited,
-			Author:               &app.Author{
-				Login:                c.Author.Login,
-				LastName:             c.Author.Surname,
-				FirstName:            c.Author.Name,
-				Score:                int32(c.Author.Score),
-				AvatarUrl:            c.Author.AvatarURL,
+			Id:        c.Id,
+			DateTime:  c.DateTime,
+			Text:      c.Text,
+			ArticleId: c.ArticleId,
+			ParentId:  c.ParentId,
+			IsEdited:  c.IsEdited,
+			Author: &app.Author{
+				Login:     c.Author.Login,
+				LastName:  c.Author.Surname,
+				FirstName: c.Author.Name,
+				Score:     int32(c.Author.Score),
+				AvatarUrl: c.Author.AvatarURL,
 			},
-			Likes:                int32(c.Likes),
+			Likes: int32(c.Likes),
 		})
 	}
 
 	return &app.CommentChunkResponse{
-		Status:               uint32(response.Status),
-		Data:                 preparedComment,
-		Msg:                  response.Msg,
+		Status: uint32(response.Status),
+		Data:   preparedComment,
+		Msg:    response.Msg,
 	}, err
 }

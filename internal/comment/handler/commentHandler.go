@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
 
 	cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
@@ -50,8 +49,8 @@ func (api *CommentHandler) CreateComment(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	createCommentInput := &app.CreateCommentInput{
-		Comment:              &requestComment,
-		SessionID:            cookie.Value,
+		Comment:   &requestComment,
+		SessionID: cookie.Value,
 	}
 
 	response, err := api.ComentUsecase.CreateComment(ctx, createCommentInput)
@@ -61,7 +60,7 @@ func (api *CommentHandler) CreateComment(c echo.Context) error {
 
 	modelResponse := cmodels.Response{
 		Status: uint(response.Status),
-		Data:   cmodels.PreparedComment{
+		Data: cmodels.PreparedComment{
 			Id:        response.Data.Id,
 			DateTime:  response.Data.DateTime,
 			Text:      response.Data.Text,
@@ -69,7 +68,7 @@ func (api *CommentHandler) CreateComment(c echo.Context) error {
 			ParentId:  response.Data.ParentId,
 			IsEdited:  response.Data.IsEdited,
 			Likes:     int(response.Data.Likes),
-			Author:    cmodels.Author{
+			Author: cmodels.Author{
 				Login:     response.Data.Author.Login,
 				Surname:   response.Data.Author.LastName,
 				Name:      response.Data.Author.FirstName,
@@ -77,7 +76,7 @@ func (api *CommentHandler) CreateComment(c echo.Context) error {
 				AvatarURL: response.Data.Author.AvatarUrl,
 			},
 		},
-		Msg:    response.Msg,
+		Msg: response.Msg,
 	}
 
 	return c.JSON(http.StatusOK, modelResponse)
@@ -104,8 +103,8 @@ func (api *CommentHandler) UpdateComment(c echo.Context) error {
 	requestComment = SanitizeComment(requestComment)
 
 	updateCommentInput := &app.UpdateCommentInput{
-		Comment:              &requestComment,
-		SessionID:            cookie.Value,
+		Comment:   &requestComment,
+		SessionID: cookie.Value,
 	}
 	ctx := c.Request().Context()
 
@@ -116,7 +115,7 @@ func (api *CommentHandler) UpdateComment(c echo.Context) error {
 
 	modelResponse := cmodels.Response{
 		Status: uint(response.Status),
-		Data:   cmodels.PreparedComment{
+		Data: cmodels.PreparedComment{
 			Id:        response.Data.Id,
 			DateTime:  response.Data.DateTime,
 			Text:      response.Data.Text,
@@ -124,7 +123,7 @@ func (api *CommentHandler) UpdateComment(c echo.Context) error {
 			ParentId:  response.Data.ParentId,
 			IsEdited:  response.Data.IsEdited,
 			Likes:     int(response.Data.Likes),
-			Author:    cmodels.Author{
+			Author: cmodels.Author{
 				Login:     response.Data.Author.Login,
 				Surname:   response.Data.Author.LastName,
 				Name:      response.Data.Author.FirstName,
@@ -132,7 +131,7 @@ func (api *CommentHandler) UpdateComment(c echo.Context) error {
 				AvatarURL: response.Data.Author.AvatarUrl,
 			},
 		},
-		Msg:    response.Msg,
+		Msg: response.Msg,
 	}
 
 	return c.JSON(http.StatusOK, modelResponse)
@@ -166,7 +165,7 @@ func (api *CommentHandler) GetCommentsByArticleID(c echo.Context) error {
 			ParentId:  c.ParentId,
 			IsEdited:  c.IsEdited,
 			Likes:     int(c.Likes),
-			Author:    cmodels.Author{
+			Author: cmodels.Author{
 				Login:     c.Author.Login,
 				Surname:   c.Author.LastName,
 				Name:      c.Author.FirstName,

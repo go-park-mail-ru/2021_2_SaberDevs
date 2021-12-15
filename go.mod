@@ -3,6 +3,7 @@ module github.com/go-park-mail-ru/2021_2_SaberDevs
 go 1.13
 
 require (
+	github.com/SherClockHolmes/webpush-go v1.1.3 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang/mock v1.6.0
@@ -25,7 +26,7 @@ require (
 	github.com/tarantool/go-tarantool v0.0.0-20210330210617-56fe55c5fa5c
 	github.com/tmdvs/Go-Emoji-Utils v1.1.0
 	github.com/zhashkevych/go-sqlxmock v1.5.1
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9 // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect

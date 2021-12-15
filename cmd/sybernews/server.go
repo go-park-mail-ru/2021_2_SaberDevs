@@ -242,7 +242,7 @@ func Run(address string) {
 	commentManager := commentApp.NewCommentDeliveryClient(grcpCommentConn)
 
 	defer DbClose(db)
-  
+
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
