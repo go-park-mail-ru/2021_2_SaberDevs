@@ -34,6 +34,8 @@ type Article struct {
 	Likes        int64    `json:"likes"`
 	Liked        int64    `json:"liked"`
 }
+
+//easyjson:json
 type FullArticle struct {
 	Id          string   `json:"id"`
 	DateTime    string   `json:"datetime" db:"datetime"`
@@ -49,6 +51,7 @@ type FullArticle struct {
 	Liked       int64    `json:"liked"`
 }
 
+//easyjson:json
 type Preview struct {
 	Id          string   `json:"id"`
 	DateTime    string   `json:"datetime" db:"datetime"`
@@ -77,25 +80,31 @@ type DbArticle struct {
 	Likes       int64  `json:"likes" db:"likes"`
 }
 
+//easyjson:json
 type ChunkResponse struct {
 	Status    uint      `json:"status"`
 	ChunkData []Preview `json:"data"`
 }
 
+//easyjson:json
 type AuthorsChunks struct {
 	Status    uint     `json:"status"`
 	ChunkData []Author `json:"data"`
 }
 
+//easyjson:json
 type ArticleResponse struct {
 	Status uint        `json:"status"`
 	Data   FullArticle `json:"data"`
 }
 
+//easyjson:json
 type GenericResponse struct {
 	Status uint   `json:"status"`
 	Data   string `json:"data"`
 }
+
+//easyjson:json
 type ArticleCreate struct {
 	Title    string   `json:"title" db:"title"`
 	Text     string   `json:"text" db:"text"`
@@ -104,6 +113,7 @@ type ArticleCreate struct {
 	Tags     []string `json:"tags"`
 }
 
+//easyjson:json
 type ArticleUpdate struct {
 	Id       string   `json:"id"  db:"id"`
 	Title    string   `json:"title" db:"title"`
@@ -111,11 +121,6 @@ type ArticleUpdate struct {
 	Category string   `json:"category" db:"category"`
 	Img      string   `json:"img" db:"img"`
 	Tags     []string `json:"tags"`
-}
-
-type СategoriesArticles struct {
-	Articles_id uint
-	Tags_id     uint
 }
 
 type Author struct {
