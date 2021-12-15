@@ -37,20 +37,23 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 	}
 	cVal := cookie.Value
 	ctx := c.Request().Context()
-	num := -2
+	num := 0
+	flag := -2
 	if like.Ltype == 0 {
 		num, err = api.arUseCase.Rating(ctx, like, cVal)
 		if err != nil {
 			return errors.Wrap(err, "likesHandler/Rate")
 		}
+		flag = 0
 	}
 	if like.Ltype == 1 {
 		num, err = api.comUseCase.Rating(ctx, like, cVal)
 		if err != nil {
 			return errors.Wrap(err, "likesHandler/Rate")
 		}
+		flag = 1
 	}
-	if num == -2 {
+	if flag == -2 {
 		fmt.Println("num =", num)
 		return sbErr.ErrNotFeedNumber{
 			Reason:   fmt.Sprint("num = ", num),
