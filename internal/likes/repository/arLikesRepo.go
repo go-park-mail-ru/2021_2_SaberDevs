@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -100,7 +101,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 	sign, err := m.Check(ctx, a)
 	if err != nil || sign == a.Signum {
 		return 0, sbErr.ErrNoContent{
-			Reason:   err.Error(),
+			Reason:   fmt.Sprint(sign),
 			Function: "inslike",
 		}
 	}
