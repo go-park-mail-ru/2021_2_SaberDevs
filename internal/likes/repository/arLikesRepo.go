@@ -115,7 +115,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 				Function: "cancel",
 			}
 		}
-		likes, err = m.UpdateCount(ctx, a.ArticleId, -sign)
+		_, err = m.UpdateCount(ctx, a.ArticleId, -sign)
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
