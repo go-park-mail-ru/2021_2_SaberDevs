@@ -105,6 +105,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 			Function: "inslike",
 		}
 	}
+	var likes int
 
 	if sign != 0 && sign != a.Signum {
 		err = m.Delete(ctx, a)
@@ -114,7 +115,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 				Function: "cancel",
 			}
 		}
-		_, err = m.UpdateCount(ctx, a.ArticleId, -sign)
+		likes, err = m.UpdateCount(ctx, a.ArticleId, -sign)
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
@@ -131,13 +132,14 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 		}
 	}
 
-	likes, err := m.UpdateCount(ctx, a.ArticleId, a.Signum)
+	likes, err = m.UpdateCount(ctx, a.ArticleId, a.Signum)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
 			Function: "inslike",
 		}
 	}
+	fmt.Println("REPO LIKES =", likes)
 	return likes, nil
 }
 
