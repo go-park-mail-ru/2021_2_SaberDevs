@@ -18,7 +18,7 @@ func NewComLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 }
 
 func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int, change int) (int, error) {
-	updateArticle := `UPDATE comments SET Likes = $1 + Likes  WHERE comments.Id = $2 RETURNING Likes;`
+	updateArticle := `UPDATE comments SET Likes = Likes + ($1)   WHERE comments.Id = $2 RETURNING Likes;`
 	var Likes int
 	err := m.Db.Get(&Likes, updateArticle, change, articlesid)
 	if err != nil {
@@ -131,13 +131,8 @@ func (m *ComLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) 
 	}
 
 	likes, err := m.UpdateCount(ctx, a.ArticleId, a.Signum)
-	if err != nil {
-		return 0, sbErr.ErrBadImage{
-			Reason:   err.Error(),
-			Function: "inslike",
-		}
-	}
-	return likes, nil
+
+	return likes, err
 }
 
 func (m *ComLikesRepository) Like(ctx context.Context, a *amodels.LikeDb) (int, error) {

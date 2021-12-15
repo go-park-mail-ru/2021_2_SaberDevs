@@ -28,7 +28,7 @@ func (m *comLikeUCase) Rating(ctx context.Context, a *amodels.LikeData, cValue s
 	like.ArticleId = a.Id
 	like.Login = login
 	like.Signum = a.Sign
-	Id := -1
+	Id := -3
 	if like.Signum == 1 {
 		Id, err = m.rep.Like(ctx, &like)
 	}
@@ -38,7 +38,7 @@ func (m *comLikeUCase) Rating(ctx context.Context, a *amodels.LikeData, cValue s
 	if like.Signum == -1 {
 		Id, err = m.rep.Dislike(ctx, &like)
 	}
-	if Id == -1 {
+	if Id == -2 {
 		fmt.Println("ID =", Id)
 		return Id, sbErr.ErrNotFeedNumber{Reason: err.Error() + fmt.Sprint(Id)}
 	}
