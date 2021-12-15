@@ -65,5 +65,10 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 		Data:   fmt.Sprint(num),
 	}
 
-	return c.JSON(http.StatusOK, response)
+	//return c.JSON(http.StatusOK, response)
+	JsonEnc, err := response.MarshalJSON()
+	if err != nil {
+		return errors.Wrap(err, "likesHandler/Rate")
+	}
+	return c.JSONBlob(http.StatusOK, JsonEnc)
 }
