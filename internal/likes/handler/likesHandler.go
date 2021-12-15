@@ -53,7 +53,7 @@ func (api *LikesHandler) Rate(c echo.Context) error {
 	if num == -2 {
 		fmt.Println("num =", num)
 		return sbErr.ErrNotFeedNumber{
-			Reason:   err.Error() + fmt.Sprint(num),
+			Reason:   fmt.Sprint("num = ", num),
 			Function: "likesHandler/Rate",
 		}
 	}
