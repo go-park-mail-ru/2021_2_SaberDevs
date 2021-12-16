@@ -32,7 +32,7 @@ func TestGetByID(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockArticleRepo.EXPECT().GetByID(gomock.Eq(context.TODO()), gomock.Eq("author"), gomock.Eq(int64(1))).Return(mockArticle, nil).AnyTimes()
-
+		mockSesRepo.EXPECT().GetSessionLogin(gomock.Eq(context.TODO()), gomock.Eq("author")).Return("author", nil).AnyTimes()
 		u := repo.NewArticleUsecase(mockArticleRepo, mockSesRepo)
 		a, err := u.GetByID(context.TODO(), "author", 1)
 		assert.NoError(t, err)
