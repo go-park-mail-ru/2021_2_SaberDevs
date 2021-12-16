@@ -12,12 +12,17 @@ type Subscription struct {
 	P256dh   string
 }
 
-// articleTitle: string
-// commentText: string
-// articleId: number
-// commentId: number
-// firstName: string
-// lastName: string
+// {
+// to, // кому
+// type: <0,1,2,3>,
+// data: string
+// }
+
+type PushCommentNotification struct {
+	To string `json:"to"`
+	Type int `json:"type"`
+	Data PushComment `json:"data"`
+}
 
 type PushComment struct {
 	Login        string `json:"login"`

@@ -13,6 +13,7 @@ import (
 	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
+	push "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications"
 
 	likes "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/handler"
 	lrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/repository"
@@ -97,8 +98,9 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	commentsRepo := crepo.NewCommentRepository(db)
 
 	repo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
-	repo.QueueArticleComment([]byte(""))
-	repo.DequeueArticleComment()
+	// repo.QueueArticleComment([]byte("9"))
+	// repo.DequeueArticleComment()
+	go push.NotificationSevice(repo)
 
 	publisher := commentWS.NewPublisher()
 	go publisher.Run()

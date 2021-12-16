@@ -8,15 +8,22 @@ import (
 )
 
 func NotificationSevice(r pnmodels.PushNotificationRepository) {
-	select {
-	default:
+	for {
 		currentMsg, err := r.DequeueArticleComment()
 		if err == nil {
 			commentModel := pnmodels.PushComment{}
 			json.Unmarshal([]byte(currentMsg), &commentModel)
 			subscription, _ := r.GetSubscription(context.Background(), commentModel.Login)
 
-			resp, err := webpush.SendNotification([]byte(currentMsg), &subscription, &webpush.Options{
+			notificationModel := pnmodels.PushCommentNotification{
+				To:   commentModel.Login,
+				Type: 1,
+				Data: commentModel,
+			}
+
+			byteNotification, _ := json.Marshal(notificationModel)
+
+			resp, err := webpush.SendNotification(byteNotification, &subscription, &webpush.Options{
 				Subscriber:      "example@example.com",
 				VAPIDPublicKey:  "<YOUR_VAPID_PUBLIC_KEY>",
 				VAPIDPrivateKey: "<YOUR_VAPID_PRIVATE_KEY>",
