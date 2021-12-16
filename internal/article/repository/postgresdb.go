@@ -116,7 +116,6 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 				Function: funcName,
 			}
 		}
-		//fmt.Println(id, "  ", newtag)
 		slice := Tags[id]
 		slice = append(slice, newtag)
 		Tags[id] = slice
@@ -245,7 +244,18 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 	return chunkSize, ChunkData, overCount, nil
 }
 
-func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) (result []amodels.Preview, err error) {
+func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login string) ([]amodels.Preview, error) {
+	schema := `select signum from article_likes where articleId = $1 and Login = $2`
+	for i := range chunkData {
+		err := m.Db.Get(&chunkData[i].Liked, schema, chunkData[i].Id, login)
+		if err != nil {
+			chunkData[i].Liked = 0
+		}
+	}
+	return chunkData, nil
+}
+
+func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := toFetch
 	Hits.WithLabelValues(layer, fName).Inc()
 	var arts []amodels.DbArticle
@@ -275,10 +285,18 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, from, chunkSize int) 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData, login)
+	for _, a := range ChunkData {
+		fmt.Println(a.Liked)
+
+	}
 	return ChunkData, err
 }
 
-func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result amodels.FullArticle, err error) {
+func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id int64) (result amodels.FullArticle, err error) {
 	var newArticle amodels.DbArticle
 	fName := "articleRepository/GetbyID"
 	fPath := "getbyid"
@@ -303,7 +321,6 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 			Function: fName,
 		}
 	}
-
 	outArticle, err = fullArticleConv(newArticle, m.Db, newAuth)
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -311,10 +328,15 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, id int64) (result a
 			Function: fName,
 		}
 	}
+	schema := `select signum from article_likes where articleId = $1 and Login = $2`
+	err = m.Db.Get(&outArticle.Liked, schema, id, login)
+	if err != nil {
+		outArticle.Liked = 0
+	}
 	return outArticle, nil
 }
 
-func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, chunkSize int) (result []amodels.Preview, err error) {
+func (m *psqlArticleRepository) GetByTag(ctx context.Context, login string, tag string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := "articleRepository/GetbyTag"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
@@ -346,10 +368,14 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, tag string, from, 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
-func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
+func (m *psqlArticleRepository) FindByTag(ctx context.Context, login string, query string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := "articleRepository/FindByTag"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
@@ -381,10 +407,14 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, query string, fro
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
-func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, from, chunkSize int) (result []amodels.Preview, err error) {
+func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, login string, author string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := "articleRepository/GetByAuthor"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
@@ -415,6 +445,10 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, author string, 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
@@ -450,7 +484,7 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 	return ChunkData, err
 }
 
-func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, from, chunkSize int) (result []amodels.Preview, err error) {
+func (m *psqlArticleRepository) FindArticles(ctx context.Context, login string, query string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := "articleRepository/FindAuthors"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
@@ -481,10 +515,14 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, query string, 
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
-func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category string, from, chunkSize int) (result []amodels.Preview, err error) {
+func (m *psqlArticleRepository) GetByCategory(ctx context.Context, login string, category string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := "articleRepository/GetByCategory"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
@@ -514,6 +552,10 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, category stri
 		}
 	}
 	ChunkData, err = m.addTags(ChunkData, chunkSize, authorRes, fName, arts)
+	if err != nil {
+		return ChunkData, err
+	}
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 

@@ -45,7 +45,8 @@ func reverseConv(a *app.Preview) *models.Preview {
 	val.CommentsUrl = a.CommentsUrl
 	val.DateTime = a.DateTime
 	val.Id = a.Id
-	val.Likes = uint(a.Likes)
+	val.Likes = a.Likes
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
@@ -69,7 +70,8 @@ func revFullConv(a *app.FullArticle) *models.FullArticle {
 	val.CommentsUrl = a.CommentsUrl
 	val.DateTime = a.DateTime
 	val.Id = a.Id
-	val.Likes = uint(a.Likes)
+	val.Likes = a.Likes
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
@@ -193,15 +195,23 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	a.Value = ""
+	if err == nil {
+		a.Value = cookie.Value
+	}
+
 	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
 	}
+
 	// Возвращаем записи
 	var ChunkData []amodels.Preview
 	for _, a := range Data.Preview {
-		val := reverseConv(a)
-		ChunkData = append(ChunkData, *val)
+		fmt.Println(a.Liked)
+		val := *reverseConv(a)
+		ChunkData = append(ChunkData, val)
 	}
 	// формируем ответ
 	response := amodels.ChunkResponse{
@@ -219,6 +229,12 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	myid := app.Id{Id: strId}
+	cookie, err := c.Cookie("session")
+	myid.Value = ""
+	if err == nil {
+		myid.Value = cookie.Value
+	}
+
 	Data, err := api.UseCase.GetByID(ctx, &myid)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetbyID")
@@ -240,6 +256,11 @@ func (api *ArticlesHandler) GetByAuthor(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	a.Value = ""
+	if err == nil {
+		a.Value = cookie.Value
+	}
 	authors := &app.Authors{Author: login, Chunk: a}
 	Data, err := api.UseCase.GetByAuthor(ctx, authors)
 	if err != nil {
@@ -271,7 +292,13 @@ func (api *ArticlesHandler) GetByCategory(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+
 	categories := &app.Categories{Category: cat, Chunk: a}
+	cookie, err := c.Cookie("session")
+	a.Value = ""
+	if err == nil {
+		a.Value = cookie.Value
+	}
 	Data, err := api.UseCase.GetByCategory(ctx, categories)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetByAuthor")
@@ -335,6 +362,11 @@ func (api *ArticlesHandler) GetByTag(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	a.Value = ""
+	if err == nil {
+		a.Value = cookie.Value
+	}
 	tags := &app.Tags{Tag: tag, Chunk: a}
 	Data, err := api.UseCase.GetByTag(ctx, tags)
 	if err != nil {
@@ -364,6 +396,11 @@ func (api *ArticlesHandler) FindArticles(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	a.Value = ""
+	if err == nil {
+		a.Value = cookie.Value
+	}
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindArticles(ctx, query)
 	if err != nil {
@@ -422,6 +459,11 @@ func (api *ArticlesHandler) FindByTag(c echo.Context) error {
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	a := &app.Chunk{ChunkSize: chunkSize, IdLastLoaded: id}
+	cookie, err := c.Cookie("session")
+	a.Value = ""
+	if err == nil {
+		a.Value = cookie.Value
+	}
 	query := &app.Queries{Query: q, Chunk: a}
 	Data, err := api.UseCase.FindByTag(ctx, query)
 	if err != nil {

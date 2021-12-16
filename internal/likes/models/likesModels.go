@@ -2,7 +2,7 @@ package models
 
 import "context"
 
-//Представление лайка
+//easyjson:json
 type LikeData struct {
 	Ltype int `json:"type"`
 	Sign  int `json:"sign"`
@@ -15,6 +15,7 @@ type LikeDb struct {
 	Signum    int    `json:"sign"`
 }
 
+//easyjson:json
 type GenericResponse struct {
 	Status uint   `json:"status"`
 	Data   string `json:"data"`

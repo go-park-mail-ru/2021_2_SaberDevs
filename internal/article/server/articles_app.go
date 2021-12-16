@@ -93,7 +93,8 @@ func previewConv(a models.Preview) *app.Preview {
 	val.CommentsUrl = a.CommentsUrl
 	val.DateTime = a.DateTime
 	val.Id = a.Id
-	val.Likes = int64(a.Likes)
+	val.Likes = a.Likes
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
@@ -110,6 +111,7 @@ func fullConv(a models.FullArticle) *app.FullArticle {
 	val.DateTime = a.DateTime
 	val.Id = a.Id
 	val.Likes = int64(a.Likes)
+	val.Liked = a.Liked
 	val.PreviewUrl = a.PreviewUrl
 	val.Tags = a.Tags
 	val.Text = a.Text
@@ -158,7 +160,7 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	id := chunk.IdLastLoaded
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.Fetch(ctx, id, ch)
+	res, err := m.handler.Fetch(ctx, chunk.Value, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -167,8 +169,12 @@ func (m *ArticleManager) Fetch(ctx context.Context, chunk *app.Chunk) (*app.Repv
 	retval := app.Repview{}
 	for _, a := range res {
 		val := previewConv(a)
+		// fmt.Println(val.Liked)
 		retval.Preview = append(retval.Preview, val)
 	}
+	// for _, a := range retval.Preview {
+	// 	//fmt.Println(a.Liked)
+	// }
 	return &retval, err
 }
 
@@ -178,7 +184,7 @@ func (m *ArticleManager) FindArticles(ctx context.Context, q *app.Queries) (*app
 	query := q.Query
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.FindArticles(ctx, query, id, ch)
+	res, err := m.handler.FindArticles(ctx, q.Chunk.Value, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -198,7 +204,7 @@ func (m *ArticleManager) FindByTag(ctx context.Context, q *app.Queries) (*app.Re
 	query := q.Query
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.FindByTag(ctx, query, id, ch)
+	res, err := m.handler.FindByTag(ctx, q.Chunk.Value, query, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -218,7 +224,7 @@ func (m *ArticleManager) GetByAuthor(ctx context.Context, au *app.Authors) (*app
 	author := au.Author
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByAuthor(ctx, author, id, ch)
+	res, err := m.handler.GetByAuthor(ctx, au.Chunk.Value, author, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -238,7 +244,7 @@ func (m *ArticleManager) GetByCategory(ctx context.Context, cat *app.Categories)
 	category := cat.Category
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByCategory(ctx, category, id, ch)
+	res, err := m.handler.GetByCategory(ctx, cat.Chunk.Value, category, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -258,7 +264,7 @@ func (m *ArticleManager) GetByTag(ctx context.Context, cat *app.Tags) (*app.Repv
 	tag := cat.Tag
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByTag(ctx, tag, id, ch)
+	res, err := m.handler.GetByTag(ctx, cat.Chunk.Value, tag, id, ch)
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {
@@ -280,7 +286,7 @@ func (m *ArticleManager) GetByID(ctx context.Context, id *app.Id) (*app.FullArti
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	res, err := m.handler.GetByID(ctx, int64(nId))
+	res, err := m.handler.GetByID(ctx, id.Value, int64(nId))
 	md, ok := metadata.FromIncomingContext(ctx)
 	value := md["x-request-id"]
 	if ok {

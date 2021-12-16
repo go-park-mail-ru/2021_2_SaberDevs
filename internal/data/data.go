@@ -235,7 +235,7 @@ var TestUsers = []amodels.Author{
 }
 
 var End = amodels.Preview{"end", "123456", "endOfFeed.png", []string{"IT-News", "Study"},
-	"А всё, а раньше надо было", "А всё, а раньше надо было", "SaberDevs", amodels.Author{}, "#", 0, 0}
+	"А всё, а раньше надо было", "А всё, а раньше надо было", "SaberDevs", amodels.Author{}, "#", 0, 0, 0}
 
 var CategoriesList = []string{
 	"Маркетинг",

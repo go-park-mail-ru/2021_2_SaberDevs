@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -18,7 +19,7 @@ func NewArLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 }
 
 func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int, change int) (int, error) {
-	updateArticle := `UPDATE articles SET Likes = $1 + Likes  WHERE articles.Id = $2 RETURNING Likes;`
+	updateArticle := `UPDATE articles SET Likes = Likes + ($1) WHERE articles.Id = $2 RETURNING Likes;`
 	var Likes int
 	err := m.Db.Get(&Likes, updateArticle, change, articlesid)
 	if err != nil {
@@ -100,10 +101,11 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 	sign, err := m.Check(ctx, a)
 	if err != nil || sign == a.Signum {
 		return 0, sbErr.ErrNoContent{
-			Reason:   err.Error(),
+			Reason:   fmt.Sprint(sign),
 			Function: "inslike",
 		}
 	}
+	var likes int
 
 	if sign != 0 && sign != a.Signum {
 		err = m.Delete(ctx, a)
@@ -130,13 +132,14 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 		}
 	}
 
-	likes, err := m.UpdateCount(ctx, a.ArticleId, a.Signum)
+	likes, err = m.UpdateCount(ctx, a.ArticleId, a.Signum)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
 			Function: "inslike",
 		}
 	}
+	fmt.Println("REPO LIKES =", likes)
 	return likes, nil
 }
 

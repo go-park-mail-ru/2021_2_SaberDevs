@@ -17,6 +17,7 @@ require (
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/labstack/gommon v0.3.0
 	github.com/lib/pq v1.10.3
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.16
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0

@@ -4,6 +4,7 @@ import (
 	"context"
 )
 
+//easyjson:json
 type Key struct {
 	_msgpack struct{} `msgpack:",asArray"`
 	Salt     string

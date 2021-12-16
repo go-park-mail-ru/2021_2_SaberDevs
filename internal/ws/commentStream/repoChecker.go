@@ -1,8 +1,9 @@
 package commentStream
 
 import (
-	cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
 	"time"
+
+	cmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/models"
 )
 
 type repoChecker struct {
@@ -10,6 +11,7 @@ type repoChecker struct {
 	commentRepo cmodels.CommentRepository
 }
 
+//easyjson:json
 type sqlPreparedComment struct {
 	Id          int64  `json:"Id"  db:"id"`
 	Text        string `json:"text" db:"text"`
@@ -18,6 +20,7 @@ type sqlPreparedComment struct {
 	author      `json:"author"`
 }
 
+//easyjson:json
 type author struct {
 	Login     string `json:"login" db:"login"`
 	Surname   string `json:"lastName" db:"surname"`

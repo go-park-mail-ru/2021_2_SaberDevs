@@ -10,10 +10,12 @@ type Image struct {
 	Name string
 }
 
+//easyjson:json
 type SaveImageData struct {
 	Name string `json:"imgId"`
 }
 
+//easyjson:json
 type SaveImageResponse struct {
 	Status uint          `json:"status"`
 	Data   SaveImageData `json:"data"`
