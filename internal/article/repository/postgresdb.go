@@ -250,10 +250,8 @@ func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login stri
 	for i := range chunkData {
 		err := m.Db.Get(&liked, schema, chunkData[i].Id, login)
 		if err != nil {
-			fmt.Print("No likes")
+			chunkData[i].Liked = 0
 		}
-		chunkData[i].Liked = 0
-
 	}
 	return chunkData, nil
 }
@@ -331,17 +329,11 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 			Function: fName,
 		}
 	}
-	var liked []int64
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
-	err = m.Db.Select(&liked, schema, id, login)
+	err = m.Db.Get(&outArticle.Liked, schema, id, login)
 	if err != nil {
-		return outArticle, err
+		outArticle.Liked = 0
 	}
-	outArticle.Liked = 0
-	if (len(liked)) > 0 {
-		outArticle.Liked = 1
-	}
-
 	return outArticle, nil
 }
 
