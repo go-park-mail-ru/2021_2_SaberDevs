@@ -26,6 +26,7 @@ type PreparedComment struct {
 	Author    Author `json:"author"`
 }
 
+//easyjson:json
 type Author struct {
 	Login     string `json:"login" db:"login"`
 	Surname   string `json:"lastName" db:"surname"`
@@ -43,7 +44,6 @@ type Response struct {
 
 // -----------------------------------------------
 
-//easyjson:json
 type StreamComment struct {
 	Id          int64  `json:"Id"  db:"id"`
 	Text        string `json:"text" db:"text"`
@@ -53,7 +53,6 @@ type StreamComment struct {
 	author      `json:"author"`
 }
 
-//easyjson:json
 type author struct {
 	Login     string `json:"login" db:"login"`
 	Surname   string `json:"lastName" db:"surname"`
