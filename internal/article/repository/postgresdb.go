@@ -301,7 +301,7 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 	fName := "articleRepository/GetbyID"
 	fPath := "getbyid"
 	Hits.WithLabelValues(layer, fPath).Inc()
-	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1", id)
+	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1;", id)
 	fPath = "getbyid"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	var outArticle amodels.FullArticle
@@ -312,7 +312,7 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 		}
 	}
 	var newAuth amodels.Author
-	err = m.Db.Get(&newAuth, `SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName WHERE AR.ID = $1`, id)
+	err = m.Db.Get(&newAuth, "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName WHERE AR.ID = $1;", id)
 	fPath = "author"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
@@ -328,7 +328,7 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 			Function: fName,
 		}
 	}
-	schema := `select signum from article_likes where articleId = $1 and Login = $2`
+	schema := `select signum from article_likes where articleId = $1 and Login = $2;`
 	err = m.Db.Get(&outArticle.Liked, schema, id, login)
 	if err != nil {
 		outArticle.Liked = 0
