@@ -6,6 +6,7 @@ import (
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 )
 
+//easyjson:json
 type Session struct {
 	_msgpack    struct{} `msgpack:",asArray"`
 	CookieValue string

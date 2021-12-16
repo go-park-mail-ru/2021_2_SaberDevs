@@ -2,6 +2,7 @@ package models
 
 import "net/http"
 
+//easyjson:json
 type ErrorResponse struct {
 	Status   uint   `json:"status"`
 	ErrorMsg string `json:"msg"`
