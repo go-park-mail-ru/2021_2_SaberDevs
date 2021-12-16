@@ -25,8 +25,8 @@ func NotificationSevice(r pnmodels.PushNotificationRepository) {
 
 			resp, err := webpush.SendNotification(byteNotification, &subscription, &webpush.Options{
 				Subscriber:      "example@example.com",
-				VAPIDPublicKey:  "<YOUR_VAPID_PUBLIC_KEY>",
-				VAPIDPrivateKey: "<YOUR_VAPID_PRIVATE_KEY>",
+				VAPIDPublicKey:  "BAm53SFQL61CJdkPZYxN4qcdNTpnRc5yVSrL182-GNHW1RYmgRSeHoF5rYdMUfZMGT93MzVsN64NBe0azXKcplM",
+				VAPIDPrivateKey: "fjYQPyyzqYN4Kh_b76obpmfKkMSAz48YnbvKamm9Azw",
 				TTL:             30,
 			})
 			if err != nil {
