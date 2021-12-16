@@ -106,7 +106,7 @@ func (pnr *pushNotificationTarantoolRepo) QueueArticleComment(comment []byte) er
 func (pnr *pushNotificationTarantoolRepo) DequeueArticleComment() (string, error) {
 	res, err := pnr.conn.Call("articleCommentTake", []interface{}{})
 	if err != nil {
-		fmt.Println(err.Error())
+		// fmt.Println(err.Error())
 		return "", err
 	}
 	if len(res.Tuples()) == 0 {
