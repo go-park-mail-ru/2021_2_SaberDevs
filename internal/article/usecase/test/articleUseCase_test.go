@@ -34,7 +34,7 @@ func TestGetByID(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockArticleRepo.EXPECT().GetByID(gomock.Eq(context.TODO()), gomock.Eq(int64(1))).Return(mockArticle, nil).AnyTimes()
+		mockArticleRepo.EXPECT().GetByID(gomock.Eq(context.TODO()), gomock.Eq(""), gomock.Eq(int64(1))).Return(mockArticle, nil).AnyTimes()
 		tc, _ := server.TarantoolConnect()
 		u := repo.NewArticleUsecase(mockArticleRepo, arepo.NewSessionRepository(tc))
 		a, err := u.GetByID(context.TODO(), "", 1)
