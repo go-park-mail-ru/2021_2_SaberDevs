@@ -7,6 +7,7 @@ import (
 
 type Subscription struct {
 	_msgpack struct{} `msgpack:",asArray"`
+	Login string
 	Endpoint string
 	Auth     string
 	P256dh   string

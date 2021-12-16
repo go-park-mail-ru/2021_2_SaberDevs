@@ -32,8 +32,8 @@ box.once('init', function()
     })
     sub:create_index('primary', {type = 'tree', parts = {'login'}})
 
-    box.queue.create_tube('articleLikes', 'fifo', {temporary = true})
-    box.queue.create_tube('articleComments', 'fifo', {temporary = true})
+    queue.create_tube('articleLikes', 'fifo', {temporary = true})
+    queue.create_tube('articleComments', 'fifo', {temporary = true})
 end)
 
 function articleLikesPut(a)

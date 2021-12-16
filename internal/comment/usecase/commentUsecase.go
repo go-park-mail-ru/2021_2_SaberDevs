@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	pnmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/models"
 	"net/http"
@@ -83,9 +84,14 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 
 	article, err := cu.aRepo.GetByID(ctx, "", storedComment.ArticleId)
 	if err != nil {
+		fmt.Println(err.Error())
 		return response, nil
 	}
-	if _, err := cu.pnRepo.GetSubscription(ctx, article.Author.Login); err != nil {
+
+	res, err := cu.pnRepo.GetSubscription(ctx, article.Author.Login)
+	fmt.Println(res)
+	if err == nil {
+		fmt.Println("add ")
 		pushComment := pnmodels.PushComment{
 			ArticleTitle: article.Title,
 			Login:        article.Author.Login,
@@ -103,6 +109,7 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 
 		err = cu.pnRepo.QueueArticleComment(pc)
 		if err != nil {
+			fmt.Println(err.Error())
 			return response, nil
 		}
 	}

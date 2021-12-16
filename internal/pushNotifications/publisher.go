@@ -23,7 +23,7 @@ func NotificationSevice(r pnmodels.PushNotificationRepository) {
 
 			byteNotification, _ := json.Marshal(notificationModel)
 
-			resp, err := webpush.SendNotification(byteNotification, &subscription, &webpush.Options{
+			_, err := webpush.SendNotification(byteNotification, &subscription, &webpush.Options{
 				Subscriber:      "example@example.com",
 				VAPIDPublicKey:  "BAm53SFQL61CJdkPZYxN4qcdNTpnRc5yVSrL182-GNHW1RYmgRSeHoF5rYdMUfZMGT93MzVsN64NBe0azXKcplM",
 				VAPIDPrivateKey: "fjYQPyyzqYN4Kh_b76obpmfKkMSAz48YnbvKamm9Azw",
@@ -33,7 +33,7 @@ func NotificationSevice(r pnmodels.PushNotificationRepository) {
 				// TODO: Handle error
 			}
 
-			defer resp.Body.Close()
+			// resp.Body.Close()
 		}
 	}
 }

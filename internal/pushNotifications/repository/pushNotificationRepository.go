@@ -89,6 +89,7 @@ func (pnr *pushNotificationTarantoolRepo) DequeueArticleLike() (string, error) {
 			Reason:   err.Error(),
 			Function: "pushNotificationRepositiry/DequeueArticleLike"}
 	}
+	fmt.Println(res.Tuples()[0][2].(string))
 
 	return res.Tuples()[0][2].(string), nil
 }
