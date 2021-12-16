@@ -18,7 +18,7 @@ func NewPushNotificationRepository(conn *tarantool.Connection) pnmodels.PushNoti
 }
 
 func (pnr *pushNotificationTarantoolRepo) StoreSubscription(ctx context.Context, subscription webpush.Subscription, login string) error {
-	_, err := pnr.conn.Replace("subscription", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
+	_, err := pnr.conn.Replace("subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -29,7 +29,7 @@ func (pnr *pushNotificationTarantoolRepo) StoreSubscription(ctx context.Context,
 }
 
 func (pnr *pushNotificationTarantoolRepo) UpdateSubscription(ctx context.Context, subscription webpush.Subscription, login string) error {
-	_, err := pnr.conn.Replace("subscription", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
+	_, err := pnr.conn.Replace("subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -46,7 +46,7 @@ func (pnr *pushNotificationTarantoolRepo) DeleteSubscription(ctx context.Context
 func (pnr *pushNotificationTarantoolRepo) GetSubscription(ctx context.Context, login string) (webpush.Subscription, error) {
 	var sub []pnmodels.Subscription
 
-	err := pnr.conn.SelectTyped("subscription", "primary", 0, 1, tarantool.IterEq, []interface{}{login}, &sub)
+	err := pnr.conn.SelectTyped("subscriptions", "primary", 0, 1, tarantool.IterEq, []interface{}{login}, &sub)
 	if err != nil {
 		fmt.Println(err.Error())
 		return webpush.Subscription{}, sbErr.ErrInternal{
