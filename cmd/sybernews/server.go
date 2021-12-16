@@ -4,6 +4,7 @@ import (
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
+	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
@@ -94,6 +95,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	// articleRepo := arepo.NewArticleRepository(db)
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db)
+
+	repo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
+	repo.QueueArticleComment([]byte(""))
+	repo.DequeueArticleComment()
 
 	publisher := commentWS.NewPublisher()
 	go publisher.Run()
@@ -245,8 +250,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Fatal(err)
+	// }
+	e.Logger.Fatal(e.Start(address))
 }

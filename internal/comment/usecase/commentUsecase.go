@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+	pnmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/models"
 	"net/http"
 	"time"
 
@@ -16,13 +19,17 @@ type commentUsecase struct {
 	userRepo    umodels.UserRepository
 	sessionRepo smodels.SessionRepository
 	commentRepo cmodels.CommentRepository
+	pnRepo      pnmodels.PushNotificationRepository
+	aRepo       amodels.ArticleRepository
 }
 
-func NewCommentUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, cr cmodels.CommentRepository) cmodels.CommentUsecase {
+func NewCommentUsecase(ur umodels.UserRepository, sr smodels.SessionRepository, cr cmodels.CommentRepository, pnr pnmodels.PushNotificationRepository, ar amodels.ArticleRepository) cmodels.CommentUsecase {
 	return &commentUsecase{
 		userRepo:    ur,
 		sessionRepo: sr,
 		commentRepo: cr,
+		pnRepo:      pnr,
+		aRepo:       ar,
 	}
 }
 
@@ -72,6 +79,32 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 		Status: http.StatusOK,
 		Data:   responseData,
 		Msg:    "OK",
+	}
+
+	article, err := cu.aRepo.GetByID(ctx, storedComment.ArticleId)
+	if err != nil {
+		return response, nil
+	}
+	if _, err := cu.pnRepo.GetSubscription(ctx, article.Author.Login); err != nil {
+		pushComment := pnmodels.PushComment{
+			ArticleTitle: article.Title,
+			Login:        article.Author.Login,
+			Text:         storedComment.Text,
+			ArticleId:    storedComment.ArticleId,
+			CommentID:    storedComment.Id,
+			FirstName:    userInRepo.Name,
+			LastName:     userInRepo.Surname,
+		}
+
+		pc, err := json.Marshal(pushComment)
+		if err != nil {
+			return response, nil
+		}
+
+		err = cu.pnRepo.QueueArticleComment(pc)
+		if err != nil {
+			return response, nil
+		}
 	}
 
 	return response, nil
