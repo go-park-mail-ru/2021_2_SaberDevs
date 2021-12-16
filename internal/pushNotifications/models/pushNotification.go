@@ -12,12 +12,6 @@ type Subscription struct {
 	P256dh   string
 }
 
-// {
-// to, // кому
-// type: <0,1,2,3>,
-// data: string
-// }
-
 type PushCommentNotification struct {
 	To string `json:"to"`
 	Type int `json:"type"`

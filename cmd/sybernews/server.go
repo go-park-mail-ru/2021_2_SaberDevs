@@ -5,6 +5,8 @@ import (
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
+	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
+	pnhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/handler"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
@@ -98,10 +100,10 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db)
 
-	repo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
+	pnRepo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
 	// repo.QueueArticleComment([]byte("9"))
 	// repo.DequeueArticleComment()
-	go push.NotificationSevice(repo)
+	go push.NotificationSevice(pnRepo)
 
 	publisher := commentWS.NewPublisher()
 	go publisher.Run()
@@ -121,6 +123,9 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	imageUsecase := iusecase.NewImageUsecase(imageRepo)
 	imageAPI := ihandler.NewImageHandler(imageUsecase)
+
+	pnUsecase := pnusecase.NewPushNotificationUsecase(pnRepo, sessionRepo)
+	pnAPI := pnhandler.NewPushNotificationHandler(pnUsecase)
 
 	// commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 	commentsAPi := chandler.NewCommentHandler(*c)
@@ -155,6 +160,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	e.Use(syberMiddleware.AddId)
 
 	e.GET("api/v1/ws", commentWSAPI.HandleWS)
+
+	e.POST("api/v1/notifications/subscribe", pnAPI.CreateSubscription, authMiddleware.CheckAuth)
 
 	e.GET("api/v1/img/:name", imageAPI.GetImage)
 	e.POST("api/v1/img/upload", imageAPI.SaveImage, authMiddleware.CheckAuth)
@@ -253,8 +260,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Fatal(err)
+	// }
+	e.Logger.Fatal(e.Start(address))
 }
