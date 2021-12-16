@@ -244,11 +244,11 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 	return chunkSize, ChunkData, overCount, nil
 }
 
-func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview) ([]amodels.Preview, error) {
+func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login string) ([]amodels.Preview, error) {
 	var liked []int64
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
 	for i := range chunkData {
-		err := m.Db.Select(&liked, schema, chunkData[i].Id, chunkData[i].Author.Login)
+		err := m.Db.Select(&liked, schema, chunkData[i].Id, login)
 		if err != nil || (len(liked)) == 0 {
 			chunkData[i].Liked = 0
 		}
@@ -293,9 +293,10 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, c
 	if err != nil {
 		return ChunkData, err
 	}
-	ChunkData, err = m.addLiked(ChunkData)
+	ChunkData, err = m.addLiked(ChunkData, login)
 	for _, a := range ChunkData {
 		fmt.Println(a.Liked)
+
 	}
 	return ChunkData, err
 }
@@ -381,7 +382,7 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, login string, tag 
 	if err != nil {
 		return ChunkData, err
 	}
-	ChunkData, err = m.addLiked(ChunkData)
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
@@ -420,7 +421,7 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, login string, que
 	if err != nil {
 		return ChunkData, err
 	}
-	ChunkData, err = m.addLiked(ChunkData)
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
@@ -458,7 +459,7 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, login string, a
 	if err != nil {
 		return ChunkData, err
 	}
-	ChunkData, err = m.addLiked(ChunkData)
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
@@ -528,7 +529,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, login string, 
 	if err != nil {
 		return ChunkData, err
 	}
-	ChunkData, err = m.addLiked(ChunkData)
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
@@ -565,7 +566,7 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, login string,
 	if err != nil {
 		return ChunkData, err
 	}
-	ChunkData, err = m.addLiked(ChunkData)
+	ChunkData, err = m.addLiked(ChunkData, login)
 	return ChunkData, err
 }
 
