@@ -24,7 +24,7 @@ box.once('init', function()
     k:create_index('primary', {type = 'tree', parts = {'login'}})
 
     sub = box.schema.space.create('subscriptions')
-    s:format({
+    sub:format({
         {name = 'login', type = 'string'},
         {name = 'endpoint', type = 'string'},
         {name = 'auth', type = 'string'},
@@ -34,7 +34,6 @@ box.once('init', function()
 
     box.queue.create_tube('articleLikes', 'fifo', {temporary = true})
     box.queue.create_tube('articleComments', 'fifo', {temporary = true})
-
 end)
 
 function articleLikesPut(a)

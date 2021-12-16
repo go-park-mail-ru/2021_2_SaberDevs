@@ -27,6 +27,10 @@ func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) 
 			Reason:   err.Error(),
 			Function: "sessionRepositiry/CreateSession"}
 	}
+	// _, err = r.conn.Insert("keys", []interface{}{sessionID, login})
+	// if err != nil {
+	//
+	// }
 
 	return sessionID, nil
 }

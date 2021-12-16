@@ -4,9 +4,9 @@ import (
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
+	pnhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/handler"
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
-	pnhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/handler"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
@@ -260,8 +260,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Fatal(err)
+	// }
+	e.Logger.Fatal(e.Start(address))
 }
