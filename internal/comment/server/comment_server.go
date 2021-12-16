@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
 	cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
+	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	"github.com/jmoiron/sqlx"
@@ -79,8 +81,10 @@ func main() {
 	userRepo := urepo.NewUserRepository(db)
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
 	commentsRepo := crepo.NewCommentRepository(db)
+	notifRepo := pnrepo.NewPushNotificationRepository(tarantoolConn)
+	artRepo := arepo.NewArticleRepository(db)
 
-	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
+	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo, notifRepo, artRepo)
 
 	app.RegisterCommentDeliveryServer(server, NewCommentManager(commentUsecase))
 
