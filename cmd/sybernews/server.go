@@ -31,8 +31,6 @@ import (
 
 	"net/http"
 
-	"golang.org/x/crypto/acme/autocert"
-
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 
@@ -182,7 +180,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
-	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+	//e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
 	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
 	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
@@ -248,8 +246,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Fatal(err)
+	// }
+	e.Logger.Fatal(e.Start(address))
 }

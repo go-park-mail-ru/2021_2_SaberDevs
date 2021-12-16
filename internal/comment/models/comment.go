@@ -2,6 +2,7 @@ package models
 
 import "context"
 
+//easyjson:json
 type Comment struct {
 	Id          int64  `json:"id"  db:"id"`
 	DateTime    string `json:"dateTime" db:"datetime"`
@@ -13,6 +14,7 @@ type Comment struct {
 	Likes       int    `json:"likes" db:"likes"`
 }
 
+//easyjson:json
 type PreparedComment struct {
 	Id        int64  `json:"id"  db:"id"`
 	DateTime  string `json:"dateTime" db:"datetime"`
@@ -32,6 +34,7 @@ type Author struct {
 	AvatarURL string `json:"avatarUrl" db:"avatarurl"`
 }
 
+//easyjson:json
 type Response struct {
 	Status uint        `json:"status"`
 	Data   interface{} `json:"data"`
@@ -40,6 +43,7 @@ type Response struct {
 
 // -----------------------------------------------
 
+//easyjson:json
 type StreamComment struct {
 	Id          int64  `json:"Id"  db:"id"`
 	Text        string `json:"text" db:"text"`
@@ -49,6 +53,7 @@ type StreamComment struct {
 	author      `json:"author"`
 }
 
+//easyjson:json
 type author struct {
 	Login     string `json:"login" db:"login"`
 	Surname   string `json:"lastName" db:"surname"`
