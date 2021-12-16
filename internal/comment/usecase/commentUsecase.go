@@ -81,7 +81,7 @@ func (cu *commentUsecase) CreateComment(ctx context.Context, comment *cmodels.Co
 		Msg:    "OK",
 	}
 
-	article, err := cu.aRepo.GetByID(ctx, storedComment.ArticleId)
+	article, err := cu.aRepo.GetByID(ctx, "", storedComment.ArticleId)
 	if err != nil {
 		return response, nil
 	}
