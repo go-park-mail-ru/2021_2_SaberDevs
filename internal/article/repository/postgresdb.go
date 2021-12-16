@@ -245,10 +245,9 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 }
 
 func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login string) ([]amodels.Preview, error) {
-	var liked int64
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
 	for i := range chunkData {
-		err := m.Db.Get(&liked, schema, chunkData[i].Id, login)
+		err := m.Db.Get(&chunkData[i].Liked, schema, chunkData[i].Id, login)
 		if err != nil {
 			chunkData[i].Liked = 0
 		}
