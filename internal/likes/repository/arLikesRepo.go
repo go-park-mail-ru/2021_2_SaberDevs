@@ -80,15 +80,19 @@ func (m *ArLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int,
 			Function: "/cancel",
 		}
 	}
+	fmt.Println("signum = ", sign, "id =", a.ArticleId)
 	err = m.Delete(ctx, a)
 	if err != nil {
+		fmt.Println("err = ", err.Error())
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
 			Function: "cancel",
 		}
 	}
+	fmt.Println("deleted = ", sign)
 	likes, err := m.UpdateCount(ctx, a.ArticleId)
 	if err != nil {
+		fmt.Println("err = ", err.Error())
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
 			Function: "cancel",
