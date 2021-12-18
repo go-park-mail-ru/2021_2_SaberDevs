@@ -17,10 +17,10 @@ func NewComLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 	return &ComLikesRepository{db}
 }
 
-func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int, change int) (int, error) {
-	updateArticle := `UPDATE comments SET Likes = Likes + ($1)   WHERE comments.Id = $2 RETURNING Likes;`
+func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int) (int, error) {
+	updateArticle := `UPDATE comments SET Likes = (Select sum(signum) as s from comments_likes WHERE commentId = $1) WHERE comments.Id = $1 RETURNING Likes;`
 	var Likes int
-	err := m.Db.Get(&Likes, updateArticle, change, articlesid)
+	err := m.Db.Get(&Likes, updateArticle, articlesid)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -86,7 +86,7 @@ func (m *ComLikesRepository) Cancel(ctx context.Context, a *amodels.LikeDb) (int
 			Function: "cancel",
 		}
 	}
-	likes, err := m.UpdateCount(ctx, a.ArticleId, -sign)
+	likes, err := m.UpdateCount(ctx, a.ArticleId)
 	if err != nil {
 		return 0, sbErr.ErrBadImage{
 			Reason:   err.Error(),
@@ -113,13 +113,6 @@ func (m *ComLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) 
 				Function: "cancel",
 			}
 		}
-		_, err = m.UpdateCount(ctx, a.ArticleId, -sign)
-		if err != nil {
-			return 0, sbErr.ErrBadImage{
-				Reason:   err.Error(),
-				Function: "cancel",
-			}
-		}
 	}
 
 	err = m.Insert(ctx, a)
@@ -130,7 +123,7 @@ func (m *ComLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) 
 		}
 	}
 
-	likes, err := m.UpdateCount(ctx, a.ArticleId, a.Signum)
+	likes, err := m.UpdateCount(ctx, a.ArticleId)
 
 	return likes, err
 }
