@@ -392,3 +392,20 @@ func TestDelete(t *testing.T) {
 
 	})
 }
+
+func TestStore(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockUcase := mocks.NewMockArticleUsecase(ctrl)
+	login := "Iam"
+	art := &app.ArticleCreate{}
+	b := &app.Create{Art: art, Value: login}
+	u := ser.NewArticleManager(mockUcase)
+	t.Run("success", func(t *testing.T) {
+		mockUcase.EXPECT().Store(gomock.Eq(context.TODO()), login, gomock.Any()).Return(1, nil).AnyTimes()
+		a, err := u.Store(context.TODO(), b)
+		assert.NoError(t, err)
+		assert.Equal(t, int(a.Id), 1)
+
+	})
+}
