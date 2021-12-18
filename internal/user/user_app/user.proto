@@ -6,8 +6,8 @@ package user_server;
 
 message User {
   string login = 1;
-  string name = 2;
-  string surname = 3;
+  string firstName = 2;
+  string lastName = 3;
   string email = 4;
   string password = 5;
   int32 score = 6;
@@ -19,8 +19,8 @@ message User {
 
 message LoginData {
   string login = 1;
-  string name = 2;
-  string surname = 3;
+  string firstName = 2;
+  string lastName = 3;
   string email = 4;
   int32 score = 5;
   string avatarUrl = 6;
@@ -52,8 +52,8 @@ message LogoutResponse {
 
 message GetUserData {
   string login = 1;
-  string name = 2;
-  string surname = 3;
+  string firstName = 2;
+  string lastName = 3;
   string email = 4;
   int32 score = 5;
   string avatarUrl = 6;
@@ -70,7 +70,7 @@ message GetUserResponse {
 
 message SignUpData {
   string login = 1;
-  string name = 2;
+  string firstName= 2;
   string surname = 3;
   string email = 4;
   int32 score = 5;

@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberValidation"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberValidation"
 
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
@@ -25,10 +26,10 @@ func SanitizeUser(a *app.User) *app.User {
 	s := bluemonday.StrictPolicy()
 	a.Email = s.Sanitize(a.Email)
 	a.Login = s.Sanitize(a.Login)
-	a.Name = s.Sanitize(a.Name)
+	a.FirstName = s.Sanitize(a.FirstName)
 	a.Password = s.Sanitize(a.Password)
 	//a.Score = s.Sanitize(a.Score)
-	a.Surname = s.Sanitize(a.Surname)
+	a.LastName = s.Sanitize(a.LastName)
 	return a
 }
 
@@ -85,8 +86,8 @@ func (api *UserHandler) AuthorProfile(c echo.Context) error {
 		Status: uint(grpcResponse.Status),
 		Data: models.LoginData{
 			Login:       grpcResponse.Data.Login,
-			Name:        grpcResponse.Data.Name,
-			Surname:     grpcResponse.Data.Surname,
+			Name:        grpcResponse.Data.FirstName,
+			Surname:     grpcResponse.Data.LastName,
 			Email:       grpcResponse.Data.Email,
 			Score:       int(grpcResponse.Data.Score),
 			AvatarURL:   grpcResponse.Data.AvatarUrl,
@@ -126,8 +127,8 @@ func (api *UserHandler) UpdateProfile(c echo.Context) error {
 
 	grpcUpdateInput := &app.UpdateInput{
 		User: &app.User{
-			Name:        requestUser.Name,
-			Surname:     requestUser.Surname,
+			FirstName:   requestUser.Name,
+			LastName:    requestUser.Surname,
 			Password:    requestUser.Password,
 			AvatarUrl:   requestUser.AvatarURL,
 			Description: requestUser.Description,
