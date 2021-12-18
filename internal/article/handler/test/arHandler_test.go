@@ -148,3 +148,109 @@ func TestUpdate(t *testing.T) {
 	})
 
 }
+
+func TestGetByTag(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+
+		req := httptest.NewRequest(echo.GET, "http://localhost:8081/api/v1/articles/tags?idLastLoaded=&tag=abc", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		new := apps.Repview{}
+		new.Preview = []*apps.Preview{}
+
+		app.EXPECT().GetByTag(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.GetByTag(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
+
+func TestFindArticles(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+
+		req := httptest.NewRequest(echo.GET, "http://localhost:8081/api/v1/search/articles?q=asdf&idLastLoaded=", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		new := apps.Repview{}
+		new.Preview = []*apps.Preview{}
+
+		app.EXPECT().FindArticles(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.FindArticles(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
+func TestFindAuthors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+
+		req := httptest.NewRequest(echo.GET, "http://localhost:8081/api/v1/search/authors?q=asdf&idLastLoaded=", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		new := apps.AView{}
+		new.Author = []*apps.Author{}
+
+		app.EXPECT().FindAuthors(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.FindAuthors(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
+func TestFindbyTag(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+
+		req := httptest.NewRequest(echo.GET, "http://localhost:8081/api/v1/search/tags?q=asdf&idLastLoaded=", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		new := apps.Repview{}
+		new.Preview = []*apps.Preview{}
+
+		app.EXPECT().FindByTag(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.FindByTag(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
