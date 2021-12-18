@@ -375,3 +375,20 @@ func TestFindAuthors(t *testing.T) {
 
 	})
 }
+
+func TestDelete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockUcase := mocks.NewMockArticleUsecase(ctrl)
+	login := "Iam"
+	id := &app.Id{Id: "1", Value: login}
+	res := &app.Nothing{Dummy: true}
+	u := ser.NewArticleManager(mockUcase)
+	t.Run("success", func(t *testing.T) {
+		mockUcase.EXPECT().Delete(gomock.Eq(context.TODO()), login, id.Id).Return(nil).AnyTimes()
+		a, err := u.Delete(context.TODO(), id)
+		assert.NoError(t, err)
+		assert.Equal(t, a, res)
+
+	})
+}
