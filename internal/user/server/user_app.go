@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ func NewUserManager(handler umodels.UserUsecase) *UserManager {
 func convertToUserModel(user app.User) *umodels.User {
 	return &umodels.User{
 		Login:       user.Login,
-		Name:        user.Name,
-		Surname:     user.Surname,
+		Name:        user.FirstName,
+		Surname:     user.LastName,
 		Email:       user.Email,
 		Password:    user.Password,
 		Score:       int(user.Score),
@@ -37,8 +38,8 @@ func (m *UserManager) UpdateProfile(ctx context.Context, updateInput *app.Update
 		Status: uint32(response.Status),
 		Data: &app.LoginData{
 			Login:       response.Data.Login,
-			Name:        response.Data.Name,
-			Surname:     response.Data.Surname,
+			FirstName:   response.Data.Name,
+			LastName:    response.Data.Surname,
 			Email:       response.Data.Email,
 			Score:       int32(response.Data.Score),
 			AvatarUrl:   response.Data.AvatarURL,
@@ -55,8 +56,8 @@ func (m *UserManager) GetAuthorProfile(ctx context.Context, author *app.Author) 
 		Status: uint32(response.Status),
 		Data: &app.GetUserData{
 			Login:       response.Data.Login,
-			Name:        response.Data.Name,
-			Surname:     response.Data.Surname,
+			FirstName:   response.Data.Name,
+			LastName:    response.Data.Surname,
 			Score:       int32(response.Data.Score),
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
@@ -72,8 +73,8 @@ func (m *UserManager) GetUserProfile(ctx context.Context, sessionID *app.Session
 		Status: uint32(response.Status),
 		Data: &app.GetUserData{
 			Login:       response.Data.Login,
-			Name:        response.Data.Name,
-			Surname:     response.Data.Surname,
+			FirstName:   response.Data.Name,
+			LastName:    response.Data.Surname,
 			Score:       int32(response.Data.Score),
 			AvatarUrl:   response.Data.AvatarURL,
 			Description: response.Data.Description,
@@ -89,8 +90,8 @@ func (m *UserManager) LoginUser(ctx context.Context, user *app.User) (*app.Login
 		Status: uint32(response.Status),
 		Data: &app.LoginData{
 			Login:       response.Data.Login,
-			Name:        response.Data.Name,
-			Surname:     response.Data.Surname,
+			FirstName:   response.Data.Name,
+			LastName:    response.Data.Surname,
 			Email:       response.Data.Email,
 			Score:       int32(response.Data.Score),
 			AvatarUrl:   response.Data.AvatarURL,
@@ -108,8 +109,8 @@ func (m *UserManager) Signup(ctx context.Context, user *app.User) (*app.SignupRe
 		Status: uint32(response.Status),
 		Data: &app.SignUpData{
 			Login:       response.Data.Login,
-			Name:        response.Data.Name,
-			Surname:     response.Data.Surname,
+			FirstName:   response.Data.Name,
+			LastName:    response.Data.Surname,
 			Email:       response.Data.Email,
 			Score:       int32(response.Data.Score),
 			AvatarUrl:   response.Data.AvatarURL,

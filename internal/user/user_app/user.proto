@@ -71,7 +71,7 @@ message GetUserResponse {
 message SignUpData {
   string login = 1;
   string firstName= 2;
-  string surname = 3;
+  string lastName = 3;
   string email = 4;
   int32 score = 5;
   string avatarUrl = 6;
