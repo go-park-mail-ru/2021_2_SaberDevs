@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"net/http/httptest"
 	"testing"
 
 	apps "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
@@ -20,10 +21,17 @@ func TestGetByID(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		e := echo.New()
-		ctx := e.AcquireContext()
-		myid := apps.Id{Id: "1"}
-		app.EXPECT().GetByID(ctx, &myid).Return(nil).AnyTimes()
-		err := handler.GetByID(ctx)
+
+		req := httptest.NewRequest(echo.GET, "http://localhost:8081/api/v1/articles?Id=1", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+
+		c := e.NewContext(req, rec)
+		new := apps.FullArticle{}
+		new.Author = &apps.Author{}
+		app.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.GetByID(c)
 		assert.NoError(t, err)
 	})
 

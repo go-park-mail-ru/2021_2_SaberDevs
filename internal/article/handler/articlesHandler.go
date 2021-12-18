@@ -200,7 +200,7 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 	if err == nil {
 		a.Value = cookie.Value
 	}
-
+	fmt.Printf("%v", c)
 	Data, err := api.UseCase.Fetch(ctx, a)
 	if err != nil {
 		return errors.Wrap(err, "articlesHandler/GetFeed")
@@ -218,12 +218,14 @@ func (api *ArticlesHandler) GetFeed(c echo.Context) error {
 		Status:    http.StatusOK,
 		ChunkData: ChunkData,
 	}
+
 	return c.JSON(http.StatusOK, response)
 }
 
 func (api *ArticlesHandler) GetByID(c echo.Context) error {
 	strId := c.QueryParam("id")
 	fPath := "/api/v1/article/:id"
+	fmt.Printf("%v", c)
 	Hits.WithLabelValues(layer, fPath).Inc()
 	reqID := c.Request().Header.Get(echo.HeaderXRequestID)
 	md := metadata.New(map[string]string{"X-Request-ID": reqID})
@@ -243,7 +245,7 @@ func (api *ArticlesHandler) GetByID(c echo.Context) error {
 		Status: http.StatusOK,
 		Data:   *revFullConv(Data),
 	}
-
+	fmt.Printf("%v", c)
 	return c.JSON(http.StatusOK, response)
 }
 
