@@ -123,32 +123,6 @@ func TestGetByCategory(t *testing.T) {
 
 }
 
-func TestUpdate(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	app := mock.NewMockArticleDeliveryClient(ctrl)
-
-	handler := hand.NewArticlesHandler(app)
-
-	t.Run("success", func(t *testing.T) {
-		e := echo.New()
-		art := models.ArticleCreate{}
-		body, _ := json.Marshal(art)
-		req := httptest.NewRequest(echo.POST, "http://localhost:8081/api/v1/articles/update", bytes.NewReader(body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		cc := &http.Cookie{Name: "session", Value: "123"}
-		req.AddCookie(cc)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-		new := apps.Nothing{}
-		app.EXPECT().Update(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
-		err := handler.Update(c)
-		assert.NoError(t, err)
-		assert.Equal(t, rec.Result().StatusCode, 200)
-	})
-
-}
-
 func TestGetByTag(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -219,7 +193,8 @@ func TestFindAuthors(t *testing.T) {
 
 		c := e.NewContext(req, rec)
 		new := apps.AView{}
-		new.Author = []*apps.Author{}
+		auth := &apps.Author{AvatarUrl: "who"}
+		new.Author = []*apps.Author{auth}
 
 		app.EXPECT().FindAuthors(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
 		err := handler.FindAuthors(c)
@@ -249,6 +224,82 @@ func TestFindbyTag(t *testing.T) {
 
 		app.EXPECT().FindByTag(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
 		err := handler.FindByTag(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
+
+func TestUpdate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+		art := models.ArticleUpdate{}
+		body, _ := json.Marshal(art)
+		req := httptest.NewRequest(echo.POST, "http://localhost:8081/api/v1/articles/update", bytes.NewReader(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		cc := &http.Cookie{Name: "session", Value: "123"}
+		req.AddCookie(cc)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		new := apps.Nothing{}
+		app.EXPECT().Update(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.Update(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
+
+func TestCreate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+		art := models.ArticleCreate{}
+		body, _ := json.Marshal(art)
+		req := httptest.NewRequest(echo.POST, "http://localhost:8081/api/v1/articles/create", bytes.NewReader(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		cc := &http.Cookie{Name: "session", Value: "123"}
+		req.AddCookie(cc)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		new := apps.Created{Id: 1}
+		app.EXPECT().Store(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.Create(c)
+		assert.NoError(t, err)
+		assert.Equal(t, rec.Result().StatusCode, 200)
+	})
+
+}
+
+func TestDelete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	app := mock.NewMockArticleDeliveryClient(ctrl)
+
+	handler := hand.NewArticlesHandler(app)
+
+	t.Run("success", func(t *testing.T) {
+		e := echo.New()
+		req := httptest.NewRequest(echo.POST, "http://localhost:8081/api/v1/articles/delete?Id=1", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		cc := &http.Cookie{Name: "session", Value: "123"}
+		req.AddCookie(cc)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		new := apps.Nothing{}
+		app.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
+		err := handler.Delete(c)
 		assert.NoError(t, err)
 		assert.Equal(t, rec.Result().StatusCode, 200)
 	})
