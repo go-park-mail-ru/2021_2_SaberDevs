@@ -399,13 +399,31 @@ func TestStore(t *testing.T) {
 	mockUcase := mocks.NewMockArticleUsecase(ctrl)
 	login := "Iam"
 	art := &app.ArticleCreate{}
+	ar := models.ArticleCreate{}
 	b := &app.Create{Art: art, Value: login}
 	u := ser.NewArticleManager(mockUcase)
 	t.Run("success", func(t *testing.T) {
-		mockUcase.EXPECT().Store(gomock.Eq(context.TODO()), login, gomock.Any()).Return(1, nil).AnyTimes()
+		mockUcase.EXPECT().Store(gomock.Eq(context.TODO()), login, &ar).Return(1, nil).AnyTimes()
 		a, err := u.Store(context.TODO(), b)
 		assert.NoError(t, err)
 		assert.Equal(t, int(a.Id), 1)
 
+	})
+}
+
+func TestUpdate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockUcase := mocks.NewMockArticleUsecase(ctrl)
+	login := "Iam"
+	art := &app.ArticleUpdate{Id: "1", Value: login, Title: "title"}
+	res := &app.Nothing{Dummy: true}
+	ar := models.ArticleUpdate{Id: "1", Title: "title"}
+	u := ser.NewArticleManager(mockUcase)
+	t.Run("success", func(t *testing.T) {
+		mockUcase.EXPECT().Update(gomock.Eq(context.TODO()), login, &ar).Return(nil).AnyTimes()
+		a, err := u.Update(context.TODO(), art)
+		assert.NoError(t, err)
+		assert.Equal(t, a, res)
 	})
 }
