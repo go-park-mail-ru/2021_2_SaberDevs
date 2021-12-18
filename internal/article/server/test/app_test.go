@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
+	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	mocks "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models/mock"
 	ser "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/server/serve"
 	gomock "github.com/golang/mock/gomock"
@@ -17,7 +18,18 @@ func TestGetByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUcase := mocks.NewMockArticleUsecase(ctrl)
-	mockArticle := &app.FullArticle{
+	mockArticle := models.FullArticle{
+		Id:          "1",
+		PreviewUrl:  "#",
+		Tags:        []string{"fishing", "boat"},
+		Title:       "fishing",
+		Text:        "fishing is bad for business",
+		Author:      models.Author{Id: 1},
+		CommentsUrl: "#",
+		Comments:    11,
+		Likes:       12,
+	}
+	resArticle := &app.FullArticle{
 		Id:          "1",
 		PreviewUrl:  "#",
 		Tags:        []string{"fishing", "boat"},
@@ -36,7 +48,7 @@ func TestGetByID(t *testing.T) {
 
 		a, err := u.GetByID(context.TODO(), id)
 		assert.NoError(t, err)
-		assert.Equal(t, a, mockArticle)
+		assert.Equal(t, a, resArticle)
 
 	})
 
