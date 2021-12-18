@@ -333,7 +333,7 @@ func (api *ArticlesHandler) Update(c echo.Context) error {
 	if err != nil {
 		return sbErr.ErrAuthorised{
 			Reason:   err.Error(),
-			Function: "articlesHandler/Delete",
+			Function: "articlesHandler/Update",
 		}
 	}
 	cook := cookie.Value
