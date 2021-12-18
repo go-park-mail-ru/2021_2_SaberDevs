@@ -139,7 +139,7 @@ func (m *psqlArticleRepository) uploadAuthors(authors []string, funcName string)
 			schema = schema + ","
 		}
 	}
-	schema = schema + ")"
+	schema = schema + ");"
 
 	rows, err := m.Db.Queryx(schema, ids...)
 	fPath := "uploadTags"
