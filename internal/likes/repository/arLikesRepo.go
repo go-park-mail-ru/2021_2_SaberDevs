@@ -19,16 +19,21 @@ func NewArLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 }
 
 func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int) (int, error) {
-	updateArticle := `UPDATE articles SET Likes = 0 + (Select sum(signum) as s from article_likes WHERE articleId = $1) WHERE articles.Id = $1 RETURNING Likes;`
 	var Likes int
-	err := m.Db.Get(&Likes, updateArticle, articlesid)
+	count := "Select sum(signum) as s from article_likes WHERE articleId = $1"
+	err := m.Db.Get(&Likes, count, articlesid)
+	if err != nil {
+		Likes = 0
+	}
+	updateArticle := `UPDATE articles SET Likes = $1 WHERE articles.Id = $2;`
+
+	_, err = m.Db.Exec(updateArticle, Likes, articlesid)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: "/update",
+			Function: "/insert",
 		}
 	}
-
 	return Likes, nil
 }
 
