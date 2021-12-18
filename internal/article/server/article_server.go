@@ -7,6 +7,7 @@ import (
 
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
+	ser "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/server/serve"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -25,22 +26,22 @@ func main() {
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
 	)
-	db, err := DbConnect()
+	db, err := ser.DbConnect()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	tarantoolConn, err := TarantoolConnect()
+	tarantoolConn, err := ser.TarantoolConnect()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	defer DbClose(db)
+	defer ser.DbClose(db)
 
 	articleRepo := arepo.NewArticleRepository(db)
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
-	app.RegisterArticleDeliveryServer(server, NewArticleManager(articlesUsecase))
+	app.RegisterArticleDeliveryServer(server, ser.NewArticleManager(articlesUsecase))
 	grpc_prometheus.Register(server)
 	prometheus.MustRegister(arepo.Hits)
 	// Register Prometheus metrics handler.
