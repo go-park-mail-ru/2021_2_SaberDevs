@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strconv"
 
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
@@ -21,8 +20,6 @@ import (
 type ArticlesHandler struct {
 	UseCase app.ArticleDeliveryClient
 }
-
-var maxNum = "999999"
 
 var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "hits",
@@ -100,32 +97,6 @@ const del = "DELETED"
 const up = "UPDATED"
 const chunkSize = 5
 
-func IdToStr(strId string) (int, error) {
-	if strId == "" {
-		strId = maxNum
-	}
-	id, err := strconv.Atoi(strId)
-	return id, err
-}
-
-func SanitizeArticle(a *amodels.Article) *amodels.Article {
-	s := bluemonday.StrictPolicy()
-	l := bluemonday.UGCPolicy()
-	a.AuthorAvatar = s.Sanitize(a.AuthorAvatar)
-	a.AuthorName = s.Sanitize(a.AuthorName)
-	a.AuthorUrl = s.Sanitize(a.AuthorUrl)
-	a.CommentsUrl = s.Sanitize(a.CommentsUrl)
-	a.PreviewUrl = s.Sanitize(a.PreviewUrl)
-	for i := range a.Tags {
-		a.Tags[i] = l.Sanitize(a.Tags[i])
-	}
-	a.Text = s.Sanitize(a.Text)
-	a.Title = s.Sanitize(a.Title)
-	r := regexp.MustCompile("\\s+")
-	a.Title = r.ReplaceAllString(a.Title, " ")
-
-	return a
-}
 func SanitizeCreate(a *amodels.ArticleCreate) *amodels.ArticleCreate {
 	s := bluemonday.StrictPolicy()
 	l := bluemonday.UGCPolicy()
@@ -136,6 +107,8 @@ func SanitizeCreate(a *amodels.ArticleCreate) *amodels.ArticleCreate {
 	a.Img = s.Sanitize(a.Img)
 	a.Text = s.Sanitize(a.Text)
 	a.Title = s.Sanitize(a.Title)
+	r := regexp.MustCompile("\\s+")
+	a.Title = r.ReplaceAllString(a.Title, " ")
 	return a
 }
 func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
@@ -149,6 +122,8 @@ func SanitizeUpdate(a *amodels.ArticleUpdate) *amodels.ArticleUpdate {
 	a.Img = s.Sanitize(a.Img)
 	a.Text = s.Sanitize(a.Text)
 	a.Title = s.Sanitize(a.Title)
+	r := regexp.MustCompile("\\s+")
+	a.Title = r.ReplaceAllString(a.Title, " ")
 	return a
 }
 

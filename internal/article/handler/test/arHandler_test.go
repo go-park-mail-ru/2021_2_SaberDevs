@@ -220,7 +220,9 @@ func TestFindbyTag(t *testing.T) {
 
 		c := e.NewContext(req, rec)
 		new := apps.Repview{}
-		new.Preview = []*apps.Preview{}
+		auth := &apps.Author{Id: 31, AvatarUrl: "who"}
+		myPreview := apps.Preview{Id: "1", Author: auth}
+		new.Preview = []*apps.Preview{&myPreview}
 
 		app.EXPECT().FindByTag(gomock.Any(), gomock.Any()).Return(&new, nil).AnyTimes()
 		err := handler.FindByTag(c)
