@@ -20,9 +20,11 @@ func NewArticleUsecase(articleRepo amodels.ArticleRepository, sessionRepo smodel
 	return &articleUsecase{sessionRepo, articleRepo}
 }
 
+var maxInt = "999999"
+
 func IdToString(id string) (int, error) {
 	if id == "" {
-		id = "999999"
+		id = maxInt
 	}
 	idInt, err := strconv.Atoi(id)
 	return idInt, err
@@ -46,6 +48,15 @@ func artOut(a *amodels.FullArticle) *amodels.Article {
 	return &out
 }
 
+func (m *articleUsecase) GetByID(ctx context.Context, c string, id int64) (result amodels.FullArticle, err error) {
+	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
+	if err != nil {
+		login = ""
+	}
+	result, err = m.articleRepo.GetByID(ctx, login, id)
+	return result, errors.Wrap(err, "articleUsecase/GetByID")
+}
+
 func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
 	from, err := IdToString(idLastLoaded)
 	if err != nil {
@@ -57,15 +68,6 @@ func (m *articleUsecase) Fetch(ctx context.Context, c string, idLastLoaded strin
 	}
 	result, err = m.articleRepo.Fetch(ctx, login, from, chunkSize)
 	return result, errors.Wrap(err, "articleUsecase/Fetch")
-}
-
-func (m *articleUsecase) GetByID(ctx context.Context, c string, id int64) (result amodels.FullArticle, err error) {
-	login, err := m.sessionRepo.GetSessionLogin(ctx, c)
-	if err != nil {
-		login = ""
-	}
-	result, err = m.articleRepo.GetByID(ctx, login, id)
-	return result, errors.Wrap(err, "articleUsecase/GetByID")
 }
 
 func (m *articleUsecase) GetByTag(ctx context.Context, c string, tag string, idLastLoaded string, chunkSize int) (result []amodels.Preview, err error) {
