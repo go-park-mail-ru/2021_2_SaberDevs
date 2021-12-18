@@ -19,7 +19,7 @@ func NewComLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 
 func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int) (int, error) {
 	var Likes int
-	count := "Select sum(signum) as s from comments_likes WHERE articleId = $1"
+	count := "Select sum(signum) as s from comments_likes WHERE commentId = $1"
 	err := m.Db.Get(&Likes, count, articlesid)
 	if err != nil {
 		Likes = 0
