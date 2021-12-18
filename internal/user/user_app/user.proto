@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package user_server;
+
+message User {
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  string password = 5;
+  int32 score = 6;
+  string avatarUrl = 7;
+  string description = 8;
+}
+
+//----------------------------------------
+
+message LoginData {
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  int32 score = 5;
+  string avatarUrl = 6;
+  string description = 7;
+}
+
+message LoginResponse {
+  uint32 status = 1;
+  LoginData data = 2;
+  string msg = 3;
+  string sessionID = 4;
+}
+
+//----------------------------------------
+
+message UpdateInput {
+  User user = 1;
+  string sesionID = 2;
+}
+
+//----------------------------------------
+
+message LogoutResponse {
+  uint32 status = 1;
+  string goodbyeMsg = 2;
+}
+
+//----------------------------------------
+
+message GetUserData {
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  int32 score = 5;
+  string avatarUrl = 6;
+  string description = 7;
+}
+
+message GetUserResponse {
+  uint32 status = 1;
+  GetUserData data = 2;
+  string msg = 3;
+}
+
+//----------------------------------------
+
+message SignUpData {
+  string login = 1;
+  string name = 2;
+  string surname = 3;
+  string email = 4;
+  int32 score = 5;
+  string avatarUrl = 6;
+  string description = 7;
+}
+
+message SignupResponse {
+  uint32 status = 1;
+  SignUpData data = 2;
+  string msg = 3;
+  string sessionID = 4;
+}
+
+//----------------------------------------
+
+message SessionID {
+  string sesionID = 1;
+}
+
+message CookieValue {
+  string cookieValue = 1;
+}
+
+message Author {
+  string author = 1;
+}
+
+message Nothing {
+  bool dummy = 1;
+}
+
+//----------------------------------------
+
+service UserDelivery {
+  rpc UpdateProfile(UpdateInput) returns (LoginResponse) {}
+  rpc GetAuthorProfile(Author) returns (GetUserResponse) {}
+  rpc GetUserProfile(SessionID) returns (GetUserResponse) {}
+  rpc LoginUser(User) returns (LoginResponse) {}
+  rpc Signup(User) returns (SignupResponse) {}
+  rpc Logout(CookieValue) returns (Nothing) {}
+}

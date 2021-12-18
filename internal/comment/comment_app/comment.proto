@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package comment_server;
+
+message Comment {
+  int64 id = 1;
+  string dateTime = 2;
+  string text = 3;
+  string authorLogin = 4;
+  int64  articleId = 5;
+  int64 parentId = 6;
+  bool isEdited = 7;
+  int32 likes = 8;
+}
+
+message Author {
+  string login = 1;
+  string lastName = 2;
+  string firstName = 3;
+  int32 score = 4;
+  string avatarUrl = 5;
+}
+
+message PreparedComment {
+  int64 id = 1;
+  string dateTime = 2;
+  string text = 3;
+  int64  articleId = 4;
+  int64 parentId = 5;
+  bool isEdited = 6;
+  Author author = 7;
+  int32 likes = 8;
+}
+
+message CommentResponse {
+  uint32 status = 1;
+  PreparedComment data = 2;
+  string msg = 3;
+}
+
+message CommentChunkResponse {
+  uint32 status = 1;
+  repeated PreparedComment data = 2;
+  string msg = 3;
+}
+
+//----------------------------------------
+
+message CreateCommentInput {
+  Comment comment = 1;
+  string sessionID = 2;
+}
+
+message UpdateCommentInput {
+  Comment comment = 1;
+  string sessionID = 2;
+}
+
+message ArticleID {
+  int64 articleID = 1;
+}
+
+//----------------------------------------
+
+service CommentDelivery {
+  rpc CreateComment(CreateCommentInput) returns (CommentResponse) {}
+  rpc UpdateComment(UpdateCommentInput) returns (CommentResponse) {}
+  rpc GetCommentsByArticleID(ArticleID) returns (CommentChunkResponse) {}
+}
+
