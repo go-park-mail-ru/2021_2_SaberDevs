@@ -24,7 +24,7 @@ func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int) (i
 	if err != nil {
 		Likes = 0
 	}
-	updateArticle := `UPDATE comments SET Likes = $1 WHERE comment.Id = $2;`
+	updateArticle := `UPDATE comments SET Likes = $1 WHERE comments.Id = $2;`
 
 	_, err = m.Db.Exec(updateArticle, Likes, articlesid)
 	if err != nil {
