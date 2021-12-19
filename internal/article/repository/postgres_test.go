@@ -432,3 +432,32 @@ func TestStore(t *testing.T) {
 	assert.NotNil(t, aid)
 	assert.Equal(t, aid, 1)
 }
+
+func TestUpdate(t *testing.T) {
+	db, mock, err := sqlxmock.Newx()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	login := "mollenTEST1"
+	id := "1"
+	tid := int64(1)
+	tag := "tag"
+	art := amodels.Article{Id: id, PreviewUrl: "123", AuthorName: login, Tags: []string{tag}}
+
+	rows := sqlxmock.NewRows([]string{""})
+	query := "UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5  WHERE articles.Id  = $6 and articles.Authorname = $7;"
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(sqlxmock.AnyArg(), art.Title, art.Text, art.PreviewUrl, art.Category, tid, art.AuthorName).WillReturnRows(rows)
+
+	query0 := "delete from tags_articles ta where ta.articles_id = $1;"
+	mock.ExpectExec(regexp.QuoteMeta(query0)).WithArgs(tid).WillReturnResult(driver.RowsAffected(1))
+
+	query2 := "INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;"
+	mock.ExpectExec(regexp.QuoteMeta(query2)).WithArgs(tag).WillReturnResult(driver.RowsAffected(1))
+
+	query3 := "INSERT INTO tags_articles (articles_id, tags_id) VALUES ((SELECT articles.Id FROM articles WHERE articles.Id = $1) , (SELECT tags.Id FROM tags WHERE tags.tag = $2)) ON CONFLICT DO NOTHING;"
+
+	mock.ExpectExec(regexp.QuoteMeta(query3)).WithArgs(tid, tag).WillReturnResult(driver.RowsAffected(1))
+	a := NewArticleRepository(db)
+	err = a.Update(context.TODO(), &art)
+	assert.NoError(t, err)
+}

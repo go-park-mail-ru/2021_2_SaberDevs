@@ -53,7 +53,7 @@ inner join articles a on a.Id = ca.articles_id
 where a.Id in (`
 
 const deleteTags = `delete from tags_articles ta
-where ta.articles_id  = $1`
+where ta.articles_id  = $1;`
 
 const byAuthor = "articleRepository/GetByAuthor"
 
