@@ -491,7 +491,7 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, login string, 
 	err = m.Db.Select(&arts, `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, 
 	Comments, Likes FROM ARTICLES WHERE articles.Id < $1 and
 	(en_tsvector(title, text) @@ plainto_tsquery('english', $2) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $2)) 
-	ORDER BY Id DESC LIMIT $3`, from, query, chunkSize)
+	ORDER BY Id DESC LIMIT $3;`, from, query, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
