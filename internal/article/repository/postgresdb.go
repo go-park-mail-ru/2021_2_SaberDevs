@@ -614,7 +614,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 func (m *psqlArticleRepository) Delete(ctx context.Context, author string, id int64) error {
 	fPath := "delete"
 	Hits.WithLabelValues(layer, fPath).Inc()
-	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2", id, author)
+	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2;", id, author)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{

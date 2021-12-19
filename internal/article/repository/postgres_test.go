@@ -461,3 +461,18 @@ func TestUpdate(t *testing.T) {
 	err = a.Update(context.TODO(), &art)
 	assert.NoError(t, err)
 }
+func TestDelete(t *testing.T) {
+	db, mock, err := sqlxmock.Newx()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	login := "mollenTEST1"
+	tid := int64(1)
+
+	query0 := "DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2;"
+	mock.ExpectExec(regexp.QuoteMeta(query0)).WithArgs(tid, login).WillReturnResult(driver.RowsAffected(1))
+
+	a := NewArticleRepository(db)
+	err = a.Delete(context.TODO(), login, tid)
+	assert.NoError(t, err)
+}
