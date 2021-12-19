@@ -121,7 +121,7 @@ func (m *ArLikesRepository) InsertLike(ctx context.Context, a *amodels.LikeDb) (
 		if err != nil {
 			return 0, sbErr.ErrBadImage{
 				Reason:   err.Error(),
-				Function: "cancel",
+				Function: "inslike",
 			}
 		}
 	}
