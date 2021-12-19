@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUpdate(t *testing.T) {
+func TestRate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	uc1 := mock.NewMockLikesUsecase(ctrl)
