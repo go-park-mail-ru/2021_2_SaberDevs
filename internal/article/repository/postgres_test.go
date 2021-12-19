@@ -2,9 +2,11 @@ package article
 
 import (
 	"context"
+	"database/sql/driver"
 	"regexp"
 	"testing"
 
+	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 )
@@ -399,4 +401,34 @@ func TestGetbyCategory(t *testing.T) {
 	anArticle, err := a.GetByCategory(context.TODO(), login, category, from, chunkSize)
 	assert.NoError(t, err)
 	assert.NotNil(t, anArticle)
+}
+
+func TestStore(t *testing.T) {
+	db, mock, err := sqlxmock.Newx()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	login := "mollenTEST1"
+	id := "1"
+	tid := int64(1)
+	tag := "tag"
+	art := amodels.Article{Id: id, PreviewUrl: "123", AuthorName: login, Tags: []string{tag}}
+
+	rows := sqlxmock.NewRows([]string{"id"}).
+		AddRow(1)
+
+	query := "INSERT INTO articles (DateTime, PreviewUrl, Title, Category, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;"
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(sqlxmock.AnyArg(), art.PreviewUrl, art.Title, art.Category, art.Text, art.AuthorName, art.CommentsUrl, art.Comments, art.Likes).WillReturnRows(rows)
+
+	query2 := "INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;"
+	mock.ExpectExec(regexp.QuoteMeta(query2)).WithArgs(tag).WillReturnResult(driver.RowsAffected(1))
+
+	query3 := "INSERT INTO tags_articles (articles_id, tags_id) VALUES ((SELECT Id FROM articles WHERE Id = $1) , (SELECT Id FROM tags WHERE tag = $2)) ON CONFLICT DO NOTHING;"
+
+	mock.ExpectExec(regexp.QuoteMeta(query3)).WithArgs(tid, tag).WillReturnResult(driver.RowsAffected(1))
+	a := NewArticleRepository(db)
+	aid, err := a.Store(context.TODO(), &art)
+	assert.NoError(t, err)
+	assert.NotNil(t, aid)
+	assert.Equal(t, aid, 1)
 }
