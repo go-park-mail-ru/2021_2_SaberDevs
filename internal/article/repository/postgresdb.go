@@ -383,7 +383,7 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, login string, que
 	a.Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag LIKE $1 and a.Id < $2 ORDER BY ID DESC LIMIT $3`, query, from, chunkSize)
+	where c.tag LIKE $1 and a.Id < $2 ORDER BY ID DESC LIMIT $3;`, query, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
