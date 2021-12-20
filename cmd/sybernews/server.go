@@ -213,15 +213,18 @@ func Run(address string) {
 		LogLevel:  log.ERROR,
 	}))
 
-	db, err := DbConnect()
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-	e.Logger.SetLevel(log.INFO)
 	tarantoolConn, err := TarantoolConnect()
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
+
+	db, err := DbConnect()
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	e.Logger.SetLevel(log.INFO)
+
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
 		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
@@ -260,8 +263,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Fatal(err)
+	// }
+	e.Logger.Fatal(e.Start(address))
 }

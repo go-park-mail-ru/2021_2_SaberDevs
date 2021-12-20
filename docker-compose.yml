@@ -7,3 +7,14 @@ services:
     ports:
       - 3302:3302
     container_name: tarantool_syber
+
+#  main:
+#    image: syber_main:latest
+#    restart: always
+#    expose:
+#      - 8081
+#    ports:
+#      - 8081:8081
+#    depends_on:
+#      - tarantool
+#    container_name: syber_main_server
