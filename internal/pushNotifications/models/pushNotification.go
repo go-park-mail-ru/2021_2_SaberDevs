@@ -7,15 +7,15 @@ import (
 
 type Subscription struct {
 	_msgpack struct{} `msgpack:",asArray"`
-	Login string
+	Login    string
 	Endpoint string
 	Auth     string
 	P256dh   string
 }
 
 type PushCommentNotification struct {
-	To string `json:"to"`
-	Type int `json:"type"`
+	To   string      `json:"to"`
+	Type int         `json:"type"`
 	Data PushComment `json:"data"`
 }
 

@@ -30,7 +30,7 @@ func NotificationSevice(r pnmodels.PushNotificationRepository) {
 				TTL:             30,
 			})
 			if err != nil {
-				// TODO: Handle error
+				continue
 			}
 
 			// resp.Body.Close()
