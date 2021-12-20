@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Login to DockerHub
-        run: echo docker
+        run: echo ${{ secrets.TEST_SECRET }}
