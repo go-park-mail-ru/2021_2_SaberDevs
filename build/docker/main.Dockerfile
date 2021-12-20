@@ -13,5 +13,6 @@ RUN apk update && apk upgrade
 RUN apk add --update libwebp-dev
 COPY --from=build /app/main.out /
 COPY --from=build /app/configs/. /configs/
+COPY --from=build /app/static/. /static/
 
 ENTRYPOINT ./main.out

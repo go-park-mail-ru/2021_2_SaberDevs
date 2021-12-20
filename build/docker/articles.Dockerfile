@@ -5,7 +5,7 @@ WORKDIR /app
 
 RUN apk update && apk upgrade
 RUN apk add --update build-base libwebp-dev
-RUN go build -o main.out ./internal/article/server/article_server.go ./internal/article/server/articles_app.go
+RUN go build -o main.out ./internal/article/server/article_server.go
 
 FROM alpine
 
