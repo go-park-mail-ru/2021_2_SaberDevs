@@ -22,9 +22,8 @@ func (api *SessionHandler) CheckSession(c echo.Context) error {
 
 	cookie, err := c.Cookie("session")
 	if err != nil {
-
 		return sbErr.ErrNoSession{
-			Reason: err.Error(),
+			Reason:   err.Error(),
 			Function: "sessionHandler/CheckSession",
 		}
 	}

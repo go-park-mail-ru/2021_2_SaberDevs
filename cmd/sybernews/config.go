@@ -1,6 +1,8 @@
 package server
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 func Config() (string, error) {
 	viper.SetConfigName("config")

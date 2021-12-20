@@ -36,10 +36,12 @@ func (uu *userUsecase) GetAuthorProfile(ctx context.Context, author string) (umo
 	}
 
 	responseData := umodels.GetUserData{
-		Login:   authorInDb.Login,
-		Name:    authorInDb.Name,
-		Surname: authorInDb.Surname,
-		Score:   authorInDb.Score,
+		Login:       authorInDb.Login,
+		Name:        authorInDb.Name,
+		Surname:     authorInDb.Surname,
+		Score:       authorInDb.Score,
+		AvatarURL:   authorInDb.AvatarURL,
+		Description: authorInDb.Description,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
@@ -62,10 +64,12 @@ func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (um
 	}
 
 	responseData := umodels.GetUserData{
-		Login:    userInDb.Login,
-		Name:     userInDb.Name,
-		Surname:  userInDb.Surname,
-		Score:    userInDb.Score,
+		Login:       userInDb.Login,
+		Name:        userInDb.Name,
+		Surname:     userInDb.Surname,
+		Score:       userInDb.Score,
+		AvatarURL:   userInDb.AvatarURL,
+		Description: userInDb.Description,
 	}
 	response := umodels.GetUserResponse{
 		Status: http.StatusOK,
@@ -76,8 +80,8 @@ func (uu *userUsecase) GetUserProfile(ctx context.Context, sessionID string) (um
 	return response, nil
 }
 
-func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, sessionID string) (umodels.UpdateProfileResponse, error) {
-	var response umodels.UpdateProfileResponse
+func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, sessionID string) (umodels.LoginResponse, error) {
+	var response umodels.LoginResponse
 
 	login, err := uu.sessionRepo.GetSessionLogin(ctx, sessionID)
 	if err != nil {
@@ -86,16 +90,26 @@ func (uu *userUsecase) UpdateProfile(ctx context.Context, user *umodels.User, se
 
 	user.Login = login
 
-	updatedUser, err := uu.userRepo.UpdateUser(ctx, user)
+	_, err = uu.userRepo.UpdateUser(ctx, user)
 	if err != nil {
 		return response, errors.Wrap(err, "userUsecase/UpdateProfile")
 	}
 
-	responseData := umodels.UpdateProfileData{
-		Name:    updatedUser.Name,
-		Surname: updatedUser.Surname,
+	updatedUser, err := uu.userRepo.GetByLogin(ctx, user.Login)
+	if err != nil {
+		return response, errors.Wrap(err, "userUsecase/UpdateProfile")
 	}
-	response = umodels.UpdateProfileResponse{
+
+	responseData := umodels.LoginData{
+		Login:       updatedUser.Login,
+		Name:        updatedUser.Name,
+		Surname:     updatedUser.Surname,
+		Email:       updatedUser.Email,
+		Score:       updatedUser.Score,
+		AvatarURL:   updatedUser.AvatarURL,
+		Description: updatedUser.Description,
+	}
+	response = umodels.LoginResponse{
 		Status: http.StatusOK,
 		Data:   responseData,
 		Msg:    "OK",
@@ -114,7 +128,7 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 
 	if userInRepo.Password != user.Password {
 		return response, "", sbErr.ErrWrongPassword{
-			Reason:   "wrong password",
+			Reason:   "Неверный пароль",
 			Function: "userUsecase/LoginUser"}
 	}
 
@@ -124,11 +138,13 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	}
 
 	responseData := umodels.LoginData{
-		Login:   userInRepo.Login,
-		Name:    userInRepo.Name,
-		Surname: userInRepo.Surname,
-		Email:   userInRepo.Email,
-		Score:   userInRepo.Score,
+		Login:       userInRepo.Login,
+		Name:        userInRepo.Name,
+		Surname:     userInRepo.Surname,
+		Email:       userInRepo.Email,
+		Score:       userInRepo.Score,
+		AvatarURL:   userInRepo.AvatarURL,
+		Description: userInRepo.Description,
 	}
 	response = umodels.LoginResponse{
 		Status: http.StatusOK,
@@ -153,11 +169,13 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 	}
 
 	responseData := umodels.SignUpData{
-		Login:   signedupUser.Login,
-		Name:    signedupUser.Name,
-		Surname: signedupUser.Surname,
-		Email:   signedupUser.Email,
-		Score:   signedupUser.Score,
+		Login:       signedupUser.Login,
+		Name:        signedupUser.Name,
+		Surname:     signedupUser.Surname,
+		Email:       signedupUser.Email,
+		Score:       signedupUser.Score,
+		AvatarURL:   signedupUser.AvatarURL,
+		Description: signedupUser.Description,
 	}
 	response = umodels.SignupResponse{
 		Status: http.StatusOK,

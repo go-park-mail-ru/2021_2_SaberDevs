@@ -142,6 +142,7 @@ type ErrInternal struct {
 func (e ErrInternal) Error() string {
 	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
+
 // -------------------------------------------------------------------------------
 
 type ErrValidate struct {
@@ -150,5 +151,38 @@ type ErrValidate struct {
 }
 
 func (e ErrValidate) Error() string {
-	return fmt.Sprintf(e.Reason)
+	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
+}
+
+// -------------------------------------------------------------------------------
+
+type ErrNoContent struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrNoContent) Error() string {
+	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
+}
+
+// -------------------------------------------------------------------------------
+
+type ErrBadImage struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrBadImage) Error() string {
+	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
+}
+
+// -------------------------------------------------------------------------------
+
+type ErrUnauthorized struct {
+	Reason   string
+	Function string
+}
+
+func (e ErrUnauthorized) Error() string {
+	return fmt.Sprintf("error happend in %s, Reason: %s", e.Function, e.Reason)
 }
