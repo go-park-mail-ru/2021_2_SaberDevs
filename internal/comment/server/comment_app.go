@@ -63,7 +63,7 @@ func (m *CommentManager) UpdateComment(ctx context.Context, comment *app.UpdateC
 		IsEdited:    false,
 		Likes:       int(comment.Comment.Likes),
 	}
-	response, err := m.usecase.CreateComment(ctx, modelComment, comment.SessionID)
+	response, err := m.usecase.UpdateComment(ctx, modelComment, comment.SessionID)
 
 	cmnt, _ := response.Data.(cmodels.PreparedComment)
 
