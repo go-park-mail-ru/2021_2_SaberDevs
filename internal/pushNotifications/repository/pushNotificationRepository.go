@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+
 	"github.com/SherClockHolmes/webpush-go"
 	pnmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -13,12 +14,32 @@ type pushNotificationTarantoolRepo struct {
 	conn *tarantool.Connection
 }
 
+func myReplace(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
+	//TODO Metrics
+	result, err := tr.Replace(space, tuple)
+	return result, err
+}
+
+func myCall(tr *tarantool.Connection, path string, functionName string, args interface{}) (resp *tarantool.Response, err error) {
+	//TODO Metrics
+	result, err := tr.Call(functionName, args)
+	return result, err
+}
+
+func mySelectTyped(tr *tarantool.Connection, path string, space interface{}, index interface{}, offset uint32, limit uint32, iterator uint32, key interface{}, result interface{}) (err error) {
+	//TODO Metrics
+	err = tr.SelectTyped(space, index, offset, limit, iterator, key, result)
+	return err
+}
+
 func NewPushNotificationRepository(conn *tarantool.Connection) pnmodels.PushNotificationRepository {
 	return &pushNotificationTarantoolRepo{conn: conn}
 }
 
 func (pnr *pushNotificationTarantoolRepo) StoreSubscription(ctx context.Context, subscription webpush.Subscription, login string) error {
-	_, err := pnr.conn.Replace("subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
+	path := "StoreSubscription"
+	// _, err := pnr.conn.Replace("subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
+	_, err := myReplace(pnr.conn, path, "subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -69,7 +90,9 @@ func (pnr *pushNotificationTarantoolRepo) GetSubscription(ctx context.Context, l
 }
 
 func (pnr *pushNotificationTarantoolRepo) QueueArticleLike(like []byte) error {
-	_, err := pnr.conn.Call("articleLikesPut", []interface{}{like})
+	path := "QueueArticleLike"
+	// _, err := pnr.conn.Call("articleLikesPut", []interface{}{like})
+	_, err := myCall(pnr.conn, path, "articleLikesPut", []interface{}{like})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),

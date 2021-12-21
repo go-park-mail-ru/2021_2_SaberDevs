@@ -24,6 +24,20 @@ func myInsert(tr *tarantool.Connection, path string, space interface{}, tuple in
 	return result, err
 }
 
+func myDelete(tr *tarantool.Connection, path string, space interface{}, index interface{}, key interface{}) (resp *tarantool.Response, err error) {
+	//TODO Metrics
+	result, err := tr.Delete(space, index, key)
+	return result, err
+}
+
+func mySelectTyped(tr *tarantool.Connection, path string, space interface{}, index interface{}, offset uint32, limit uint32, iterator uint32, key interface{}, result interface{}) (err error) {
+	//TODO Metrics
+	err = tr.SelectTyped(space, index, offset, limit, iterator, key, result)
+	return err
+}
+
+// _, err := r.conn.Delete("sessions", "primary", []interface{}{sessionID})
+
 func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) (string, error) {
 	sessionID := uuid.NewV4().String()
 
@@ -44,7 +58,9 @@ func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) 
 }
 
 func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID string) error {
-	_, err := r.conn.Delete("sessions", "primary", []interface{}{sessionID})
+	path := "DeleteSession"
+	// _, err := r.conn.Delete("sessions", "primary", []interface{}{sessionID})
+	_, err := myDelete(r.conn, path, "sessions", "primary", []interface{}{sessionID})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -55,9 +71,10 @@ func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID stri
 }
 
 func (r *sessionTarantoolRepo) GetSessionLogin(ctx context.Context, sessionID string) (string, error) {
+	path := "GetSessionLogin"
 	var user []smodels.Session
-
-	err := r.conn.SelectTyped("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
+	//err := r.conn.SelectTyped("sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
+	err := mySelectTyped(r.conn, path, "sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
