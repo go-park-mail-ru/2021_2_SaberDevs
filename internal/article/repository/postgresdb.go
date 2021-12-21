@@ -84,7 +84,7 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 
 func myQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
 	//TODO Metrics
-	rows, err := db.Queryx(query, args)
+	rows, err := db.Queryx(query, args...)
 	return rows, err
 }
 
