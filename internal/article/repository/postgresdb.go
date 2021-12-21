@@ -2,6 +2,7 @@ package article
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -99,6 +100,14 @@ func myGet(db *sqlx.DB, path string, query string, dest interface{}, args ...int
 	err := db.Get(dest, query, args...)
 	return err
 }
+
+func myExec(db *sqlx.DB, path string, query string, args ...interface{}) (sql.Result, error) {
+	//TODO Metrics
+	result, err := db.Exec(query, args...)
+	return result, err
+}
+
+//func (*sql.DB).Exec(query string, args ...interface{}) (sql.Result, error)
 
 func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName string) ([]amodels.Preview, error) {
 	funcName = funcName + "/uploadTags"
@@ -607,7 +616,8 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 
 	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
-		_, err = m.Db.Exec(insertCat, data)
+		// _, err = m.Db.Exec(insertCat, data)
+		_, err = myExec(m.Db, fPath, insertCat, data)
 		fPath = "newtag"
 		Hits.WithLabelValues(dblayer, fPath).Inc()
 		if err != nil {
