@@ -18,18 +18,26 @@ func NewSessionRepository(conn *tarantool.Connection) smodels.SessionRepository 
 	return &sessionTarantoolRepo{conn: conn}
 }
 
+func myInsert(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
+	//TODO Metrics
+	result, err := tr.Insert(space, tuple)
+	return result, err
+}
+
 func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) (string, error) {
 	sessionID := uuid.NewV4().String()
 
-	_, err := r.conn.Insert("sessions", []interface{}{sessionID, login})
+	// _, err := r.conn.Insert("sessions", []interface{}{sessionID, login})
+	_, err := myInsert(r.conn, "path", "sessions", []interface{}{sessionID, login})
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
 			Function: "sessionRepositiry/CreateSession"}
 	}
-	// _, err = r.conn.Insert("keys", []interface{}{sessionID, login})
+	//_, err = r.conn.Insert("keys", []interface{}{sessionID, login})
+	_, err = myInsert(r.conn, "path", "keys", []interface{}{sessionID, login})
 	// if err != nil {
-	//
+
 	// }
 
 	return sessionID, nil
