@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"google.golang.org/grpc/status"
 
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
@@ -163,10 +164,11 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 
 	err := r.Db.Get(&login, "SELECT login FROM author WHERE login = $1", user.Login)
 	if login != "" {
-		return umodels.User{}, sbErr.ErrUserExists{
-			Reason:   "Логин уже занят",
-			Function: "userRepository/Store",
-		}
+		// return umodels.User{}, sbErr.ErrUserExists{
+		// 	Reason:   "Логин уже занят",
+		// 	Function: "userRepository/Store",
+		// }
+		return umodels.User{}, status.Error(17, "Логин уже занят")
 	}
 
 	schema := `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
