@@ -88,6 +88,12 @@ func myQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx
 	return rows, err
 }
 
+func mySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
+	//TODO Metrics
+	err := db.Select(dest, query, args...)
+	return err
+}
+
 func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName string) ([]amodels.Preview, error) {
 	funcName = funcName + "/uploadTags"
 	schema := multiArtTags
@@ -267,7 +273,9 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, c
 	Hits.WithLabelValues(layer, fName).Inc()
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, "SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE Id < $1 ORDER BY Id DESC LIMIT $2;", from, chunkSize)
+	schema := "SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE Id < $1 ORDER BY Id DESC LIMIT $2;"
+	//err = m.Db.Select(&arts, schema, from, chunkSize)
+	err = mySelect(m.Db, fName, schema, &arts, from, chunkSize)
 	Hits.WithLabelValues(dblayer, fName).Inc()
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
