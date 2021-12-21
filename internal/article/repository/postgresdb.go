@@ -94,6 +94,12 @@ func mySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...
 	return err
 }
 
+func myGet(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
+	//TODO Metrics
+	err := db.Get(dest, query, args...)
+	return err
+}
+
 func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName string) ([]amodels.Preview, error) {
 	funcName = funcName + "/uploadTags"
 	schema := multiArtTags
@@ -233,9 +239,11 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 
 func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunkSize int, args ...interface{}) (int, []amodels.Author, bool, error) {
 	var ChunkData []amodels.Author
+	path := "authLimitChecker"
 	overCount := false
 	var count int
-	err := m.Db.Get(&count, schemaCount, args...)
+	//err := m.Db.Get(&count, schemaCount, args...)
+	err := myGet(m.Db, path, schemaCount, &count, args...)
 	fPath := "authLimitChecker"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
