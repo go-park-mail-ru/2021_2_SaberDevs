@@ -82,6 +82,12 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	return article
 }
 
+func myQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
+	//TODO Metrics
+	rows, err := db.Queryx(query, args)
+	return rows, err
+}
+
 func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName string) ([]amodels.Preview, error) {
 	funcName = funcName + "/uploadTags"
 	schema := multiArtTags
@@ -93,10 +99,11 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 			schema = schema + `,`
 		}
 	}
-	//fmt.Println(len(ChunkData))
 	schema = schema + `) order by a.Id DESC;`
 
-	rows, err := m.Db.Queryx(schema, ids...)
+	//rows, err := m.Db.Queryx(schema, ids...)
+	rows, err := myQuery(m.Db, funcName, schema, ids...)
+
 	fPath := "uploadTags"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
@@ -563,7 +570,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 	fPath := "store"
 	Hits.WithLabelValues(layer, fPath).Inc()
 	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Category, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;`
-	rows, err := m.Db.Query(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
+	rows, err := m.Db.Queryx(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return 0, sbErr.ErrDbError{
@@ -635,7 +642,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 		}
 	}
 	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5  WHERE articles.Id  = $6 and articles.Authorname = $7;`
-	_, err = m.Db.Query(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId, a.AuthorName)
+	_, err = m.Db.Queryx(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId, a.AuthorName)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
