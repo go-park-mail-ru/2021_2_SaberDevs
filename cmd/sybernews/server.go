@@ -202,7 +202,9 @@ func Run(address string) {
 		CookieSameSite: http.SameSiteNoneMode,
 		CookiePath:     "/",
 		CookieHTTPOnly: false,
+		CookieSecure:   false,
 	}
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
