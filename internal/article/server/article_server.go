@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	ser "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/server/serve"
@@ -43,7 +44,7 @@ func main() {
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	app.RegisterArticleDeliveryServer(server, ser.NewArticleManager(articlesUsecase))
 	grpc_prometheus.Register(server)
-	prometheus.MustRegister(arepo.Hits)
+	prometheus.MustRegister(wrapper.Hits)
 	// Register Prometheus metrics handler.
 	http.Handle("/metrics", promhttp.Handler())
 	fmt.Println("starting server at :8079")

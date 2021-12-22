@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
 
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -18,7 +19,8 @@ func NewKeyRepository(conn *tarantool.Connection) kmodels.KeyRepository {
 }
 
 func (r *keyTarantoolRepo) StoreSalt(ctx context.Context, key kmodels.Key) error {
-	_, err := r.conn.Insert("keys", []interface{}{key.Login, key.Salt})
+	path := "StoreSalt"
+	_, err := wrapper.MyInsert(r.conn, path, "keys", []interface{}{key.Login, key.Salt})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -29,9 +31,9 @@ func (r *keyTarantoolRepo) StoreSalt(ctx context.Context, key kmodels.Key) error
 }
 
 func (r *keyTarantoolRepo) GetSalt(ctx context.Context, email string) (string, error) {
+	path := "GetSalt"
 	var key []kmodels.Key
-
-	err := r.conn.SelectTyped("keys", "primary", 0, 1, tarantool.IterEq, []interface{}{email}, &key)
+	err := wrapper.MySelectTyped(r.conn, path, "keys", "primary", 0, 1, tarantool.IterEq, []interface{}{email}, &key)
 	if err != nil {
 		return "", sbErr.ErrNoSession{
 			Reason:   err.Error(),
