@@ -2,7 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
@@ -10,10 +15,12 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
-	"net"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -65,7 +72,8 @@ func main() {
 		fmt.Println("cant listen port", err)
 	}
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor))
 	db, err := DbConnect()
 	if err != nil {
 		fmt.Println(err)
@@ -87,6 +95,11 @@ func main() {
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo, notifRepo, artRepo)
 
 	app.RegisterCommentDeliveryServer(server, NewCommentManager(commentUsecase))
+	grpc_prometheus.Register(server)
+	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
+	// Register Prometheus metrics handler.
+	http.Handle("/metrics", promhttp.Handler())
+	go log.Fatal(http.ListenAndServe(":8074", nil))
 
 	fmt.Println("starting comment server at :8077")
 	server.Serve(lis)

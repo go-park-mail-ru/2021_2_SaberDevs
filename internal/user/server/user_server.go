@@ -2,17 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	krepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/repository"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
-	"net"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -64,7 +71,8 @@ func main() {
 		fmt.Println("cant listen port", err)
 	}
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor))
 	db, err := DbConnect()
 	if err != nil {
 		fmt.Println(err)
@@ -85,7 +93,10 @@ func main() {
 	userUsecase := uusecase.NewUserUsecase(userRepo, sessionRepo, keyRepo, articleRepo)
 
 	app.RegisterUserDeliveryServer(server, NewUserManager(userUsecase))
-
+	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
+	// Register Prometheus metrics handler.
+	http.Handle("/metrics", promhttp.Handler())
+	go log.Fatal(http.ListenAndServe(":8073", nil))
 	fmt.Println("starting user server at :8078")
 	server.Serve(lis)
 }
