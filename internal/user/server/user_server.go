@@ -14,7 +14,6 @@ import (
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -71,8 +70,7 @@ func main() {
 		fmt.Println("cant listen port", err)
 	}
 
-	server := grpc.NewServer(grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor))
+	server := grpc.NewServer()
 	db, err := DbConnect()
 	if err != nil {
 		fmt.Println(err)
@@ -96,7 +94,9 @@ func main() {
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 	// Register Prometheus metrics handler.
 	http.Handle("/metrics", promhttp.Handler())
-	go log.Fatal(http.ListenAndServe(":8073", nil))
+	go func() {
+		log.Fatal(http.ListenAndServe(":8073", nil))
+	}()
 	fmt.Println("starting user server at :8078")
 	server.Serve(lis)
 }

@@ -113,7 +113,7 @@ func MyGet(db *sqlx.DB, path string, query string, dest interface{}, args ...int
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := db.Get(dest, query, args...)
 	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path, method).Observe(float64(time.Milliseconds()))
+	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}

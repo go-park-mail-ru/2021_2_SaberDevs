@@ -12,7 +12,6 @@ import (
 	ser "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/server/serve"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
@@ -23,10 +22,7 @@ func main() {
 	if err != nil {
 		fmt.Println("cant listen port", err)
 	}
-	server := grpc.NewServer(
-		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
-	)
+	server := grpc.NewServer()
 	db, err := ser.DbConnect()
 	if err != nil {
 		fmt.Println(err)
@@ -43,12 +39,14 @@ func main() {
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	app.RegisterArticleDeliveryServer(server, ser.NewArticleManager(articlesUsecase))
-	grpc_prometheus.Register(server)
+	//prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
+	http.Handle("/metrics", promhttp.Handler())
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 	// Register Prometheus metrics handler.
-	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Fatal(http.ListenAndServe(":8074", nil))
+	}()
 	fmt.Println("starting server at :8079")
-	go log.Fatal(http.ListenAndServe(":8075", nil))
 	server.Serve(lis)
 
 }

@@ -15,7 +15,6 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -72,8 +71,7 @@ func main() {
 		fmt.Println("cant listen port", err)
 	}
 
-	server := grpc.NewServer(grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor))
+	server := grpc.NewServer()
 	db, err := DbConnect()
 	if err != nil {
 		fmt.Println(err)
@@ -95,12 +93,12 @@ func main() {
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo, notifRepo, artRepo)
 
 	app.RegisterCommentDeliveryServer(server, NewCommentManager(commentUsecase))
-	grpc_prometheus.Register(server)
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 	// Register Prometheus metrics handler.
 	http.Handle("/metrics", promhttp.Handler())
-	go log.Fatal(http.ListenAndServe(":8074", nil))
-
+	go func() {
+		log.Fatal(http.ListenAndServe(":8075", nil))
+	}()
 	fmt.Println("starting comment server at :8077")
 	server.Serve(lis)
 }
