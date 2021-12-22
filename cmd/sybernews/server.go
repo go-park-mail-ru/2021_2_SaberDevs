@@ -204,7 +204,7 @@ func Run(address string) {
 		CookieHTTPOnly: false,
 		CookieSecure:   false,
 	}
-
+	e.Use(syberMiddleware.AccessLogger)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
