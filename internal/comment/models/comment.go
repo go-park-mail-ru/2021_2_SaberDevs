@@ -23,6 +23,7 @@ type PreparedComment struct {
 	ParentId  int64  `json:"parentId" db:"parentid"`
 	IsEdited  bool   `json:"isEdited" db:"isedited"`
 	Likes     int    `json:"likes" db:"likes"`
+	Liked     int    `json:"liked" db:"liked"`
 	Author    Author `json:"author"`
 }
 
@@ -49,6 +50,7 @@ type StreamComment struct {
 	Text        string `json:"text" db:"text"`
 	ArticleId   int64  `json:"articleId" db:"articleid"`
 	Likes       int64  `json:"likes" db:"likes"`
+	Liked       int64  `json:"liked" db:"liked"`
 	ArticleName string `json:"articleName" db:"title"`
 	author      `json:"author"`
 }

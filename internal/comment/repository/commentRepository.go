@@ -40,6 +40,17 @@ func NewCommentRepository(db *sqlx.DB) cmodels.CommentRepository {
 	return &commentPsqlRepo{db}
 }
 
+func (cr *commentPsqlRepo) addLiked(chunk []cmodels.PreparedComment, login string) ([]cmodels.PreparedComment, error) {
+	schema := `select signum from comments_likes where commentId = $1 and Login = $2`
+	for i := range chunk {
+		err := cr.Db.Get(&chunk[i].Liked, schema, chunk[i].Id, login)
+		if err != nil {
+			chunk[i].Liked = 0
+		}
+	}
+	return chunk, nil
+}
+
 func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 	schema := `INSERT INTO comments (AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime) values ($1, $2, $3, $4, $5, $6, $7) returning id;`
 	var result *sql.Rows
@@ -154,6 +165,7 @@ func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID
 			},
 		})
 	}
+	comments, err = cr.addLiked(comments, "login")
 
 	return comments, nil
 }
