@@ -8,6 +8,7 @@ import (
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type commentPsqlRepo struct {
@@ -40,10 +41,46 @@ func NewCommentRepository(db *sqlx.DB) cmodels.CommentRepository {
 	return &commentPsqlRepo{db}
 }
 
+var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"layer", "path"})
+
+var Errors = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
+
+var Duration = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "hits",
+}, []string{"status", "path"})
+
+var dblayer = "db"
+
+func myQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
+	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
+	rows, err := db.Queryx(query, args...)
+	return rows, err
+}
+
+func mySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
+	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
+	err := db.Select(dest, query, args...)
+	return err
+}
+
+func myGet(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
+	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
+	err := db.Get(dest, query, args...)
+	return err
+}
+
 func (cr *commentPsqlRepo) addLiked(chunk []cmodels.PreparedComment, login string) ([]cmodels.PreparedComment, error) {
+	path := "addLiked"
 	schema := `select signum from comments_likes where commentId = $1 and Login = $2`
 	for i := range chunk {
-		err := cr.Db.Get(&chunk[i].Liked, schema, chunk[i].Id, login)
+		err := myGet(cr.Db, path, schema, &chunk[i].Liked, chunk[i].Id, login)
 		if err != nil {
 			chunk[i].Liked = 0
 		}
@@ -52,12 +89,13 @@ func (cr *commentPsqlRepo) addLiked(chunk []cmodels.PreparedComment, login strin
 }
 
 func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
+	path := "StoreComment"
 	schema := `INSERT INTO comments (AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime) values ($1, $2, $3, $4, $5, $6, $7) returning id;`
-	var result *sql.Rows
+	var result *sqlx.Rows
 
 	if comment.ParentId == 0 {
 		var err error
-		result, err = cr.Db.Query(schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, sql.NullInt64{}, comment.Text, comment.IsEdited, comment.DateTime)
+		result, err = myQuery(cr.Db, path, schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, sql.NullInt64{}, comment.Text, comment.IsEdited, comment.DateTime)
 		if err != nil {
 			return cmodels.Comment{}, sbErr.ErrInternal{
 				Reason:   err.Error(),
@@ -66,7 +104,7 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 		}
 	} else {
 		var err error
-		result, err = cr.Db.Query(schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, comment.ParentId, comment.Text, comment.IsEdited, comment.DateTime)
+		result, err = myQuery(cr.Db, path, schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, comment.ParentId, comment.Text, comment.IsEdited, comment.DateTime)
 		if err != nil {
 			return cmodels.Comment{}, sbErr.ErrInternal{
 				Reason:   err.Error(),
@@ -93,8 +131,8 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 }
 
 func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
-
-	result, err := cr.Db.Queryx(`UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime`,
+	path := "UpdateComment"
+	result, err := myQuery(cr.Db, path, `UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime`,
 
 		comment.Text, comment.IsEdited, comment.Id)
 	if err != nil {
@@ -129,12 +167,12 @@ func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.C
 }
 
 func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID int64, lastCommentID int64) ([]cmodels.PreparedComment, error) {
+	path := "GetCommentsByArticleID"
 	var sqlComments []sqlPreparedComment
-
 	schema := `select c.id, c.articleid, c.Likes, c.parentid, c.text, c.isedited, c.datetime, a.login, a.surname, a.name, a.score, a.avatarurl  
                from comments c join author a on a.login = c.AuthorLogin where c.ArticleId = $1 limit 50`
 
-	err := cr.Db.Select(&sqlComments, schema, articleID)
+	err := mySelect(cr.Db, path, schema, &sqlComments, articleID)
 	if err != nil {
 		return []cmodels.PreparedComment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -171,9 +209,10 @@ func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID
 }
 
 func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) (cmodels.Comment, error) {
+	path := "GetCommentByID"
 	var comment sqlComment
-
-	err := cr.Db.Get(&comment, `SELECT Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime FROM comments WHERE id = $1`, commentID)
+	schema := `SELECT Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime FROM comments WHERE id = $1`
+	err := myGet(cr.Db, path, schema, &comment, commentID)
 	if err != nil {
 		return cmodels.Comment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -194,11 +233,12 @@ func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) 
 }
 
 func (cr *commentPsqlRepo) GetCommentsStream(lastCommentID int64) ([]cmodels.StreamComment, error) {
+	path := "GetCommentsStream"
 	var sqlComments []cmodels.StreamComment
 	schema := `select c.id, c.articleid, c.text,  c.likes, a.login, a.surname, a.name, a.avatarurl, a2.title
                from comments c join author a on a.login = c.AuthorLogin join articles a2 on c.articleid = a2.id where c.id > $1 order by c.id desc limit 5`
 
-	err := cr.Db.Select(&sqlComments, schema, lastCommentID)
+	err := mySelect(cr.Db, path, schema, sqlComments, lastCommentID)
 	if err != nil {
 		return []cmodels.StreamComment{}, err
 	}

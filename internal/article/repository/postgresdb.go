@@ -25,8 +25,6 @@ func NewArticleRepository(db *sqlx.DB) amodels.ArticleRepository {
 	return &psqlArticleRepository{db}
 }
 
-var layer = "repository"
-
 var dblayer = "db"
 
 var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -165,10 +163,7 @@ func (m *psqlArticleRepository) uploadAuthors(authors []string, funcName string)
 		}
 	}
 	schema = schema + ");"
-
 	rows, err := myQuery(m.Db, funcName, schema, ids...)
-	fPath := "uploadTags"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -222,8 +217,6 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 	article.Category = val.Category
 	article.Text = val.Text
 	rows, err := myQuery(Db, fPath, tagsLoad, val.Id)
-
-	//Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return article, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -250,8 +243,6 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 	overCount := false
 	var count int
 	err := myGet(m.Db, path, schemaCount, &count, args...)
-	fPath := "authLimitChecker"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return chunkSize, ChunkData, overCount, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -285,12 +276,10 @@ func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login stri
 
 func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, chunkSize int) (result []amodels.Preview, err error) {
 	fName := toFetch
-	Hits.WithLabelValues(layer, fName).Inc()
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
 	schema := "SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE Id < $1 ORDER BY Id DESC LIMIT $2;"
 	err = mySelect(m.Db, fName, schema, &arts, from, chunkSize)
-	Hits.WithLabelValues(dblayer, fName).Inc()
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -593,10 +582,8 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, login string,
 
 func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (int, error) {
 	fPath := "store"
-	Hits.WithLabelValues(layer, fPath).Inc()
 	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Category, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;`
 	rows, err := myQuery(m.Db, fPath, insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
-	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -643,10 +630,8 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 
 func (m *psqlArticleRepository) Delete(ctx context.Context, author string, id int64) error {
 	fPath := "delete"
-	Hits.WithLabelValues(layer, fPath).Inc()
 	schema := "DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2;"
 	_, err := myExec(m.Db, fPath, schema, id, author)
-	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -657,7 +642,6 @@ func (m *psqlArticleRepository) Delete(ctx context.Context, author string, id in
 }
 func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) error {
 	fPath := "update"
-	Hits.WithLabelValues(layer, fPath).Inc()
 	uniqId, err := strconv.Atoi(a.Id)
 	if err != nil {
 		return sbErr.ErrDbError{
@@ -667,7 +651,6 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 	}
 	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5  WHERE articles.Id  = $6 and articles.Authorname = $7;`
 	_, err = myQuery(m.Db, fPath, updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId, a.AuthorName)
-	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -699,7 +682,6 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 	for _, v := range a.Tags {
 		_, err = myExec(m.Db, fPath, insert_junc, uniqId, v)
 		fPath = "newconstraint"
-		Hits.WithLabelValues(dblayer, fPath).Inc()
 		if err != nil {
 			return sbErr.ErrDbError{
 				Reason:   err.Error(),
