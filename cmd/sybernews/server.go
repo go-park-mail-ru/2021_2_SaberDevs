@@ -192,6 +192,15 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 func Run(address string) {
 	e := echo.New()
 
+	Default := middleware.CSRFConfig{
+		Skipper:      middleware.DefaultSkipper,
+		TokenLength:  32,
+		TokenLookup:  "header:" + echo.HeaderXCSRFToken,
+		ContextKey:   "csrf",
+		CookieName:   "_csrf",
+		CookieMaxAge: 86400,
+	}
+	e.Use(middleware.CSRFWithConfig(Default))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
