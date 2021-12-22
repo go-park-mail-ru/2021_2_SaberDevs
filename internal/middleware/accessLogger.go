@@ -24,7 +24,7 @@ func Logging(r *http.Request, c echo.Context, start time.Time) {
 	} else {
 		val = k.Value
 	}
-	c.Logger().Error("csrfheader = ", csrf, "cookie=", val)
+	c.Logger().Debug("csrfheader = ", csrf, "cookie=", val)
 }
 
 func AccessLogger(next echo.HandlerFunc) echo.HandlerFunc {
