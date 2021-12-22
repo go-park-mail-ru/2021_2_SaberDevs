@@ -76,8 +76,6 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 	if len(temp) <= previewLen {
 		article.Text = val.Text
 	} else {
-		// temp := []rune(val.Text)
-		// article.Text = string(temp[:previewLen])
 		article.Text = strings.Join(temp[:previewLen], " ")
 	}
 	return article
@@ -85,24 +83,28 @@ func previewConv(val amodels.DbArticle, auth amodels.Author) amodels.Preview {
 
 func myQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
 	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
 	rows, err := db.Queryx(query, args...)
 	return rows, err
 }
 
 func mySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
 	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
 	err := db.Select(dest, query, args...)
 	return err
 }
 
 func myGet(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
 	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
 	err := db.Get(dest, query, args...)
 	return err
 }
 
 func myExec(db *sqlx.DB, path string, query string, args ...interface{}) (sql.Result, error) {
 	//TODO Metrics
+	Hits.WithLabelValues(dblayer, path).Inc()
 	result, err := db.Exec(query, args...)
 	return result, err
 }
@@ -122,9 +124,6 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 	}
 	schema = schema + `) order by a.Id DESC;`
 	rows, err := myQuery(m.Db, funcName, schema, ids...)
-
-	fPath := "uploadTags"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -617,10 +616,8 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 
 	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
-		// _, err = m.Db.Exec(insertCat, data)
 		_, err = myExec(m.Db, fPath, insertCat, data)
 		fPath = "newtag"
-		Hits.WithLabelValues(dblayer, fPath).Inc()
 		if err != nil {
 			return Id, sbErr.ErrDbError{
 				Reason:   err.Error(),
@@ -632,9 +629,8 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 	((SELECT Id FROM articles WHERE Id = $1) ,    
 	(SELECT Id FROM tags WHERE tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
-		_, err = m.Db.Exec(insert_junc, Id, v)
+		_, err = myExec(m.Db, fPath, insert_junc, Id, v)
 		fPath = "newconstraint"
-		Hits.WithLabelValues(dblayer, fPath).Inc()
 		if err != nil {
 			return Id, sbErr.ErrDbError{
 				Reason:   err.Error(),
@@ -648,7 +644,8 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 func (m *psqlArticleRepository) Delete(ctx context.Context, author string, id int64) error {
 	fPath := "delete"
 	Hits.WithLabelValues(layer, fPath).Inc()
-	_, err := m.Db.Exec("DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2;", id, author)
+	schema := "DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2;"
+	_, err := myExec(m.Db, fPath, schema, id, author)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
@@ -678,7 +675,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 		}
 	}
 	schema := deleteTags
-	_, err = m.Db.Exec(schema, uniqId)
+	_, err = myExec(m.Db, fPath, schema, uniqId)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -687,9 +684,8 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 	}
 	insertCat := `INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING;`
 	for _, data := range a.Tags {
-		_, err = m.Db.Exec(insertCat, data)
+		_, err = myExec(m.Db, fPath, insertCat, data)
 		fPath = "newtag"
-		Hits.WithLabelValues(dblayer, fPath).Inc()
 		if err != nil {
 			return sbErr.ErrDbError{
 				Reason:   err.Error(),
@@ -701,7 +697,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 	((SELECT articles.Id FROM articles WHERE articles.Id = $1) ,
 	(SELECT tags.Id FROM tags WHERE tags.tag = $2)) ON CONFLICT DO NOTHING;`
 	for _, v := range a.Tags {
-		_, err = m.Db.Exec(insert_junc, uniqId, v)
+		_, err = myExec(m.Db, fPath, insert_junc, uniqId, v)
 		fPath = "newconstraint"
 		Hits.WithLabelValues(dblayer, fPath).Inc()
 		if err != nil {
