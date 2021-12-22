@@ -192,31 +192,6 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 	return article, nil
 }
 
-func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunkSize int, args ...interface{}) (int, []amodels.Author, bool, error) {
-	var ChunkData []amodels.Author
-	path := "authLimitChecker"
-	overCount := false
-	var count int
-	err := wrapper.MyGet(m.Db, path, schemaCount, &count, args...)
-	if err != nil {
-		return chunkSize, ChunkData, overCount, sbErr.ErrDbError{
-			Reason:   err.Error(),
-			Function: "articleRepository/limitChecker",
-		}
-	}
-
-	if count <= from {
-		ChunkData = append(ChunkData, models.Author{Login: "end"})
-		overCount = true
-	}
-
-	if (count > from) && (count < from+chunkSize) {
-		chunkSize = count - from
-		overCount = true
-	}
-	return chunkSize, ChunkData, overCount, nil
-}
-
 func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login string) ([]amodels.Preview, error) {
 	fName := "addLiked"
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
@@ -428,12 +403,8 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, login string, a
 func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, from, chunkSize int) (result []amodels.Author, err error) {
 	fPath := "articleRepository/FindAuthors"
 	query = "%" + query + "%"
-	schemaCount := `SELECT count(*) FROM AUTHOR WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1;`
-	chunkSize, ChunkData, overCount, err := m.authLimitChecker(schemaCount, from, chunkSize, query)
-	if err != nil || len(ChunkData) > 0 {
-		return ChunkData, err
-	}
-	schema := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 ORDER BY AU.Id DESC LIMIT $2 OFFSET $3;"
+	var ChunkData []amodels.Author
+	schema := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 AND AU.Id < $3 ORDER BY AU.Id DESC LIMIT $2;"
 	rows, err := wrapper.MyQuery(m.Db, fPath, schema, query, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
@@ -452,7 +423,7 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 		}
 		ChunkData = append(ChunkData, newAuthor)
 	}
-	if overCount {
+	if len(ChunkData) < chunkSize {
 		ChunkData = append(ChunkData, models.Author{Login: "end"})
 	}
 	return ChunkData, err

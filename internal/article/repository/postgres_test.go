@@ -265,19 +265,12 @@ func TestFindAuthors(t *testing.T) {
 	login := "mollenTEST1"
 	id := "1"
 
-	rowspre := sqlxmock.NewRows([]string{"count(*)"}).
-		AddRow(1)
-
-	querypre := "SELECT count(*) FROM AUTHOR WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1;"
-
-	mock.ExpectQuery(regexp.QuoteMeta(querypre)).WithArgs(qauthor).WillReturnRows(rowspre)
-
 	rows2 := sqlxmock.NewRows([]string{"id", "login", "name", "surname", "avatarurl", "description", "email", "password", "score"}).
 		AddRow(1, "mollenTEST1", "mollenTEST1", "7 Skills of Highly Effective Programmers", "SaberDevs",
 			"Our team was inspired by the seven skills of highly effective", "mollenTEST1", "static/img/photo-elon-musk.jpg",
 			97)
 
-	query2 := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 ORDER BY AU.Id DESC LIMIT $2 OFFSET $3;"
+	query2 := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 AND AU.Id < $3 ORDER BY AU.Id DESC LIMIT $2;"
 
 	mock.ExpectQuery(regexp.QuoteMeta(query2)).WithArgs(qauthor, chunkSize, from).WillReturnRows(rows2)
 	rows0 := sqlxmock.NewRows([]string{"id", "tag"}).

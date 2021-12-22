@@ -1,12 +1,14 @@
 package wrapper
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tarantool/go-tarantool"
+	"google.golang.org/grpc"
 )
 
 var dblayer = "db"
@@ -28,8 +30,8 @@ func MyInsert(tr *tarantool.Connection, path string, space interface{}, tuple in
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Insert(space, tuple)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -40,8 +42,8 @@ func MyDelete(tr *tarantool.Connection, path string, space interface{}, index in
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Delete(space, index, key)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -52,8 +54,8 @@ func MySelectTyped(tr *tarantool.Connection, path string, space interface{}, ind
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err = tr.SelectTyped(space, index, offset, limit, iterator, key, result)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -64,8 +66,8 @@ func MyReplace(tr *tarantool.Connection, path string, space interface{}, tuple i
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Replace(space, tuple)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -76,8 +78,8 @@ func MyCall(tr *tarantool.Connection, path string, functionName string, args int
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Call(functionName, args)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -88,8 +90,8 @@ func MyQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	rows, err := db.Queryx(query, args...)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -100,8 +102,8 @@ func MySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := db.Select(dest, query, args...)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -112,8 +114,8 @@ func MyGet(db *sqlx.DB, path string, query string, dest interface{}, args ...int
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := db.Get(dest, query, args...)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -124,8 +126,8 @@ func MyExec(db *sqlx.DB, path string, query string, args ...interface{}) (sql.Re
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := db.Exec(query, args...)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -136,8 +138,8 @@ func MyTxExec(tx *sqlx.Tx, path string, query string, args ...interface{}) (sql.
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tx.Exec(query, args...)
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -148,8 +150,8 @@ func MyBegin(db *sqlx.DB, path string) (*sqlx.Tx, error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := db.Beginx()
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -160,8 +162,8 @@ func MyRollBack(tx *sqlx.Tx, path string) error {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := tx.Rollback()
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
 	}
@@ -171,10 +173,30 @@ func MyCommit(tx *sqlx.Tx, path string) error {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := tx.Commit()
-	time := time.Since(start)
-	Duration.WithLabelValues(dblayer, path).Observe(float64(time.Milliseconds()))
+	passed := time.Since(start)
+	Duration.WithLabelValues(dblayer, path).Observe(float64(passed.Milliseconds()))
 	if err != nil {
 		Errors.WithLabelValues(dblayer, err.Error(), path).Inc()
+	}
+	return err
+}
+
+func MetricsInterceptor(
+	ctx context.Context,
+	method string,
+	req interface{},
+	reply interface{},
+	cc *grpc.ClientConn,
+	invoker grpc.UnaryInvoker,
+	opts ...grpc.CallOption,
+) error {
+	start := time.Now()
+	err := invoker(ctx, method, req, reply, cc, opts...)
+	duration := time.Since(start)
+	Hits.WithLabelValues("grpc", cc.Target(), method).Inc()
+	Duration.WithLabelValues("grpc", cc.Target()).Observe(float64(duration.Milliseconds()))
+	if err != nil {
+		Errors.WithLabelValues("grpc", err.Error(), cc.Target()).Inc()
 	}
 	return err
 }

@@ -36,7 +36,6 @@ import (
 
 	"net/http"
 
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 
 	// "github.com/labstack/echo-contrib/prometheus"
@@ -220,8 +219,7 @@ func Run(address string) {
 
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
-		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(wrapper.MetricsInterceptor))
 	defer grcpConn.Close()
 
 	if err != nil {
@@ -230,8 +228,7 @@ func Run(address string) {
 
 	grcpUserConn, err := grpc.Dial(
 		"127.0.0.1:8078",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
-		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(wrapper.MetricsInterceptor))
 	defer grcpUserConn.Close()
 
 	if err != nil {
@@ -240,8 +237,7 @@ func Run(address string) {
 
 	grcpCommentConn, err := grpc.Dial(
 		"127.0.0.1:8077",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
-		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(wrapper.MetricsInterceptor))
 	defer grcpCommentConn.Close()
 
 	if err != nil {
