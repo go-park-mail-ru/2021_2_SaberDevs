@@ -40,6 +40,18 @@ func MySelectTyped(tr *tarantool.Connection, path string, space interface{}, ind
 	return err
 }
 
+func MyReplace(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
+	//TODO Metrics
+	result, err := tr.Replace(space, tuple)
+	return result, err
+}
+
+func MyCall(tr *tarantool.Connection, path string, functionName string, args interface{}) (resp *tarantool.Response, err error) {
+	//TODO Metrics
+	result, err := tr.Call(functionName, args)
+	return result, err
+}
+
 func MyQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
 	//TODO Metrics
 	Hits.WithLabelValues(dblayer, path).Inc()
