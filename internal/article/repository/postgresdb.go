@@ -121,8 +121,6 @@ func (m *psqlArticleRepository) uploadTags(ChunkData []amodels.Preview, funcName
 		}
 	}
 	schema = schema + `) order by a.Id DESC;`
-
-	//rows, err := m.Db.Queryx(schema, ids...)
 	rows, err := myQuery(m.Db, funcName, schema, ids...)
 
 	fPath := "uploadTags"
@@ -169,7 +167,7 @@ func (m *psqlArticleRepository) uploadAuthors(authors []string, funcName string)
 	}
 	schema = schema + ");"
 
-	rows, err := m.Db.Queryx(schema, ids...)
+	rows, err := myQuery(m.Db, funcName, schema, ids...)
 	fPath := "uploadTags"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
@@ -212,6 +210,7 @@ func (m *psqlArticleRepository) addTags(ChunkData []amodels.Preview, chunkSize i
 }
 
 func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (amodels.FullArticle, error) {
+	fPath := "fullArticleConv"
 	var article amodels.FullArticle
 	article.Author = auth
 	article.Comments = val.Comments
@@ -223,9 +222,9 @@ func fullArticleConv(val amodels.DbArticle, Db *sqlx.DB, auth amodels.Author) (a
 	article.Title = val.Title
 	article.Category = val.Category
 	article.Text = val.Text
-	rows, err := Db.Queryx(tagsLoad, val.Id)
-	fPath := "fullArticleConv"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	rows, err := myQuery(Db, fPath, tagsLoad, val.Id)
+
+	//Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return article, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -251,7 +250,6 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 	path := "authLimitChecker"
 	overCount := false
 	var count int
-	//err := m.Db.Get(&count, schemaCount, args...)
 	err := myGet(m.Db, path, schemaCount, &count, args...)
 	fPath := "authLimitChecker"
 	Hits.WithLabelValues(dblayer, fPath).Inc()
@@ -275,9 +273,10 @@ func (m *psqlArticleRepository) authLimitChecker(schemaCount string, from, chunk
 }
 
 func (m *psqlArticleRepository) addLiked(chunkData []amodels.Preview, login string) ([]amodels.Preview, error) {
+	fName := "addLiked"
 	schema := `select signum from article_likes where articleId = $1 and Login = $2`
 	for i := range chunkData {
-		err := m.Db.Get(&chunkData[i].Liked, schema, chunkData[i].Id, login)
+		err := myGet(m.Db, fName, schema, &chunkData[i].Liked, chunkData[i].Id, login)
 		if err != nil {
 			chunkData[i].Liked = 0
 		}
@@ -291,7 +290,6 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, c
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
 	schema := "SELECT Id, PreviewUrl, DateTime,  Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE Id < $1 ORDER BY Id DESC LIMIT $2;"
-	//err = m.Db.Select(&arts, schema, from, chunkSize)
 	err = mySelect(m.Db, fName, schema, &arts, from, chunkSize)
 	Hits.WithLabelValues(dblayer, fName).Inc()
 	if err != nil {
@@ -331,11 +329,9 @@ func (m *psqlArticleRepository) Fetch(ctx context.Context, login string, from, c
 func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id int64) (result amodels.FullArticle, err error) {
 	var newArticle amodels.DbArticle
 	fName := "articleRepository/GetbyID"
-	fPath := "getbyid"
-	Hits.WithLabelValues(layer, fPath).Inc()
-	err = m.Db.Get(&newArticle, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1;", id)
-	fPath = "getbyid"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+
+	schema := "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Id = $1;"
+	err = myGet(m.Db, fName, schema, &newArticle, id)
 	var outArticle amodels.FullArticle
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
@@ -344,9 +340,8 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 		}
 	}
 	var newAuth amodels.Author
-	err = m.Db.Get(&newAuth, "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName WHERE AR.ID = $1;", id)
-	fPath = "author"
-	Hits.WithLabelValues(dblayer, fPath).Inc()
+	schema = "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM ARTICLES AS AR INNER JOIN AUTHOR AS AU ON AU.LOGIN = AR.AuthorName WHERE AR.ID = $1;"
+	err = myGet(m.Db, fName, schema, &newAuth, id)
 	if err != nil {
 		return outArticle, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -360,8 +355,8 @@ func (m *psqlArticleRepository) GetByID(ctx context.Context, login string, id in
 			Function: fName,
 		}
 	}
-	schema := `select signum from article_likes where articleId = $1 and Login = $2;`
-	err = m.Db.Get(&outArticle.Liked, schema, id, login)
+	schema = `select signum from article_likes where articleId = $1 and Login = $2;`
+	err = myGet(m.Db, fName, schema, &outArticle.Liked, id, login)
 	if err != nil {
 		outArticle.Liked = 0
 	}
@@ -372,11 +367,12 @@ func (m *psqlArticleRepository) GetByTag(ctx context.Context, login string, tag 
 	fName := "articleRepository/GetbyTag"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, `select a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  
+	schema := `select a.Id, a.PreviewUrl, a.DateTime, a.Title, Category, a.Text, a.AuthorName,  
 	a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag = $1 and a.Id < $2 ORDER BY Id DESC LIMIT $3`, tag, from, chunkSize)
+	where c.tag = $1 and a.Id < $2 ORDER BY Id DESC LIMIT $3`
+	err = mySelect(m.Db, fName, schema, &arts, tag, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -411,11 +407,12 @@ func (m *psqlArticleRepository) FindByTag(ctx context.Context, login string, que
 	fName := "articleRepository/FindByTag"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, `select DISTINCT a.Id, a.PreviewUrl, a.DateTime, a.Title, 
+	schema := `select DISTINCT a.Id, a.PreviewUrl, a.DateTime, a.Title, 
 	a.Category, a.Text, a.AuthorName,  a.CommentsUrl, a.Comments, a.Likes from tags c
 	inner join tags_articles ca  on c.Id = ca.tags_id
 	inner join articles a on a.Id = ca.articles_id
-	where c.tag LIKE $1 and a.Id < $2 ORDER BY ID DESC LIMIT $3;`, query, from, chunkSize)
+	where c.tag LIKE $1 and a.Id < $2 ORDER BY ID DESC LIMIT $3;`
+	err = mySelect(m.Db, fName, schema, &arts, query, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -450,7 +447,8 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, login string, a
 	fName := "articleRepository/GetByAuthor"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 and articles.Id < $2 ORDER BY Id DESC LIMIT $3;", author, from, chunkSize)
+	schema := "SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.AuthorName = $1 and articles.Id < $2 ORDER BY Id DESC LIMIT $3;"
+	err = mySelect(m.Db, fName, schema, &arts, author, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -485,18 +483,19 @@ func (m *psqlArticleRepository) GetByAuthor(ctx context.Context, login string, a
 }
 
 func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, from, chunkSize int) (result []amodels.Author, err error) {
-	fName := "articleRepository/FindAuthors"
+	fPath := "articleRepository/FindAuthors"
 	query = "%" + query + "%"
 	schemaCount := `SELECT count(*) FROM AUTHOR WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1;`
 	chunkSize, ChunkData, overCount, err := m.authLimitChecker(schemaCount, from, chunkSize, query)
 	if err != nil || len(ChunkData) > 0 {
 		return ChunkData, err
 	}
-	rows, err := m.Db.Queryx("SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 ORDER BY AU.Id DESC LIMIT $2 OFFSET $3;", query, chunkSize, from)
+	schema := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 ORDER BY AU.Id DESC LIMIT $2 OFFSET $3;"
+	rows, err := myQuery(m.Db, fPath, schema, query, chunkSize, from)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
-			Function: fName,
+			Function: fPath,
 		}
 	}
 	var newAuthor models.Author
@@ -505,7 +504,7 @@ func (m *psqlArticleRepository) FindAuthors(ctx context.Context, query string, f
 		if err != nil {
 			return ChunkData, sbErr.ErrDbError{
 				Reason:   err.Error(),
-				Function: fName,
+				Function: fPath,
 			}
 		}
 		ChunkData = append(ChunkData, newAuthor)
@@ -520,10 +519,11 @@ func (m *psqlArticleRepository) FindArticles(ctx context.Context, login string, 
 	fName := "articleRepository/FindAuthors"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, 
+	schema := `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  CommentsUrl, 
 	Comments, Likes FROM ARTICLES WHERE articles.Id < $1 and
 	(en_tsvector(title, text) @@ plainto_tsquery('english', $2) or rus_tsvector(title, text) @@ plainto_tsquery('russian', $2)) 
-	ORDER BY Id DESC LIMIT $3;`, from, query, chunkSize)
+	ORDER BY Id DESC LIMIT $3;`
+	err = mySelect(m.Db, fName, schema, &arts, from, query, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -558,9 +558,10 @@ func (m *psqlArticleRepository) GetByCategory(ctx context.Context, login string,
 	fName := "articleRepository/GetByCategory"
 	var arts []amodels.DbArticle
 	var ChunkData []amodels.Preview
-	err = m.Db.Select(&arts, `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  
+	schema := `SELECT Id, PreviewUrl, DateTime, Title, Category, Text, AuthorName,  
 	CommentsUrl, Comments, Likes FROM ARTICLES WHERE articles.Category = $1
-	and articles.Id < $2 ORDER BY Id DESC LIMIT $3`, category, from, chunkSize)
+	and articles.Id < $2 ORDER BY Id DESC LIMIT $3`
+	err = mySelect(m.Db, fName, schema, &arts, category, from, chunkSize)
 	if err != nil {
 		return ChunkData, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -595,7 +596,7 @@ func (m *psqlArticleRepository) Store(ctx context.Context, a *amodels.Article) (
 	fPath := "store"
 	Hits.WithLabelValues(layer, fPath).Inc()
 	insertArticle := `INSERT INTO articles (DateTime, PreviewUrl, Title, Category, Text, AuthorName, CommentsUrl, Comments, Likes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ID;`
-	rows, err := m.Db.Queryx(insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
+	rows, err := myQuery(m.Db, fPath, insertArticle, a.DateTime, a.PreviewUrl, a.Title, a.Category, a.Text, a.AuthorName, a.CommentsUrl, a.Comments, a.Likes)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return 0, sbErr.ErrDbError{
@@ -668,7 +669,7 @@ func (m *psqlArticleRepository) Update(ctx context.Context, a *amodels.Article) 
 		}
 	}
 	updateArticle := `UPDATE articles SET DateTime = $1, Title = $2, Text = $3, PreviewUrl = $4, Category = $5  WHERE articles.Id  = $6 and articles.Authorname = $7;`
-	_, err = m.Db.Queryx(updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId, a.AuthorName)
+	_, err = myQuery(m.Db, fPath, updateArticle, time.Now().Format("2006/1/2 15:04"), a.Title, a.Text, a.PreviewUrl, a.Category, uniqId, a.AuthorName)
 	Hits.WithLabelValues(dblayer, fPath).Inc()
 	if err != nil {
 		return sbErr.ErrDbError{
