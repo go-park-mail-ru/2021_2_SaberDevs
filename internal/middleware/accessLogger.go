@@ -17,7 +17,7 @@ func Logging(r *http.Request, c echo.Context, start time.Time) {
 	wrapper.Hits.WithLabelValues(layer, r.URL.Path, r.Method).Inc()
 	c.Logger().Info("Id = ", Id, " method = ", r.Method, " address = ", r.RemoteAddr, " RequestUri = ", r.URL.Path, " Request Time = ", time)
 	csrf := r.Header.Get("X-CSRF-Token")
-	k, err := c.Cookie("_csrf")
+	k, err := r.Cookie("_csrf")
 	var val string
 	if err != nil {
 		val = err.Error()

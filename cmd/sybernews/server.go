@@ -196,7 +196,7 @@ func Run(address string) {
 		Skipper:        middleware.DefaultSkipper,
 		TokenLength:    32,
 		TokenLookup:    "header:X-CSRF-Token",
-		ContextKey:     "_csrf",
+		ContextKey:     "csrf",
 		CookieName:     "_csrf",
 		CookieMaxAge:   86400,
 		CookieSameSite: http.SameSiteNoneMode,
