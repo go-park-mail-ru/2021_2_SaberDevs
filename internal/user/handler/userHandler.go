@@ -158,7 +158,8 @@ func (api *UserHandler) Login(c echo.Context) error {
 	ctx := c.Request().Context()
 	grpcResponse, err := api.UserUsecase.LoginUser(ctx, requestUser)
 	if err != nil {
-		return errors.Wrap(err, "userHandler/Login")
+		// return errors.Wrap(err, "userHandler/Login")
+		return err
 	}
 
 	cookie := formCookie(grpcResponse.SessionID)
@@ -190,7 +191,8 @@ func (api *UserHandler) Register(c echo.Context) error {
 	ctx := c.Request().Context()
 	grpcResponse, err := api.UserUsecase.Signup(ctx, newUser)
 	if err != nil {
-		return errors.Wrap(err, "userHandler/Register")
+		// return errors.Wrap(err, "userHandler/Register")
+		return err
 	}
 
 	cookie := formCookie(grpcResponse.SessionID)

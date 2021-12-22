@@ -3,12 +3,12 @@ package usecases
 import (
 	"context"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
+	"google.golang.org/grpc/status"
 	"net/http"
 
 	kmodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/keys/models"
 
 	smodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/models"
-	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	umodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/models"
 	"github.com/pkg/errors"
 )
@@ -127,9 +127,10 @@ func (uu *userUsecase) LoginUser(ctx context.Context, user *umodels.User) (umode
 	}
 
 	if userInRepo.Password != user.Password {
-		return response, "", sbErr.ErrWrongPassword{
-			Reason:   "Неверный пароль",
-			Function: "userUsecase/LoginUser"}
+		// return response, "", sbErr.ErrWrongPassword{
+		// 	Reason:   "Неверный пароль",
+		// 	Function: "userUsecase/LoginUser"}
+		return response, "", status.Error(18, "Неверный пароль")
 	}
 
 	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Login)
@@ -160,7 +161,8 @@ func (uu *userUsecase) Signup(ctx context.Context, user *umodels.User) (umodels.
 
 	signedupUser, err := uu.userRepo.Store(ctx, user)
 	if err != nil {
-		return response, "", errors.Wrap(err, "userUsecase/Signup")
+		// return response, "", errors.Wrap(err, "userUsecase/Signup")
+		return response, "", err
 	}
 
 	sessionID, err := uu.sessionRepo.CreateSession(ctx, user.Login)

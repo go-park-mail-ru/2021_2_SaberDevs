@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"google.golang.org/grpc/status"
 	"net/http"
 
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
@@ -11,11 +12,29 @@ import (
 	"github.com/pkg/errors"
 )
 
+
+
 func ErrorHandler(err error, c echo.Context) {
 	var responseCode int
 	var responseBody errResp.ErrorResponse
+	s, ok := status.FromError(err)
 
 	switch {
+	case ok:
+		switch s.Code() {
+			case 17:
+				responseCode = http.StatusNotFound
+				responseBody = errResp.ErrorResponse{
+					Status:   http.StatusNotFound,
+					ErrorMsg: "Логин уже занят",
+				}
+			case 18:
+			case 19:
+			default:
+				responseCode = http.StatusInternalServerError
+				responseBody = errResp.ErrInternal
+			}
+
 	case errors.As(err, &sbErr.ErrUserDoesntExist{}):
 		responseCode = http.StatusUnprocessableEntity
 		responseBody = errResp.ErrUserDoesntExist
@@ -83,6 +102,7 @@ func ErrorHandler(err error, c echo.Context) {
 		responseCode = http.StatusInternalServerError
 		responseBody = errResp.ErrInternal
 	}
+
 	Id := c.Request().Header.Get(echo.HeaderXRequestID)
 	c.Logger().Error("Id = ", Id, "  ", err.Error())
 	layer := "request"

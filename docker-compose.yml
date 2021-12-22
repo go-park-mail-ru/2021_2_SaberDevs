@@ -8,42 +8,42 @@ services:
       - 3302:3302
     container_name: tarantool_syber
 
-  main:
-    image: syber_main:latest
-    restart: always
-    network_mode: "host"
-    expose:
-      - 8081
-    depends_on:
-      - tarantool
-    container_name: syber_main_server
-
-  comments:
-    image: syber_comments:latest
-    restart: always
-    network_mode: "host"
-    expose:
-      - 8077
-    depends_on:
-      - tarantool
-    container_name: syber_comments_server
-
-  articles:
-    image: syber_articles:latest
-    restart: always
-    network_mode: "host"
-    expose:
-      - 8079
-    depends_on:
-      - tarantool
-    container_name: syber_articles_server
-
-  auth:
-    image: syber_auth:latest
-    restart: always
-    network_mode: "host"
-    expose:
-      - 8078
-    depends_on:
-      - tarantool
-    container_name: syber_auth_server
+#  main:
+#    image: syber_main:latest
+#    restart: always
+#    network_mode: "host"
+#    expose:
+#      - 8081
+#    depends_on:
+#      - tarantool
+#    container_name: syber_main_server
+#
+#  comments:
+#    image: syber_comments:latest
+#    restart: always
+#    network_mode: "host"
+#    expose:
+#      - 8077
+#    depends_on:
+#      - tarantool
+#    container_name: syber_comments_server
+#
+#  articles:
+#    image: syber_articles:latest
+#    restart: always
+#    network_mode: "host"
+#    expose:
+#      - 8079
+#    depends_on:
+#      - tarantool
+#    container_name: syber_articles_server
+#
+#  auth:
+#    image: syber_auth:latest
+#    restart: always
+#    network_mode: "host"
+#    expose:
+#      - 8078
+#    depends_on:
+#      - tarantool
+#    container_name: syber_auth_server

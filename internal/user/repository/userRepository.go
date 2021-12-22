@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"google.golang.org/grpc/status"
 
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
@@ -171,10 +172,11 @@ func (r *userPsqlRepo) Store(ctx context.Context, user *umodels.User) (umodels.U
 	schema := "SELECT login FROM author WHERE login = $1"
 	err := wrapper.MyGet(r.Db, path, schema, &login, user.Login)
 	if login != "" {
-		return umodels.User{}, sbErr.ErrUserExists{
-			Reason:   "Логин уже занят",
-			Function: "userRepository/Store",
-		}
+		// return umodels.User{}, sbErr.ErrUserExists{
+		// 	Reason:   "Логин уже занят",
+		// 	Function: "userRepository/Store",
+		// }
+		return umodels.User{}, status.Error(17, "Логин уже занят")
 	}
 	schema = `INSERT INTO author (Login, Name, Surname, Email, Password, Score, AvatarUrl, Description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 	_, err = wrapper.MyExec(r.Db, path, schema, user.Login, user.Name, user.Surname, user.Email, user.Password, 0, "", "")

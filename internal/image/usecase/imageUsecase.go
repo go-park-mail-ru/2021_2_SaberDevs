@@ -37,7 +37,7 @@ func (iu *imageUsecase) GetImage(ctx context.Context, imageName string) (string,
 func (iu *imageUsecase) SaveImage(ctx context.Context, file *multipart.FileHeader) (imodels.SaveImageResponse, error) {
 	if file.Size > MaxFileSize {
 		return imodels.SaveImageResponse{}, sbErr.ErrBadImage{
-			Reason:   "image too big",
+			Reason:   "Размер картинки не должен превышать 4мб. Формат jpeg, png",
 			Function: "imageUsecase/SaveImage",
 		}
 	}
@@ -63,7 +63,7 @@ func (iu *imageUsecase) SaveImage(ctx context.Context, file *multipart.FileHeade
 	filetype := http.DetectContentType(buff)
 	if filetype != "image/jpeg" && filetype != "image/png" {
 		return imodels.SaveImageResponse{}, sbErr.ErrBadImage{
-			Reason:   err.Error(),
+			Reason:   "Размер картинки не должен превышать 4мб. Формат jpeg, png",
 			Function: "imageUsecase/SaveImage",
 		}
 	}
