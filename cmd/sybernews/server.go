@@ -195,7 +195,7 @@ func Run(address string) {
 	Default := middleware.CSRFConfig{
 		Skipper:        middleware.DefaultSkipper,
 		TokenLength:    32,
-		TokenLookup:    "header:X-CSRF-Token",
+		TokenLookup:    "header:X-XSRF-Token",
 		ContextKey:     "csrf",
 		CookieName:     "_csrf",
 		CookieMaxAge:   86400,
@@ -204,7 +204,7 @@ func Run(address string) {
 		CookieHTTPOnly: false,
 		CookieSecure:   false,
 	}
-	e.Use(syberMiddleware.AccessLogger)
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
