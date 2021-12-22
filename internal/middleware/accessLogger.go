@@ -18,9 +18,11 @@ func Logging(r *http.Request, c echo.Context, start time.Time) {
 	c.Logger().Info("Id = ", Id, " method = ", r.Method, " address = ", r.RemoteAddr, " RequestUri = ", r.URL.Path, " Request Time = ", time)
 	csrf := r.Header.Get("X-CSRF-Token")
 	k, err := c.Cookie("_csrf")
-	val := k.Value
+	var val string
 	if err != nil {
 		val = err.Error()
+	} else {
+		val = k.Value
 	}
 	c.Logger().Error("csrfheader = ", csrf, "cookie=", val)
 }
