@@ -86,7 +86,7 @@ func ErrorHandler(err error, c echo.Context) {
 	Id := c.Request().Header.Get(echo.HeaderXRequestID)
 	c.Logger().Error("Id = ", Id, "  ", err.Error())
 	layer := "request"
-	wrapper.Errors.WithLabelValues(layer, fmt.Sprint(responseCode), c.Request().RequestURI[:15]).Inc()
+	wrapper.Errors.WithLabelValues(layer, fmt.Sprint(responseCode), c.Request().RequestURI).Inc()
 	jsonErr := c.JSON(responseCode, responseBody)
 	if jsonErr != nil {
 		return

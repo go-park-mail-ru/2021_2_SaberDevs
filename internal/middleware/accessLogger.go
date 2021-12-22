@@ -13,8 +13,8 @@ var layer = "request"
 func Logging(r *http.Request, c echo.Context, start time.Time) {
 	Id := r.Header.Get(echo.HeaderXRequestID)
 	time := time.Since(start)
-	wrapper.Duration.WithLabelValues(layer, c.Request().RequestURI[:15]).Observe(float64(time.Milliseconds()))
-	wrapper.Hits.WithLabelValues(layer, c.Request().RequestURI[:15], r.Method).Inc()
+	wrapper.Duration.WithLabelValues(layer, c.Request().RequestURI).Observe(float64(time.Milliseconds()))
+	wrapper.Hits.WithLabelValues(layer, c.Request().RequestURI, r.Method).Inc()
 	c.Logger().Info("Id = ", Id, " method = ", r.Method, " address = ", r.RemoteAddr, " RequestUri = ", r.RequestURI, " Request Time = ", time)
 }
 
