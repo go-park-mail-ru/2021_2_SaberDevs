@@ -200,6 +200,8 @@ func Run(address string) {
 		CookieName:     "_csrf",
 		CookieMaxAge:   86400,
 		CookieSameSite: http.SameSiteNoneMode,
+		CookiePath:     "/",
+		CookieHTTPOnly: false,
 	}
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
