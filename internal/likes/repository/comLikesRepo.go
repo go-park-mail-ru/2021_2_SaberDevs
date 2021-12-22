@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
@@ -18,15 +19,16 @@ func NewComLikesRepository(db *sqlx.DB) amodels.LikesRepository {
 }
 
 func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int) (int, error) {
+	path := "UpdateCount"
 	var Likes int
 	count := "Select sum(signum) as s from comments_likes WHERE commentId = $1"
-	err := m.Db.Get(&Likes, count, articlesid)
+	err := wrapper.MyGet(m.Db, path, count, &Likes, articlesid)
 	if err != nil {
 		Likes = 0
 	}
 	updateArticle := `UPDATE comments SET Likes = $1 WHERE comments.Id = $2;`
 
-	_, err = m.Db.Exec(updateArticle, Likes, articlesid)
+	_, err = wrapper.MyExec(m.Db, path, updateArticle, Likes, articlesid)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -37,8 +39,9 @@ func (m *ComLikesRepository) UpdateCount(ctx context.Context, articlesid int) (i
 }
 
 func (m *ComLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) error {
+	path := "Insert"
 	ins := `INSERT INTO comments_likes(login, commentId, signum) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`
-	_, err := m.Db.Exec(ins, a.Login, a.ArticleId, a.Signum)
+	_, err := wrapper.MyExec(m.Db, path, ins, a.Login, a.ArticleId, a.Signum)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -49,8 +52,9 @@ func (m *ComLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) erro
 }
 
 func (m *ComLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error {
+	path := "Delete"
 	delete := `delete from comments_likes  WHERE commentId = $1 and login = $2;`
-	_, err := m.Db.Exec(delete, a.ArticleId, a.Login)
+	_, err := wrapper.MyExec(m.Db, path, delete, a.ArticleId, a.Login)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
