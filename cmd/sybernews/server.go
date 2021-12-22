@@ -1,6 +1,7 @@
 package server
 
 import (
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
@@ -129,11 +130,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	// commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 	commentsAPi := chandler.NewCommentHandler(*c)
-	// metrics := e.Group("/metrics")
-	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
 	e.Any("/metrics", echo.WrapHandler(promhttp.Handler()))
-	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
-
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	search := e.Group("/api/v1/search")
@@ -156,6 +153,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	// e.Logger.SetLevel(log.ERROR)
 
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
+
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
 
@@ -194,19 +192,14 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
-	//e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
-	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
-	// 	AllowCredentials: true,
-	// }))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
-	prometheus.MustRegister(ahandler.Hits)
+
+	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -263,8 +256,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
 
-	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-	// 	log.Fatal(err)
-	// }
-	e.Logger.Fatal(e.Start(address))
+	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+	// e.Logger.Fatal(e.Start(address))
 }

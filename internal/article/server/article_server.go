@@ -44,7 +44,7 @@ func main() {
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	app.RegisterArticleDeliveryServer(server, ser.NewArticleManager(articlesUsecase))
 	grpc_prometheus.Register(server)
-	prometheus.MustRegister(wrapper.Hits)
+	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 	// Register Prometheus metrics handler.
 	http.Handle("/metrics", promhttp.Handler())
 	fmt.Println("starting server at :8079")

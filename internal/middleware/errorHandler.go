@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	errResp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/errResponses"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/labstack/echo/v4"
@@ -83,6 +85,8 @@ func ErrorHandler(err error, c echo.Context) {
 	}
 	Id := c.Request().Header.Get(echo.HeaderXRequestID)
 	c.Logger().Error("Id = ", Id, "  ", err.Error())
+	layer := "request"
+	wrapper.Errors.WithLabelValues(layer, fmt.Sprint(responseCode), c.Request().RequestURI[:15]).Inc()
 	jsonErr := c.JSON(responseCode, responseBody)
 	if jsonErr != nil {
 		return
