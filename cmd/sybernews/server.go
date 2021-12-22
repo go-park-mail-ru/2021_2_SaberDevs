@@ -193,19 +193,21 @@ func Run(address string) {
 	e := echo.New()
 
 	Default := middleware.CSRFConfig{
-		Skipper:      middleware.DefaultSkipper,
-		TokenLength:  32,
-		TokenLookup:  "header:" + echo.HeaderXCSRFToken,
-		ContextKey:   "csrf",
-		CookieName:   "_csrf",
-		CookieMaxAge: 86400,
+		Skipper:        middleware.DefaultSkipper,
+		TokenLength:    32,
+		TokenLookup:    "header:" + echo.HeaderXCSRFToken,
+		ContextKey:     "csrf",
+		CookieName:     "_csrf",
+		CookieMaxAge:   86400,
+		CookieSameSite: http.SameSiteNoneMode,
 	}
-	e.Use(middleware.CSRFWithConfig(Default))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
+
+	e.Use(middleware.CSRFWithConfig(Default))
 
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 
