@@ -1,6 +1,7 @@
 package server
 
 import (
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
 	commentApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
@@ -8,6 +9,8 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
+
+	// log "github.com/sirupsen/logrus"
 
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
@@ -35,7 +38,6 @@ import (
 
 	"net/http"
 
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 
 	// "github.com/labstack/echo-contrib/prometheus"
@@ -92,15 +94,14 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient, u *userApp.UserDeliveryClient, c *commentApp.CommentDeliveryClient) {
-	userRepo := urepo.NewUserRepository(db)
-	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient, u *userApp.UserDeliveryClient, c *commentApp.CommentDeliveryClient, log *wrapper.MyLogger) {
+	userRepo := urepo.NewUserRepository(db, log)
+	sessionRepo := srepo.NewSessionRepository(sessionsDbConn, log)
 	// keyRepo := krepo.NewKeyRepository(sessionsDbConn)
-	// articleRepo := arepo.NewArticleRepository(db)
 	imageRepo := irepo.NewImageRepository()
-	commentsRepo := crepo.NewCommentRepository(db)
+	commentsRepo := crepo.NewCommentRepository(db, log)
 
-	pnRepo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
+	pnRepo := pnrepo.NewPushNotificationRepository(sessionsDbConn, log)
 	// repo.QueueArticleComment([]byte("9"))
 	// repo.DequeueArticleComment()
 	go push.NotificationSevice(pnRepo)
@@ -129,11 +130,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 	// commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo)
 	commentsAPi := chandler.NewCommentHandler(*c)
-	// metrics := e.Group("/metrics")
-	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
 	e.Any("/metrics", echo.WrapHandler(promhttp.Handler()))
-	// metrics.Any("", echo.WrapHandler(promhttp.Handler()))
-
 	articles := e.Group("/api/v1/articles")
 	articles.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{}))
 	search := e.Group("/api/v1/search")
@@ -141,8 +138,8 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	authMiddleware := syberMiddleware.NewAuthMiddleware(sessionRepo)
 
 	//likes
-	repoAr := lrepo.NewArLikesRepository(db)
-	repoCom := lrepo.NewComLikesRepository(db)
+	repoAr := lrepo.NewArLikesRepository(db, log)
+	repoCom := lrepo.NewComLikesRepository(db, log)
 	useAr := luse.NewArLikeUsecase(repoAr, sessionRepo)
 	useCm := luse.NewComLikeUsecase(repoCom, sessionRepo)
 	like := likes.NewLikesHandler(useAr, useCm)
@@ -150,10 +147,11 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	e.POST("api/v1/like", like.Rate)
 
 	//Logger.SetOutput() //to file
-	e.Logger.SetLevel(log.INFO)
+
 	// e.Logger.SetLevel(log.ERROR)
 
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
+
 	e.Use(syberMiddleware.AccessLogger)
 	e.Use(syberMiddleware.AddId)
 
@@ -192,19 +190,29 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
-	//e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	// 	AllowOrigins:     []string{"http://localhost:8080", "http://87.228.2.178:8080", "http://89.208.197.247:8080"},
-	// 	AllowMethods:     []string{http.MethodGet, http.MethodPost},
-	// 	AllowCredentials: true,
-	// }))
+
+	Default := middleware.CSRFConfig{
+		Skipper:        middleware.DefaultSkipper,
+		TokenLength:    32,
+		TokenLookup:    "header:X-XSRF-Token",
+		ContextKey:     "csrf",
+		CookieName:     "_csrf",
+		CookieMaxAge:   86400,
+		CookieSameSite: http.SameSiteNoneMode,
+		CookiePath:     "/",
+		CookieHTTPOnly: false,
+		CookieSecure:   false,
+	}
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost},
 		AllowCredentials: true,
 	}))
-	prometheus.MustRegister(ahandler.Hits)
+
+	e.Use(middleware.CSRFWithConfig(Default))
+
+	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -222,11 +230,13 @@ func Run(address string) {
 	}
 
 	e.Logger.SetLevel(log.INFO)
+	logger := wrapper.NewLogger()
+
+	log := logger
 
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
-		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(log.MetricsInterceptor))
 	defer grcpConn.Close()
 
 	if err != nil {
@@ -235,8 +245,7 @@ func Run(address string) {
 
 	grcpUserConn, err := grpc.Dial(
 		"127.0.0.1:8078",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
-		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(log.MetricsInterceptor))
 	defer grcpUserConn.Close()
 
 	if err != nil {
@@ -245,8 +254,7 @@ func Run(address string) {
 
 	grcpCommentConn, err := grpc.Dial(
 		"127.0.0.1:8077",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
-		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(log.MetricsInterceptor))
 	defer grcpCommentConn.Close()
 
 	if err != nil {
@@ -259,10 +267,10 @@ func Run(address string) {
 
 	defer DbClose(db)
 
-	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
+	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager, log)
 
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
+		log.Logger.Fatal(err.Error())
 	}
 	// e.Logger.Fatal(e.Start(address))
 }

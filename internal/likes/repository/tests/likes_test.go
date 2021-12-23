@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"testing"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	repo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/repository"
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,7 @@ import (
 )
 
 func TestArLike(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -41,7 +43,7 @@ func TestArLike(t *testing.T) {
 	query4 := "UPDATE articles SET Likes = $1 WHERE articles.Id = $2;"
 	mock.ExpectQuery(regexp.QuoteMeta(query4)).WithArgs(0, art.ArticleId).WillReturnRows(rows4)
 
-	a := repo.NewArLikesRepository(db)
+	a := repo.NewArLikesRepository(db, log)
 	aid, err := a.Like(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)
@@ -49,6 +51,7 @@ func TestArLike(t *testing.T) {
 }
 
 func TestArDisLike(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -77,7 +80,7 @@ func TestArDisLike(t *testing.T) {
 	query4 := "UPDATE articles SET Likes = $1 WHERE articles.Id = $2;"
 	mock.ExpectQuery(regexp.QuoteMeta(query4)).WithArgs(0, art.ArticleId).WillReturnRows(rows4)
 
-	a := repo.NewArLikesRepository(db)
+	a := repo.NewArLikesRepository(db, log)
 	aid, err := a.Dislike(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)
@@ -86,6 +89,7 @@ func TestArDisLike(t *testing.T) {
 
 func TestArCancel(t *testing.T) {
 	db, mock, err := sqlxmock.Newx()
+	log := wrapper.NewLogger()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
@@ -105,7 +109,7 @@ func TestArCancel(t *testing.T) {
 	query3 := "UPDATE articles SET Likes = $1 WHERE articles.Id = $2;"
 	mock.ExpectExec(regexp.QuoteMeta(query3)).WithArgs(0, art.ArticleId).WillReturnResult(driver.RowsAffected(1))
 
-	a := repo.NewArLikesRepository(db)
+	a := repo.NewArLikesRepository(db, log)
 	aid, err := a.Cancel(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)
@@ -113,6 +117,7 @@ func TestArCancel(t *testing.T) {
 }
 
 func TestComLike(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -141,7 +146,7 @@ func TestComLike(t *testing.T) {
 	query4 := "UPDATE comments SET Likes = $1 WHERE comments.Id = $2;"
 	mock.ExpectQuery(regexp.QuoteMeta(query4)).WithArgs(0, art.ArticleId).WillReturnRows(rows4)
 
-	a := repo.NewComLikesRepository(db)
+	a := repo.NewComLikesRepository(db, log)
 	aid, err := a.Like(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)
@@ -149,6 +154,7 @@ func TestComLike(t *testing.T) {
 }
 
 func TestComDisLike(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -177,7 +183,7 @@ func TestComDisLike(t *testing.T) {
 	query4 := "UPDATE comments SET Likes = $1 WHERE comments.Id = $2;"
 	mock.ExpectQuery(regexp.QuoteMeta(query4)).WithArgs(0, art.ArticleId).WillReturnRows(rows4)
 
-	a := repo.NewComLikesRepository(db)
+	a := repo.NewComLikesRepository(db, log)
 	aid, err := a.Dislike(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)
@@ -185,6 +191,7 @@ func TestComDisLike(t *testing.T) {
 }
 
 func TestComCancel(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -205,7 +212,7 @@ func TestComCancel(t *testing.T) {
 	query3 := "UPDATE comments SET Likes = $1 WHERE comments.Id = $2;"
 	mock.ExpectExec(regexp.QuoteMeta(query3)).WithArgs(0, art.ArticleId).WillReturnResult(driver.RowsAffected(1))
 
-	a := repo.NewComLikesRepository(db)
+	a := repo.NewComLikesRepository(db, log)
 	aid, err := a.Cancel(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)

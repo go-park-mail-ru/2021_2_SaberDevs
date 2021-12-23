@@ -6,12 +6,14 @@ import (
 	"regexp"
 	"testing"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/models"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 )
 
 func TestGetByID(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -47,7 +49,7 @@ func TestGetByID(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, "mollen").WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.GetByID(context.TODO(), "mollen", 1)
 	assert.NoError(t, err)
@@ -55,6 +57,7 @@ func TestGetByID(t *testing.T) {
 }
 
 func TestGetbyTag(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -99,7 +102,7 @@ func TestGetbyTag(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.GetByTag(context.TODO(), login, tag, from, chunkSize)
 	assert.NoError(t, err)
@@ -107,6 +110,7 @@ func TestGetbyTag(t *testing.T) {
 }
 
 func TestFetch(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -146,7 +150,7 @@ func TestFetch(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.Fetch(context.TODO(), login, from, chunkSize)
 	assert.NoError(t, err)
@@ -154,6 +158,7 @@ func TestFetch(t *testing.T) {
 }
 
 func TestFindByTag(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -198,7 +203,7 @@ func TestFindByTag(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.FindByTag(context.TODO(), login, tag, from, chunkSize)
 	assert.NoError(t, err)
@@ -206,6 +211,7 @@ func TestFindByTag(t *testing.T) {
 }
 
 func TestGetbyAuthor(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -246,7 +252,7 @@ func TestGetbyAuthor(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.GetByAuthor(context.TODO(), login, author, from, chunkSize)
 	assert.NoError(t, err)
@@ -254,6 +260,7 @@ func TestGetbyAuthor(t *testing.T) {
 }
 
 func TestFindAuthors(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -265,19 +272,12 @@ func TestFindAuthors(t *testing.T) {
 	login := "mollenTEST1"
 	id := "1"
 
-	rowspre := sqlxmock.NewRows([]string{"count(*)"}).
-		AddRow(1)
-
-	querypre := "SELECT count(*) FROM AUTHOR WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1;"
-
-	mock.ExpectQuery(regexp.QuoteMeta(querypre)).WithArgs(qauthor).WillReturnRows(rowspre)
-
 	rows2 := sqlxmock.NewRows([]string{"id", "login", "name", "surname", "avatarurl", "description", "email", "password", "score"}).
 		AddRow(1, "mollenTEST1", "mollenTEST1", "7 Skills of Highly Effective Programmers", "SaberDevs",
 			"Our team was inspired by the seven skills of highly effective", "mollenTEST1", "static/img/photo-elon-musk.jpg",
 			97)
 
-	query2 := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 ORDER BY AU.Id DESC LIMIT $2 OFFSET $3;"
+	query2 := "SELECT AU.ID, AU.LOGIN, AU.NAME, AU.SURNAME, AU.AVATARURL, AU.DESCRIPTION, AU.EMAIL, AU.PASSWORD, AU.SCORE FROM AUTHOR AU WHERE LOGIN LIKE $1 OR NAME LIKE $1 OR SURNAME LIKE $1 AND AU.Id < $3 ORDER BY AU.Id DESC LIMIT $2;"
 
 	mock.ExpectQuery(regexp.QuoteMeta(query2)).WithArgs(qauthor, chunkSize, from).WillReturnRows(rows2)
 	rows0 := sqlxmock.NewRows([]string{"id", "tag"}).
@@ -294,7 +294,7 @@ func TestFindAuthors(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anAuth, err := a.FindAuthors(context.TODO(), author, from, chunkSize)
 	assert.NoError(t, err)
@@ -302,6 +302,7 @@ func TestFindAuthors(t *testing.T) {
 }
 
 func TestFindArticles(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -346,7 +347,7 @@ func TestFindArticles(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.FindArticles(context.TODO(), login, qart, from, chunkSize)
 	assert.NoError(t, err)
@@ -354,6 +355,7 @@ func TestFindArticles(t *testing.T) {
 }
 
 func TestGetbyCategory(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -396,7 +398,7 @@ func TestGetbyCategory(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(query3)).WithArgs(1, login).WillReturnRows(rows3)
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 
 	anArticle, err := a.GetByCategory(context.TODO(), login, category, from, chunkSize)
 	assert.NoError(t, err)
@@ -404,6 +406,7 @@ func TestGetbyCategory(t *testing.T) {
 }
 
 func TestStore(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -426,7 +429,7 @@ func TestStore(t *testing.T) {
 	query3 := "INSERT INTO tags_articles (articles_id, tags_id) VALUES ((SELECT Id FROM articles WHERE Id = $1) , (SELECT Id FROM tags WHERE tag = $2)) ON CONFLICT DO NOTHING;"
 
 	mock.ExpectExec(regexp.QuoteMeta(query3)).WithArgs(tid, tag).WillReturnResult(driver.RowsAffected(1))
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 	aid, err := a.Store(context.TODO(), &art)
 	assert.NoError(t, err)
 	assert.NotNil(t, aid)
@@ -434,6 +437,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -457,11 +461,12 @@ func TestUpdate(t *testing.T) {
 	query3 := "INSERT INTO tags_articles (articles_id, tags_id) VALUES ((SELECT articles.Id FROM articles WHERE articles.Id = $1) , (SELECT tags.Id FROM tags WHERE tags.tag = $2)) ON CONFLICT DO NOTHING;"
 
 	mock.ExpectExec(regexp.QuoteMeta(query3)).WithArgs(tid, tag).WillReturnResult(driver.RowsAffected(1))
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 	err = a.Update(context.TODO(), &art)
 	assert.NoError(t, err)
 }
 func TestDelete(t *testing.T) {
+	log := wrapper.NewLogger()
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -472,7 +477,7 @@ func TestDelete(t *testing.T) {
 	query0 := "DELETE FROM ARTICLES WHERE articles.Id = $1 and articles.Authorname = $2;"
 	mock.ExpectExec(regexp.QuoteMeta(query0)).WithArgs(tid, login).WillReturnResult(driver.RowsAffected(1))
 
-	a := NewArticleRepository(db)
+	a := NewArticleRepository(db, log)
 	err = a.Delete(context.TODO(), login, tid)
 	assert.NoError(t, err)
 }

@@ -4,19 +4,34 @@ import (
 	"net/http"
 	"time"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	"github.com/labstack/echo/v4"
 )
 
-func String(r *http.Request, c echo.Context, start time.Time) {
+var layer = "request"
+
+func Logging(r *http.Request, c echo.Context, start time.Time) {
 	Id := r.Header.Get(echo.HeaderXRequestID)
-	c.Logger().Info("Id = ", Id, " method = ", r.Method, " address = ", r.RemoteAddr, " RequestUri = ", r.RequestURI, " Request Time = ", time.Since(start))
+	time := time.Since(start)
+	wrapper.Duration.WithLabelValues(layer, r.URL.Path).Observe(float64(time.Milliseconds()))
+	wrapper.Hits.WithLabelValues(layer, r.URL.Path, r.Method).Inc()
+	c.Logger().Info("Id = ", Id, " method = ", r.Method, " address = ", r.RemoteAddr, " RequestUri = ", r.URL.Path, " Request Time = ", time)
+	csrf := r.Header.Get("X-XSRF-Token")
+	k, err := r.Cookie("_csrf")
+	var val string
+	if err != nil {
+		val = err.Error()
+	} else {
+		val = k.Value
+	}
+	c.Logger().Warn("csrfheader = ", csrf, "cookie=", val)
 }
 
 func AccessLogger(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		start := time.Now()
 		err := next(c)
-		String(c.Request(), c, start)
+		Logging(c.Request(), c, start)
 		return err
 	}
 }

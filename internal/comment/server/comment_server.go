@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/comment_app"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
@@ -11,9 +15,10 @@ import (
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
-	"net"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -77,17 +82,23 @@ func main() {
 	}
 
 	defer DbClose(db)
-
-	userRepo := urepo.NewUserRepository(db)
-	sessionRepo := srepo.NewSessionRepository(tarantoolConn)
-	commentsRepo := crepo.NewCommentRepository(db)
-	notifRepo := pnrepo.NewPushNotificationRepository(tarantoolConn)
-	artRepo := arepo.NewArticleRepository(db)
+	log := wrapper.NewLogger()
+	userRepo := urepo.NewUserRepository(db, log)
+	sessionRepo := srepo.NewSessionRepository(tarantoolConn, log)
+	commentsRepo := crepo.NewCommentRepository(db, log)
+	notifRepo := pnrepo.NewPushNotificationRepository(tarantoolConn, log)
+	artRepo := arepo.NewArticleRepository(db, log)
 
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo, notifRepo, artRepo)
 
 	app.RegisterCommentDeliveryServer(server, NewCommentManager(commentUsecase))
-
+	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
+	// Register Prometheus metrics handler.
+	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		err := http.ListenAndServe(":8074", nil)
+		log.Logger.Fatal(err.Error())
+	}()
 	fmt.Println("starting comment server at :8077")
 	server.Serve(lis)
 }

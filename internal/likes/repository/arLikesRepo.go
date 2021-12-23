@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	amodels "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/likes/models"
 	sbErr "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberErrors"
 	"github.com/jmoiron/sqlx"
@@ -12,22 +13,24 @@ import (
 
 type ArLikesRepository struct {
 	Db *sqlx.DB
+	lg *wrapper.MyLogger
 }
 
-func NewArLikesRepository(db *sqlx.DB) amodels.LikesRepository {
-	return &ArLikesRepository{db}
+func NewArLikesRepository(db *sqlx.DB, lg *wrapper.MyLogger) amodels.LikesRepository {
+	return &ArLikesRepository{db, lg}
 }
 
 func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int) (int, error) {
+	path := "UpdateCount"
 	var Likes int
 	count := "Select sum(signum) as s from article_likes WHERE articleId = $1"
-	err := m.Db.Get(&Likes, count, articlesid)
+	err := m.lg.MyGet(m.Db, path, count, &Likes, articlesid)
 	if err != nil {
 		Likes = 0
 	}
 	updateArticle := `UPDATE articles SET Likes = $1 WHERE articles.Id = $2;`
 
-	_, err = m.Db.Exec(updateArticle, Likes, articlesid)
+	_, err = m.lg.MyExec(m.Db, path, updateArticle, Likes, articlesid)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -38,8 +41,9 @@ func (m *ArLikesRepository) UpdateCount(ctx context.Context, articlesid int) (in
 }
 
 func (m *ArLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) error {
+	path := "Insert"
 	ins := `INSERT INTO article_likes(login, articleId, signum) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`
-	_, err := m.Db.Exec(ins, a.Login, a.ArticleId, a.Signum)
+	_, err := m.lg.MyExec(m.Db, path, ins, a.Login, a.ArticleId, a.Signum)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -50,8 +54,9 @@ func (m *ArLikesRepository) Insert(ctx context.Context, a *amodels.LikeDb) error
 }
 
 func (m *ArLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error {
+	path := "Delete"
 	delete := `delete from article_likes  WHERE articleId = $1 and login = $2;`
-	_, err := m.Db.Exec(delete, a.ArticleId, a.Login)
+	_, err := m.lg.MyExec(m.Db, path, delete, a.ArticleId, a.Login)
 	if err != nil {
 		return sbErr.ErrDbError{
 			Reason:   err.Error(),
@@ -62,9 +67,10 @@ func (m *ArLikesRepository) Delete(ctx context.Context, a *amodels.LikeDb) error
 }
 
 func (m *ArLikesRepository) Check(ctx context.Context, a *amodels.LikeDb) (int, error) {
+	path := "Check"
 	check := `select signum from article_likes  WHERE articleId = $1 and login = $2;`
 	var sign []int
-	err := m.Db.Select(&sign, check, a.ArticleId, a.Login)
+	err := m.lg.MySelect(m.Db, path, check, &sign, a.ArticleId, a.Login)
 	if err != nil {
 		return 0, sbErr.ErrDbError{
 			Reason:   err.Error(),
