@@ -147,8 +147,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	useCm := luse.NewComLikeUsecase(repoCom, sessionRepo)
 	like := likes.NewLikesHandler(useAr, useCm)
 
-	e.Use(syberMiddleware.ValidateRequestBody)
-
 	e.POST("api/v1/like", like.Rate)
 
 	//Logger.SetOutput() //to file

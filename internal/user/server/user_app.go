@@ -32,7 +32,8 @@ func convertToUserModel(user app.User) *umodels.User {
 }
 
 func (m *UserManager) UpdateProfile(ctx context.Context, updateInput *app.UpdateInput) (*app.LoginResponse, error) {
-	response, err := m.usecase.UpdateProfile(ctx, convertToUserModel(*updateInput.User), updateInput.SesionID)
+	user := convertToUserModel(*updateInput.User)
+	response, err := m.usecase.UpdateProfile(ctx, user, updateInput.SesionID)
 
 	return &app.LoginResponse{
 		Status: uint32(response.Status),
@@ -84,7 +85,8 @@ func (m *UserManager) GetUserProfile(ctx context.Context, sessionID *app.Session
 }
 
 func (m *UserManager) LoginUser(ctx context.Context, user *app.User) (*app.LoginResponse, error) {
-	response, sessionID, err := m.usecase.LoginUser(ctx, convertToUserModel(*user))
+	userModel := convertToUserModel(*user)
+	response, sessionID, err := m.usecase.LoginUser(ctx, userModel)
 
 	return &app.LoginResponse{
 		Status: uint32(response.Status),
@@ -103,7 +105,8 @@ func (m *UserManager) LoginUser(ctx context.Context, user *app.User) (*app.Login
 }
 
 func (m *UserManager) Signup(ctx context.Context, user *app.User) (*app.SignupResponse, error) {
-	response, sessionID, err := m.usecase.Signup(ctx, convertToUserModel(*user))
+	userModel := convertToUserModel(*user)
+	response, sessionID, err := m.usecase.Signup(ctx, userModel)
 
 	return &app.SignupResponse{
 		Status: uint32(response.Status),

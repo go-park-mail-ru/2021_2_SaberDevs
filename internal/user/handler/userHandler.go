@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/go-park-mail-ru/2021_2_SaberDevs/internal/syberValidation"
@@ -41,14 +40,6 @@ func formCookie(cookeValue string) *http.Cookie {
 		Expires:  time.Now().Add(10 * time.Hour),
 		Path:     "/",
 	}
-}
-
-func isUserAuthorized(cookie *http.Cookie, sessionsMap *sync.Map) bool {
-	if cookie == nil {
-		return false
-	}
-	_, ok := sessionsMap.Load(cookie.Value)
-	return ok
 }
 
 func (api *UserHandler) UserProfile(c echo.Context) error {
@@ -203,15 +194,20 @@ func (api *UserHandler) Register(c echo.Context) error {
 }
 
 func (api *UserHandler) Logout(c echo.Context) error {
-	cookie, _ := c.Cookie("session")
-	// TODO middleware
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		return sbErr.ErrNotLoggedin{
+			Reason:   err.Error(),
+			Function: "userUsecase/UpdateProfile",
+		}
+	}
 
 	ctx := c.Request().Context()
 	grpcSessionID := &app.CookieValue{
 		CookieValue: cookie.Value,
 	}
 
-	_, err := api.UserUsecase.Logout(ctx, grpcSessionID)
+	_, err = api.UserUsecase.Logout(ctx, grpcSessionID)
 	if err != nil {
 		return errors.Wrap(err, "userHandler/Logout")
 	}
