@@ -204,7 +204,7 @@ func (cr *commentPsqlRepo) GetCommentsStream(lastCommentID int64) ([]cmodels.Str
 	schema := `select c.id, c.articleid, c.text,  c.likes, a.login, a.surname, a.name, a.avatarurl, a2.title
                from comments c join author a on a.login = c.AuthorLogin join articles a2 on c.articleid = a2.id where c.id > $1 order by c.id desc limit 5`
 
-	err := cr.lg.MySelect(cr.Db, path, schema, sqlComments, lastCommentID)
+	err := cr.lg.MySelect(cr.Db, path, schema, &sqlComments, lastCommentID)
 	if err != nil {
 		return []cmodels.StreamComment{}, err
 	}

@@ -269,8 +269,8 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager, log)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Logger.Fatal(err.Error())
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Logger.Fatal(err.Error())
+	// }
+	e.Logger.Fatal(e.Start(address))
 }
