@@ -1,6 +1,8 @@
 package server
 
 import (
+	"os"
+
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
@@ -9,6 +11,7 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
+	log "github.com/sirupsen/logrus"
 
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
@@ -41,7 +44,6 @@ import (
 	// "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -191,6 +193,14 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.Info)
+	log.WithFields(log.Fields{
+		// "method":     c.Request().Method,
+		// "path":       c.Path(),
+		// "status":     c.Response().Status,
+		// "latency_ns": time.Since(start).Nanoseconds(),
+	}).Info("request details")
 
 	Default := middleware.CSRFConfig{
 		Skipper:        middleware.DefaultSkipper,
