@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -19,7 +18,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -84,29 +82,7 @@ func main() {
 	}
 
 	defer DbClose(db)
-	rawJSON := []byte(`{
-		"level": "debug",
-		"encoding": "json",
-		"outputPaths": ["stdout", "/tmp/logs"],
-		"errorOutputPaths": ["stderr"],
-		"initialFields": {"foo": "bar"},
-		"encoderConfig": {
-		  "messageKey": "message",
-		  "levelKey": "level",
-		  "levelEncoder": "lowercase"
-		}
-	  }`)
-
-	var cfg zap.Config
-	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
-		panic(err)
-	}
-	logger, err := cfg.Build()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-	log := wrapper.NewMyLogger(logger)
+	log := wrapper.NewLogger()
 	userRepo := urepo.NewUserRepository(db, log)
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn, log)
 	commentsRepo := crepo.NewCommentRepository(db, log)
@@ -121,7 +97,7 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 	go func() {
 		err := http.ListenAndServe(":8074", nil)
-		logger.Fatal(err.Error())
+		log.Logger.Fatal(err.Error())
 	}()
 	fmt.Println("starting comment server at :8077")
 	server.Serve(lis)

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"time"
 
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
@@ -12,9 +11,9 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
+	"go.uber.org/zap"
 
 	// log "github.com/sirupsen/logrus"
-	"go.uber.org/zap"
 
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
@@ -196,36 +195,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
-	rawJSON := []byte(`{
-		"level": "debug",
-		"encoding": "json",
-		"outputPaths": ["stdout", "/tmp/logs"],
-		"errorOutputPaths": ["stderr"],
-		"initialFields": {"foo": "bar"},
-		"encoderConfig": {
-		  "messageKey": "message",
-		  "levelKey": "level",
-		  "levelEncoder": "lowercase"
-		}
-	  }`)
-
-	var cfg zap.Config
-	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
-		panic(err)
-	}
-	logger, err := cfg.Build()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-
-	logger.Info("ID=",
-		zap.String("Id", "url"),
-		zap.String("method", "meth"),
-		zap.String("path", "path"),
-		zap.String("status", "status"),
-		zap.Duration("latency", time.Second),
-	)
 
 	Default := middleware.CSRFConfig{
 		Skipper:        middleware.DefaultSkipper,
@@ -266,8 +235,16 @@ func Run(address string) {
 	}
 
 	e.Logger.SetLevel(log.INFO)
+	logger := wrapper.NewLogger()
 
-	log := wrapper.NewMyLogger(logger)
+	logger.Logger.Info("ID=",
+		zap.String("Id", "url"),
+		zap.String("method", "meth"),
+		zap.String("path", "path"),
+		zap.String("status", "status"),
+		zap.Duration("latency", time.Second),
+	)
+	log := logger
 
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
@@ -305,7 +282,7 @@ func Run(address string) {
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager, log)
 
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		logger.Fatal(err.Error())
+		log.Logger.Fatal(err.Error())
 	}
 	// e.Logger.Fatal(e.Start(address))
 }
