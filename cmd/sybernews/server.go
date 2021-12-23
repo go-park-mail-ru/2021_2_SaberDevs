@@ -1,7 +1,8 @@
 package server
 
 import (
-	"os"
+	"encoding/json"
+	"time"
 
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
@@ -11,7 +12,9 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
-	log "github.com/sirupsen/logrus"
+
+	// log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
@@ -44,6 +47,7 @@ import (
 	// "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -193,15 +197,43 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.Info)
-	log.WithFields(log.Fields{
-		// "method":     c.Request().Method,
-		// "path":       c.Path(),
-		// "status":     c.Response().Status,
-		// "latency_ns": time.Since(start).Nanoseconds(),
-	}).Info("request details")
+	// log.SetOutput(os.Stdout)
+	// log.SetLevel(log.Info)
+	// log.WithFields(log.Fields{
+	// 	// "method":     c.Request().Method,
+	// 	// "path":       c.Path(),
+	// 	// "status":     c.Response().Status,
+	// 	// "latency_ns": time.Since(start).Nanoseconds(),
+	// }).Info("request details")
+	rawJSON := []byte(`{
+		"level": "debug",
+		"encoding": "json",
+		"outputPaths": ["stdout", "/tmp/logs"],
+		"errorOutputPaths": ["stderr"],
+		"initialFields": {"foo": "bar"},
+		"encoderConfig": {
+		  "messageKey": "message",
+		  "levelKey": "level",
+		  "levelEncoder": "lowercase"
+		}
+	  }`)
 
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
+	}
+	logger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	// logger.OptionSetLevel("info")
+	defer logger.Sync()
+	logger.Info("failed to fetch URL",
+		// Structured context as strongly typed Field values.
+		zap.String("url", "url"),
+		zap.Int("attempt", 3),
+		zap.Duration("backoff", time.Second),
+	)
 	Default := middleware.CSRFConfig{
 		Skipper:        middleware.DefaultSkipper,
 		TokenLength:    32,
