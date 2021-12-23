@@ -8,11 +8,20 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tarantool/go-tarantool"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 var dblayer = "db"
 var method = "Db"
+
+type MyLogger struct {
+	logger *zap.Logger
+}
+
+func NewMyLogger(logger *zap.Logger) *MyLogger {
+	return &MyLogger{logger}
+}
 
 var Hits = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "Hits",
