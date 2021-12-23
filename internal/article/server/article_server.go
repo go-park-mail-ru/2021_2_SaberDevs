@@ -11,7 +11,6 @@ import (
 	ser "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/server/serve"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -29,7 +28,7 @@ func main() {
 	if err != nil {
 		fmt.Println("cant listen port", err)
 	}
-	server := grpc.NewServer(grpc_middleware.ChainUnaryServer(grpc_zap.UnaryServerInterceptor(zapLogger)))
+	server := grpc.NewServer()
 	db, err := ser.DbConnect()
 	if err != nil {
 		fmt.Println(err)
