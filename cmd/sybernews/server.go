@@ -99,13 +99,13 @@ func DbClose(db *sqlx.DB) error {
 }
 
 func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient, u *userApp.UserDeliveryClient, c *commentApp.CommentDeliveryClient, log *wrapper.MyLogger) {
-	userRepo := urepo.NewUserRepository(db)
+	userRepo := urepo.NewUserRepository(db, log)
 	sessionRepo := srepo.NewSessionRepository(sessionsDbConn, log)
 	// keyRepo := krepo.NewKeyRepository(sessionsDbConn)
 	imageRepo := irepo.NewImageRepository()
 	commentsRepo := crepo.NewCommentRepository(db, log)
 
-	pnRepo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
+	pnRepo := pnrepo.NewPushNotificationRepository(sessionsDbConn, log)
 	// repo.QueueArticleComment([]byte("9"))
 	// repo.DequeueArticleComment()
 	go push.NotificationSevice(pnRepo)
@@ -217,8 +217,8 @@ func Run(address string) {
 	if err != nil {
 		panic(err)
 	}
-	// logger.OptionSetLevel("info")
 	defer logger.Sync()
+
 	logger.Info("ID=",
 		zap.String("Id", "url"),
 		zap.String("method", "meth"),
@@ -226,6 +226,7 @@ func Run(address string) {
 		zap.String("status", "status"),
 		zap.Duration("latency", time.Second),
 	)
+
 	Default := middleware.CSRFConfig{
 		Skipper:        middleware.DefaultSkipper,
 		TokenLength:    32,

@@ -13,16 +13,17 @@ import (
 
 type pushNotificationTarantoolRepo struct {
 	conn *tarantool.Connection
+	lg   *wrapper.MyLogger
 }
 
-func NewPushNotificationRepository(conn *tarantool.Connection) pnmodels.PushNotificationRepository {
-	return &pushNotificationTarantoolRepo{conn: conn}
+func NewPushNotificationRepository(conn *tarantool.Connection, lg *wrapper.MyLogger) pnmodels.PushNotificationRepository {
+	return &pushNotificationTarantoolRepo{conn: conn, lg: lg}
 }
 
 func (pnr *pushNotificationTarantoolRepo) StoreSubscription(ctx context.Context, subscription webpush.Subscription, login string) error {
 	path := "StoreSubscription"
 	// _, err := pnr.conn.Replace("subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
-	_, err := wrapper.MyReplace(pnr.conn, path, "subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
+	_, err := pnr.lg.MyReplace(pnr.conn, path, "subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -34,7 +35,7 @@ func (pnr *pushNotificationTarantoolRepo) StoreSubscription(ctx context.Context,
 
 func (pnr *pushNotificationTarantoolRepo) UpdateSubscription(ctx context.Context, subscription webpush.Subscription, login string) error {
 	path := "UpdateSubscription"
-	_, err := wrapper.MyReplace(pnr.conn, path, "subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
+	_, err := pnr.lg.MyReplace(pnr.conn, path, "subscriptions", []interface{}{login, subscription.Endpoint, subscription.Keys.Auth, subscription.Keys.P256dh})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -51,7 +52,7 @@ func (pnr *pushNotificationTarantoolRepo) DeleteSubscription(ctx context.Context
 func (pnr *pushNotificationTarantoolRepo) GetSubscription(ctx context.Context, login string) (webpush.Subscription, error) {
 	path := "GetSubscription"
 	var sub []pnmodels.Subscription
-	err := wrapper.MySelectTyped(pnr.conn, path, "subscriptions", "primary", 0, 1, tarantool.IterEq, []interface{}{login}, &sub)
+	err := pnr.lg.MySelectTyped(pnr.conn, path, "subscriptions", "primary", 0, 1, tarantool.IterEq, []interface{}{login}, &sub)
 	if err != nil {
 		fmt.Println(err.Error())
 		return webpush.Subscription{}, sbErr.ErrInternal{
@@ -75,7 +76,7 @@ func (pnr *pushNotificationTarantoolRepo) GetSubscription(ctx context.Context, l
 
 func (pnr *pushNotificationTarantoolRepo) QueueArticleLike(like []byte) error {
 	path := "QueueArticleLike"
-	_, err := wrapper.MyCall(pnr.conn, path, "articleLikesPut", []interface{}{like})
+	_, err := pnr.lg.MyCall(pnr.conn, path, "articleLikesPut", []interface{}{like})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -87,7 +88,7 @@ func (pnr *pushNotificationTarantoolRepo) QueueArticleLike(like []byte) error {
 
 func (pnr *pushNotificationTarantoolRepo) DequeueArticleLike() (string, error) {
 	path := "DequeueArticleLike"
-	res, err := wrapper.MyCall(pnr.conn, path, "articleLikesTake", []interface{}{})
+	res, err := pnr.lg.MyCall(pnr.conn, path, "articleLikesTake", []interface{}{})
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +104,7 @@ func (pnr *pushNotificationTarantoolRepo) DequeueArticleLike() (string, error) {
 
 func (pnr *pushNotificationTarantoolRepo) QueueArticleComment(comment []byte) error {
 	path := "QueueArticleComment"
-	_, err := wrapper.MyCall(pnr.conn, path, "articleCommentPut", []interface{}{comment})
+	_, err := pnr.lg.MyCall(pnr.conn, path, "articleCommentPut", []interface{}{comment})
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
@@ -114,7 +115,7 @@ func (pnr *pushNotificationTarantoolRepo) QueueArticleComment(comment []byte) er
 
 func (pnr *pushNotificationTarantoolRepo) DequeueArticleComment() (string, error) {
 	path := "DequeueArticleComment"
-	res, err := wrapper.MyCall(pnr.conn, path, "articleCommentTake", []interface{}{})
+	res, err := pnr.lg.MyCall(pnr.conn, path, "articleCommentTake", []interface{}{})
 	if err != nil {
 		return "", err
 	}

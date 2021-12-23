@@ -107,10 +107,10 @@ func main() {
 	}
 	defer logger.Sync()
 	log := wrapper.NewMyLogger(logger)
-	userRepo := urepo.NewUserRepository(db)
+	userRepo := urepo.NewUserRepository(db, log)
 	sessionRepo := srepo.NewSessionRepository(tarantoolConn, log)
 	commentsRepo := crepo.NewCommentRepository(db, log)
-	notifRepo := pnrepo.NewPushNotificationRepository(tarantoolConn)
+	notifRepo := pnrepo.NewPushNotificationRepository(tarantoolConn, log)
 	artRepo := arepo.NewArticleRepository(db, log)
 
 	commentUsecase := cusecase.NewCommentUsecase(userRepo, sessionRepo, commentsRepo, notifRepo, artRepo)
