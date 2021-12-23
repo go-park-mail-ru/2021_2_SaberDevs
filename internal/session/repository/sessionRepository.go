@@ -13,22 +13,23 @@ import (
 
 type sessionTarantoolRepo struct {
 	conn *tarantool.Connection
+	lg   *wrapper.MyLogger
 }
 
-func NewSessionRepository(conn *tarantool.Connection) smodels.SessionRepository {
-	return &sessionTarantoolRepo{conn: conn}
+func NewSessionRepository(conn *tarantool.Connection, lg *wrapper.MyLogger) smodels.SessionRepository {
+	return &sessionTarantoolRepo{conn: conn, lg: lg}
 }
 
 func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) (string, error) {
 	path := "CreateSession"
 	sessionID := uuid.NewV4().String()
-	_, err := wrapper.MyInsert(r.conn, path, "sessions", []interface{}{sessionID, login})
+	_, err := r.lg.MyInsert(r.conn, path, "sessions", []interface{}{sessionID, login})
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),
 			Function: "sessionRepositiry/CreateSession"}
 	}
-	_, err = wrapper.MyInsert(r.conn, "path", "keys", []interface{}{sessionID, login})
+	_, err = r.lg.MyInsert(r.conn, "path", "keys", []interface{}{sessionID, login})
 	// if err != nil {
 
 	// }
@@ -38,7 +39,7 @@ func (r *sessionTarantoolRepo) CreateSession(ctx context.Context, login string) 
 
 func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID string) error {
 	path := "DeleteSession"
-	_, err := wrapper.MyDelete(r.conn, path, "sessions", "primary", []interface{}{sessionID})
+	_, err := r.lg.MyDelete(r.conn, path, "sessions", "primary", []interface{}{sessionID})
 	if err != nil {
 		return sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -51,7 +52,7 @@ func (r *sessionTarantoolRepo) DeleteSession(ctx context.Context, sessionID stri
 func (r *sessionTarantoolRepo) GetSessionLogin(ctx context.Context, sessionID string) (string, error) {
 	path := "GetSessionLogin"
 	var user []smodels.Session
-	err := wrapper.MySelectTyped(r.conn, path, "sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
+	err := r.lg.MySelectTyped(r.conn, path, "sessions", "primary", 0, 1, tarantool.IterEq, []interface{}{sessionID}, &user)
 	if err != nil {
 		return "", sbErr.ErrInternal{
 			Reason:   err.Error(),

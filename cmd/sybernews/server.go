@@ -98,13 +98,12 @@ func DbClose(db *sqlx.DB) error {
 	return err
 }
 
-func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient, u *userApp.UserDeliveryClient, c *commentApp.CommentDeliveryClient) {
+func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *app.ArticleDeliveryClient, u *userApp.UserDeliveryClient, c *commentApp.CommentDeliveryClient, log *wrapper.MyLogger) {
 	userRepo := urepo.NewUserRepository(db)
-	sessionRepo := srepo.NewSessionRepository(sessionsDbConn)
+	sessionRepo := srepo.NewSessionRepository(sessionsDbConn, log)
 	// keyRepo := krepo.NewKeyRepository(sessionsDbConn)
-	// articleRepo := arepo.NewArticleRepository(db)
 	imageRepo := irepo.NewImageRepository()
-	commentsRepo := crepo.NewCommentRepository(db)
+	commentsRepo := crepo.NewCommentRepository(db, log)
 
 	pnRepo := pnrepo.NewPushNotificationRepository(sessionsDbConn)
 	// repo.QueueArticleComment([]byte("9"))
@@ -154,7 +153,7 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 	e.POST("api/v1/like", like.Rate)
 
 	//Logger.SetOutput() //to file
-	e.Logger.SetLevel(log.INFO)
+
 	// e.Logger.SetLevel(log.ERROR)
 
 	e.HTTPErrorHandler = syberMiddleware.ErrorHandler
@@ -197,14 +196,6 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 
 func Run(address string) {
 	e := echo.New()
-	// log.SetOutput(os.Stdout)
-	// log.SetLevel(log.Info)
-	// log.WithFields(log.Fields{
-	// 	// "method":     c.Request().Method,
-	// 	// "path":       c.Path(),
-	// 	// "status":     c.Response().Status,
-	// 	// "latency_ns": time.Since(start).Nanoseconds(),
-	// }).Info("request details")
 	rawJSON := []byte(`{
 		"level": "debug",
 		"encoding": "json",
@@ -275,9 +266,11 @@ func Run(address string) {
 
 	e.Logger.SetLevel(log.INFO)
 
+	log := wrapper.NewMyLogger(logger)
+
 	grcpConn, err := grpc.Dial(
 		"127.0.0.1:8079",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(wrapper.MetricsInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(log.MetricsInterceptor))
 	defer grcpConn.Close()
 
 	if err != nil {
@@ -286,7 +279,7 @@ func Run(address string) {
 
 	grcpUserConn, err := grpc.Dial(
 		"127.0.0.1:8078",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(wrapper.MetricsInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(log.MetricsInterceptor))
 	defer grcpUserConn.Close()
 
 	if err != nil {
@@ -295,7 +288,7 @@ func Run(address string) {
 
 	grcpCommentConn, err := grpc.Dial(
 		"127.0.0.1:8077",
-		grpc.WithInsecure(), grpc.WithUnaryInterceptor(wrapper.MetricsInterceptor))
+		grpc.WithInsecure(), grpc.WithUnaryInterceptor(log.MetricsInterceptor))
 	defer grcpCommentConn.Close()
 
 	if err != nil {
@@ -308,10 +301,10 @@ func Run(address string) {
 
 	defer DbClose(db)
 
-	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager)
+	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager, log)
 
 	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Fatal(err)
+		logger.Fatal(err.Error())
 	}
 	// e.Logger.Fatal(e.Start(address))
 }

@@ -13,6 +13,7 @@ import (
 
 type commentPsqlRepo struct {
 	Db *sqlx.DB
+	lg *wrapper.MyLogger
 }
 
 type sqlComment struct {
@@ -37,15 +38,15 @@ type sqlPreparedComment struct {
 	cmodels.Author `json:"author"`
 }
 
-func NewCommentRepository(db *sqlx.DB) cmodels.CommentRepository {
-	return &commentPsqlRepo{db}
+func NewCommentRepository(db *sqlx.DB, lg *wrapper.MyLogger) cmodels.CommentRepository {
+	return &commentPsqlRepo{db, lg}
 }
 
 func (cr *commentPsqlRepo) addLiked(chunk []cmodels.PreparedComment, login string) ([]cmodels.PreparedComment, error) {
 	path := "addLiked"
 	schema := `select signum from comments_likes where commentId = $1 and Login = $2`
 	for i := range chunk {
-		err := wrapper.MyGet(cr.Db, path, schema, &chunk[i].Liked, chunk[i].Id, login)
+		err := cr.lg.MyGet(cr.Db, path, schema, &chunk[i].Liked, chunk[i].Id, login)
 		if err != nil {
 			chunk[i].Liked = 0
 		}
@@ -60,7 +61,7 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 
 	if comment.ParentId == 0 {
 		var err error
-		result, err = wrapper.MyQuery(cr.Db, path, schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, sql.NullInt64{}, comment.Text, comment.IsEdited, comment.DateTime)
+		result, err = cr.lg.MyQuery(cr.Db, path, schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, sql.NullInt64{}, comment.Text, comment.IsEdited, comment.DateTime)
 		if err != nil {
 			return cmodels.Comment{}, sbErr.ErrInternal{
 				Reason:   err.Error(),
@@ -69,7 +70,7 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 		}
 	} else {
 		var err error
-		result, err = wrapper.MyQuery(cr.Db, path, schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, comment.ParentId, comment.Text, comment.IsEdited, comment.DateTime)
+		result, err = cr.lg.MyQuery(cr.Db, path, schema, comment.AuthorLogin, comment.ArticleId, comment.Likes, comment.ParentId, comment.Text, comment.IsEdited, comment.DateTime)
 		if err != nil {
 			return cmodels.Comment{}, sbErr.ErrInternal{
 				Reason:   err.Error(),
@@ -97,7 +98,7 @@ func (cr *commentPsqlRepo) StoreComment(ctx context.Context, comment *cmodels.Co
 
 func (cr *commentPsqlRepo) UpdateComment(ctx context.Context, comment *cmodels.Comment) (cmodels.Comment, error) {
 	path := "UpdateComment"
-	result, err := wrapper.MyQuery(cr.Db, path, `UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime`,
+	result, err := cr.lg.MyQuery(cr.Db, path, `UPDATE comments SET text = $1, isedited = $2 WHERE id = $3 returning Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime`,
 
 		comment.Text, comment.IsEdited, comment.Id)
 	if err != nil {
@@ -137,7 +138,7 @@ func (cr *commentPsqlRepo) GetCommentsByArticleID(ctx context.Context, articleID
 	schema := `select c.id, c.articleid, c.Likes, c.parentid, c.text, c.isedited, c.datetime, a.login, a.surname, a.name, a.score, a.avatarurl  
                from comments c join author a on a.login = c.AuthorLogin where c.ArticleId = $1 limit 50`
 
-	err := wrapper.MySelect(cr.Db, path, schema, &sqlComments, articleID)
+	err := cr.lg.MySelect(cr.Db, path, schema, &sqlComments, articleID)
 	if err != nil {
 		return []cmodels.PreparedComment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -177,7 +178,7 @@ func (cr *commentPsqlRepo) GetCommentByID(ctx context.Context, commentID int64) 
 	path := "GetCommentByID"
 	var comment sqlComment
 	schema := `SELECT Id, AuthorLogin, ArticleId, Likes, ParentId, Text, IsEdited, DateTime FROM comments WHERE id = $1`
-	err := wrapper.MyGet(cr.Db, path, schema, &comment, commentID)
+	err := cr.lg.MyGet(cr.Db, path, schema, &comment, commentID)
 	if err != nil {
 		return cmodels.Comment{}, sbErr.ErrInternal{
 			Reason:   err.Error(),
@@ -203,7 +204,7 @@ func (cr *commentPsqlRepo) GetCommentsStream(lastCommentID int64) ([]cmodels.Str
 	schema := `select c.id, c.articleid, c.text,  c.likes, a.login, a.surname, a.name, a.avatarurl, a2.title
                from comments c join author a on a.login = c.AuthorLogin join articles a2 on c.articleid = a2.id where c.id > $1 order by c.id desc limit 5`
 
-	err := wrapper.MySelect(cr.Db, path, schema, sqlComments, lastCommentID)
+	err := cr.lg.MySelect(cr.Db, path, schema, sqlComments, lastCommentID)
 	if err != nil {
 		return []cmodels.StreamComment{}, err
 	}

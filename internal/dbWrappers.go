@@ -35,7 +35,7 @@ var Duration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 	Name: "Duratin",
 }, []string{"layer", "path"})
 
-func MyInsert(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
+func (m *MyLogger) MyInsert(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Insert(space, tuple)
@@ -47,7 +47,7 @@ func MyInsert(tr *tarantool.Connection, path string, space interface{}, tuple in
 	return result, err
 }
 
-func MyDelete(tr *tarantool.Connection, path string, space interface{}, index interface{}, key interface{}) (resp *tarantool.Response, err error) {
+func (m *MyLogger) MyDelete(tr *tarantool.Connection, path string, space interface{}, index interface{}, key interface{}) (resp *tarantool.Response, err error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Delete(space, index, key)
@@ -59,7 +59,7 @@ func MyDelete(tr *tarantool.Connection, path string, space interface{}, index in
 	return result, err
 }
 
-func MySelectTyped(tr *tarantool.Connection, path string, space interface{}, index interface{}, offset uint32, limit uint32, iterator uint32, key interface{}, result interface{}) (err error) {
+func (m *MyLogger) MySelectTyped(tr *tarantool.Connection, path string, space interface{}, index interface{}, offset uint32, limit uint32, iterator uint32, key interface{}, result interface{}) (err error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err = tr.SelectTyped(space, index, offset, limit, iterator, key, result)
@@ -71,7 +71,7 @@ func MySelectTyped(tr *tarantool.Connection, path string, space interface{}, ind
 	return err
 }
 
-func MyReplace(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
+func (m *MyLogger) MyReplace(tr *tarantool.Connection, path string, space interface{}, tuple interface{}) (resp *tarantool.Response, err error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Replace(space, tuple)
@@ -83,7 +83,7 @@ func MyReplace(tr *tarantool.Connection, path string, space interface{}, tuple i
 	return result, err
 }
 
-func MyCall(tr *tarantool.Connection, path string, functionName string, args interface{}) (resp *tarantool.Response, err error) {
+func (m *MyLogger) MyCall(tr *tarantool.Connection, path string, functionName string, args interface{}) (resp *tarantool.Response, err error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tr.Call(functionName, args)
@@ -95,7 +95,7 @@ func MyCall(tr *tarantool.Connection, path string, functionName string, args int
 	return result, err
 }
 
-func MyQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
+func (m *MyLogger) MyQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx.Rows, error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	rows, err := db.Queryx(query, args...)
@@ -107,7 +107,7 @@ func MyQuery(db *sqlx.DB, path string, query string, args ...interface{}) (*sqlx
 	return rows, err
 }
 
-func MySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
+func (m *MyLogger) MySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := db.Select(dest, query, args...)
@@ -119,7 +119,7 @@ func MySelect(db *sqlx.DB, path string, query string, dest interface{}, args ...
 	return err
 }
 
-func MyGet(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
+func (m *MyLogger) MyGet(db *sqlx.DB, path string, query string, dest interface{}, args ...interface{}) error {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := db.Get(dest, query, args...)
@@ -131,7 +131,7 @@ func MyGet(db *sqlx.DB, path string, query string, dest interface{}, args ...int
 	return err
 }
 
-func MyExec(db *sqlx.DB, path string, query string, args ...interface{}) (sql.Result, error) {
+func (m *MyLogger) MyExec(db *sqlx.DB, path string, query string, args ...interface{}) (sql.Result, error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := db.Exec(query, args...)
@@ -143,7 +143,7 @@ func MyExec(db *sqlx.DB, path string, query string, args ...interface{}) (sql.Re
 	return result, err
 }
 
-func MyTxExec(tx *sqlx.Tx, path string, query string, args ...interface{}) (sql.Result, error) {
+func (m *MyLogger) MyTxExec(tx *sqlx.Tx, path string, query string, args ...interface{}) (sql.Result, error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := tx.Exec(query, args...)
@@ -155,7 +155,7 @@ func MyTxExec(tx *sqlx.Tx, path string, query string, args ...interface{}) (sql.
 	return result, err
 }
 
-func MyBegin(db *sqlx.DB, path string) (*sqlx.Tx, error) {
+func (m *MyLogger) MyBegin(db *sqlx.DB, path string) (*sqlx.Tx, error) {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	result, err := db.Beginx()
@@ -167,7 +167,7 @@ func MyBegin(db *sqlx.DB, path string) (*sqlx.Tx, error) {
 	return result, err
 }
 
-func MyRollBack(tx *sqlx.Tx, path string) error {
+func (m *MyLogger) MyRollBack(tx *sqlx.Tx, path string) error {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := tx.Rollback()
@@ -178,7 +178,7 @@ func MyRollBack(tx *sqlx.Tx, path string) error {
 	}
 	return err
 }
-func MyCommit(tx *sqlx.Tx, path string) error {
+func (m *MyLogger) MyCommit(tx *sqlx.Tx, path string) error {
 	start := time.Now()
 	Hits.WithLabelValues(dblayer, path, method).Inc()
 	err := tx.Commit()
@@ -190,7 +190,7 @@ func MyCommit(tx *sqlx.Tx, path string) error {
 	return err
 }
 
-func MetricsInterceptor(
+func (m *MyLogger) MetricsInterceptor(
 	ctx context.Context,
 	method string,
 	req interface{},
