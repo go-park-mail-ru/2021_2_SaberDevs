@@ -11,6 +11,7 @@ import (
 	"github.com/tarantool/go-tarantool"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 var dblayer = "db"
@@ -274,7 +275,11 @@ func (m *MyLogger) MetricsInterceptor(
 	err := invoker(ctx, method, req, reply, cc, opts...)
 	duration := time.Since(start)
 	Hits.WithLabelValues("grpc", cc.Target(), method).Inc()
-	id := ctx.Value("X-Request-ID")
+	md, ok := metadata.FromIncomingContext(ctx)
+	id := md["x-request-id"]
+	if !ok {
+		m.Logger.Error("no ID")
+	}
 	m.Logger.Info("request=",
 		zap.Any("Id", id),
 		zap.String("method", method),
