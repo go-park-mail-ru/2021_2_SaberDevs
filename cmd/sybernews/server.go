@@ -1,8 +1,6 @@
 package server
 
 import (
-	"time"
-
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	ahandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/handler"
@@ -11,7 +9,6 @@ import (
 	pnrepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/repository"
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
-	"go.uber.org/zap"
 
 	// log "github.com/sirupsen/logrus"
 
@@ -237,13 +234,6 @@ func Run(address string) {
 	e.Logger.SetLevel(log.INFO)
 	logger := wrapper.NewLogger()
 
-	logger.Logger.Info("ID=",
-		zap.String("Id", "url"),
-		zap.String("method", "meth"),
-		zap.String("path", "path"),
-		zap.String("status", "status"),
-		zap.Duration("latency", time.Second),
-	)
 	log := logger
 
 	grcpConn, err := grpc.Dial(

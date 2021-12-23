@@ -11,16 +11,9 @@ import (
 	ser "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/server/serve"
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
-)
-
-var (
-	zapLogger  *zap.Logger
-	customFunc grpc_zap.CodeToLevel
 )
 
 func main() {
