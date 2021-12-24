@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"net/http"
-
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/article_app"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
@@ -12,8 +9,8 @@ import (
 	ausecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/usecase"
 	srepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/session/repository"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
+	"net"
 )
 
 func main() {
@@ -40,13 +37,13 @@ func main() {
 	articlesUsecase := ausecase.NewArticleUsecase(articleRepo, sessionRepo)
 	app.RegisterArticleDeliveryServer(server, ser.NewArticleManager(articlesUsecase))
 	//prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
-	http.Handle("/metrics", promhttp.Handler())
+	// http.Handle("/metrics", promhttp.Handler())
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 	// Register Prometheus metrics handler.
-	go func() {
-		err := http.ListenAndServe(":8074", nil)
-		log.Logger.Fatal(err.Error())
-	}()
+	// go func() {
+	// 	err := http.ListenAndServe(":8074", nil)
+	// 	log.Logger.Fatal(err.Error())
+	// }()
 	fmt.Println("starting server at :8079")
 	server.Serve(lis)
 

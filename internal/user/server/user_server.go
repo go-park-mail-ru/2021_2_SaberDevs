@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"net/http"
-
 	server "github.com/go-park-mail-ru/2021_2_SaberDevs/cmd/sybernews"
 	wrapper "github.com/go-park-mail-ru/2021_2_SaberDevs/internal"
 	arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
@@ -15,9 +12,9 @@ import (
 	app "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tarantool/go-tarantool"
 	"google.golang.org/grpc"
+	"net"
 )
 
 func TarantoolConnect() (*tarantool.Connection, error) {
@@ -93,11 +90,11 @@ func main() {
 	app.RegisterUserDeliveryServer(server, NewUserManager(userUsecase))
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 	// Register Prometheus metrics handler.
-	http.Handle("/metrics", promhttp.Handler())
-	go func() {
-		err := http.ListenAndServe(":8074", nil)
-		log.Logger.Fatal(err.Error())
-	}()
+	// http.Handle("/metrics", promhttp.Handler())
+	// go func() {
+	// 	err := http.ListenAndServe(":8074", nil)
+	// 	log.Logger.Fatal(err.Error())
+	// }()
 
 	fmt.Println("starting user server at :8078")
 	server.Serve(lis)
