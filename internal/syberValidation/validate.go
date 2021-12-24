@@ -21,7 +21,7 @@ const loginInvalidMsg = "логин должен быть от 4 до 20 сим�
 func ValidateSignUp(user app.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Login, validation.Required.Error("Логин это обязательное поле"),
-			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{4,20}$")).Error(loginInvalidMsg)),
+			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{3,20}$")).Error(loginInvalidMsg)),
 		validation.Field(&user.Email, validation.Required.Error("Email это обязательное поле"), is.EmailFormat.Error("Неверный email")),
 		validation.Field(&user.Password, validation.Required.Error("Пароль это обязательное поле"), validation.By(isPasswordValid)),
 	)
