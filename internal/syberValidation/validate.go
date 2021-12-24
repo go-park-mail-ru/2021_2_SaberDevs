@@ -21,7 +21,7 @@ const loginInvalidMsg = "логин должен быть от 4 до 20 сим�
 func ValidateSignUp(user app.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Login, validation.Required.Error("Логин это обязательное поле"),
-			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{3,20}$")).Error(loginInvalidMsg)),
+			validation.Match(regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9_]{2,20}$")).Error(loginInvalidMsg)),
 		validation.Field(&user.Email, validation.Required.Error("Email это обязательное поле"), is.EmailFormat.Error("Неверный email")),
 		validation.Field(&user.Password, validation.Required.Error("Пароль это обязательное поле"), validation.By(isPasswordValid)),
 	)
@@ -35,9 +35,9 @@ func ValidateSignUp(user app.User) error {
 func ValidateUpdate(user umodels.User) error {
 	err := validation.ValidateStruct(&user,
 		validation.Field(&user.Name, validation.When(user.Name != "",
-			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z_а-яА-ЯЁё'-]{3,20}$")).Error(nameInvalidMsg))),
+			validation.Match(regexp.MustCompile("^[a-zA-Zа-яА-ЯЁё][a-zA-Z_а-яА-ЯЁё'-]{2,20}$")).Error(nameInvalidMsg))),
 		validation.Field(&user.Surname, validation.When(user.Surname != "",
-			validation.Match(regexp.MustCompile("[a-zA-Zа-яА-ЯЁё][a-zA-Z_а-яА-ЯЁё'-]{3,20}$")).Error(surnameInvalidMsg))),
+			validation.Match(regexp.MustCompile("^[a-zA-Zа-яА-ЯЁё][a-zA-Z_а-яА-ЯЁё'-]{2,20}$")).Error(surnameInvalidMsg))),
 		validation.Field(&user.Password, validation.When(user.Password != "", validation.By(isPasswordValid))),
 	)
 	if err != nil {
