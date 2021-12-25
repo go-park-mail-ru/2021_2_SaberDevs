@@ -191,18 +191,18 @@ func router(e *echo.Echo, db *sqlx.DB, sessionsDbConn *tarantool.Connection, a *
 func Run(address string) {
 	e := echo.New()
 
-	Default := middleware.CSRFConfig{
-		Skipper:        middleware.DefaultSkipper,
-		TokenLength:    32,
-		TokenLookup:    "header:X-XSRF-Token",
-		ContextKey:     "csrf",
-		CookieName:     "_csrf",
-		CookieMaxAge:   86400,
-		CookieSameSite: http.SameSiteNoneMode,
-		CookiePath:     "/",
-		CookieHTTPOnly: false,
-		CookieSecure:   false,
-	}
+	// Default := middleware.CSRFConfig{
+	// 	Skipper:        middleware.DefaultSkipper,
+	// 	TokenLength:    32,
+	// 	TokenLookup:    "header:X-XSRF-Token",
+	// 	ContextKey:     "csrf",
+	// 	CookieName:     "_csrf",
+	// 	CookieMaxAge:   86400,
+	// 	CookieSameSite: http.SameSiteNoneMode,
+	// 	CookiePath:     "/",
+	// 	CookieHTTPOnly: false,
+	// 	CookieSecure:   false,
+	// }
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
@@ -210,7 +210,7 @@ func Run(address string) {
 		AllowCredentials: true,
 	}))
 
-	e.Use(middleware.CSRFWithConfig(Default))
+	// e.Use(middleware.CSRFWithConfig(Default))
 
 	prometheus.MustRegister(wrapper.Hits, wrapper.Duration, wrapper.Errors)
 
