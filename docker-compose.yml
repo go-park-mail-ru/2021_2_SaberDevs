@@ -13,7 +13,7 @@ services:
     restart: always
     network_mode: "host"
     volumes:
-      - /etc/ssl
+      - /etc/ssl/
     expose:
       - 8081
     depends_on:
