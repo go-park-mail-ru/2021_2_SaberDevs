@@ -9,7 +9,7 @@ services:
     container_name: tarantool_syber
 
   main:
-    image: syber_main:latest
+    image: mollenar/sb_main:latest
     restart: always
     network_mode: "host"
     expose:
@@ -19,7 +19,7 @@ services:
     container_name: syber_main_server
 
   comments:
-    image: syber_comments:latest
+    image: mollenar/sb_comm:latest
     restart: always
     network_mode: "host"
     expose:
@@ -29,7 +29,7 @@ services:
     container_name: syber_comments_server
 
   articles:
-    image: syber_articles:latest
+    image: mollenar/sb_art:latest
     restart: always
     network_mode: "host"
     expose:
@@ -39,7 +39,7 @@ services:
     container_name: syber_articles_server
 
   auth:
-    image: syber_auth:latest
+    image: mollenar/sb_auth:latest
     restart: always
     network_mode: "host"
     expose:
