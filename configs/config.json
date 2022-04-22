@@ -1,0 +1,22 @@
+{
+  "server" : {
+    "address" : "192.168.0.31",
+    "port" : "8081"
+  },
+  "tarantool" : {
+    "user" : "admin",
+    "pass" : "pass",
+    "addr" : ":3302"
+  },
+  "postgres" : {
+      "user" : "postgres",
+      "dbname" : "postgres",
+      "password" : "yura11011",
+      "host" : "localhost",
+      "sslmode" : "disable"
+  },
+  "notification" : {
+    "privateKey" : "fjYQPyyzqYN4Kh_b76obpmfKkMSAz48YnbvKamm9Azw",
+    "publicKey" : "BAm53SFQL61CJdkPZYxN4qcdNTpnRc5yVSrL182-GNHW1RYmgRSeHoF5rYdMUfZMGT93MzVsN64NBe0azXKcplM"
+  }
+}
