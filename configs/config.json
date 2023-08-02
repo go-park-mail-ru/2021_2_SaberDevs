@@ -1,6 +1,6 @@
 {
   "server" : {
-    "address" : "192.168.0.31",
+    "address" : "localhost",
     "port" : "8081"
   },
   "tarantool" : {
@@ -9,9 +9,9 @@
     "addr" : ":3302"
   },
   "postgres" : {
-      "user" : "postgres",
-      "dbname" : "postgres",
-      "password" : "yura11011",
+      "user" : "alexey",
+      "dbname" : "alexeydb",
+      "password" : "alexey",
       "host" : "localhost",
       "sslmode" : "disable"
   },

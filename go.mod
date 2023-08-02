@@ -1,40 +1,27 @@
 module github.com/go-park-mail-ru/2021_2_SaberDevs
 
-go 1.13
+go 1.16
 
 require (
-	github.com/SherClockHolmes/webpush-go v1.1.3 // indirect
-	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+	github.com/SherClockHolmes/webpush-go v1.2.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang/mock v1.6.0
-	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.1.2
-	github.com/gorilla/websocket v1.4.2
-	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/jmoiron/sqlx v1.3.4
-	github.com/kolesa-team/go-webp v1.0.1
-	github.com/kr/text v0.2.0 // indirect
-	github.com/labstack/echo/v4 v4.6.1
-	github.com/labstack/gommon v0.3.0
-	github.com/lib/pq v1.10.3
-	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/microcosm-cc/bluemonday v1.0.16
+	github.com/golang/protobuf v1.5.3
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.5.0
+	github.com/jmoiron/sqlx v1.3.5
+	github.com/kolesa-team/go-webp v1.0.4
+	github.com/labstack/echo/v4 v4.10.2
+	github.com/labstack/gommon v0.4.0
+	github.com/lib/pq v1.10.9
+	github.com/mailru/easyjson v0.7.7
+	github.com/microcosm-cc/bluemonday v1.0.24
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.15.1
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/viper v1.9.0
-	github.com/stretchr/testify v1.7.0
-	github.com/tarantool/go-tarantool v0.0.0-20210330210617-56fe55c5fa5c
+	github.com/spf13/viper v1.15.0
+	github.com/tarantool/go-tarantool v1.11.0
 	github.com/tmdvs/Go-Emoji-Utils v1.1.0
-	github.com/zhashkevych/go-sqlxmock v1.5.1
-	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.19.1 // indirect
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
-	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9 // indirect
-	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
-	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
-	google.golang.org/grpc v1.42.0
-
+	go.uber.org/zap v1.24.0
+	google.golang.org/grpc v1.55.0
 )

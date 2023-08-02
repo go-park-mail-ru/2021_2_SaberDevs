@@ -1,7 +1,8 @@
 version: '3.8'
 services:
   tarantool:
-    image: syber_test:latest
+    build:
+      context: ../build/tarantool/
     expose:
       - 3302
     ports:
@@ -9,7 +10,9 @@ services:
     container_name: tarantool_syber
 
   main:
-    image: mollenar/sb_main:latest
+    build:
+      context: ..
+      dockerfile: build/docker/main.Dockerfile
     restart: always
     network_mode: "host"
     volumes:
@@ -21,7 +24,9 @@ services:
     container_name: syber_main_server
 
   comments:
-    image: mollenar/sb_comm:latest
+    build:
+      context: ..
+      dockerfile: build/docker/comments.Dockerfile
     restart: always
     network_mode: "host"
     expose:
@@ -31,7 +36,9 @@ services:
     container_name: syber_comments_server
 
   articles:
-    image: mollenar/sb_art:latest
+    build:
+      context: ..
+      dockerfile: build/docker/articles.Dockerfile
     restart: always
     network_mode: "host"
     expose:
@@ -41,7 +48,9 @@ services:
     container_name: syber_articles_server
 
   auth:
-    image: mollenar/sb_auth:latest
+    build:
+      context: ..
+      dockerfile: build/docker/auth.Dockerfile
     restart: always
     network_mode: "host"
     expose:

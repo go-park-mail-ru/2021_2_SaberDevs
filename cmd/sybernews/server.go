@@ -10,13 +10,9 @@ import (
 	pnusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/pushNotifications/usecase"
 	userApp "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/user_app"
 
-	// log "github.com/sirupsen/logrus"
-
-	// arepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/article/repository"
 	chandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/handler"
 	crepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/repository"
 
-	// cusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/comment/usecase"
 	ihandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/handler"
 	irepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/repository"
 	iusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/image/usecase"
@@ -33,14 +29,12 @@ import (
 	uhandler "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/handler"
 	urepo "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/repository"
 
-	// uusecase "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/user/usecase"
 	commentWS "github.com/go-park-mail-ru/2021_2_SaberDevs/internal/ws/commentStream"
 
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
 
-	// "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -269,8 +263,9 @@ func Run(address string) {
 
 	router(e, db, tarantoolConn, &sessManager, &userManager, &commentManager, log)
 
-	if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
-		log.Logger.Fatal(err.Error())
-	}
-	// e.Logger.Fatal(e.Start(address))
+	// Выбор режима: с SSL или без
+	// if err := e.StartTLS(address, "/etc/ssl/sabernews.crt", "/etc/ssl/sabernews.key"); err != http.ErrServerClosed {
+	// 	log.Logger.Fatal(err.Error())
+	// }
+	e.Logger.Fatal(e.Start(address))
 }
