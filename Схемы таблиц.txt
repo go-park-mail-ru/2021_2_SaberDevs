@@ -1,0 +1,167 @@
+                                     Table "public.article_likes"
+  Column   |         Type          | Collation | Nullable |                  Default                  
+-----------+-----------------------+-----------+----------+-------------------------------------------
+ id        | integer               |           | not null | nextval('article_likes_id_seq'::regclass)
+ login     | character varying(45) |           |          | 
+ articleid | integer               |           |          | 
+ signum    | integer               |           |          | 
+Indexes:
+    "article_likes_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "article_likes_articleid_fkey" FOREIGN KEY (articleid) REFERENCES articles(id) ON DELETE CASCADE
+    "article_likes_login_fkey" FOREIGN KEY (login) REFERENCES author(login) ON DELETE CASCADE
+
+
+
+
+                                       Table "public.articles"
+   Column    |         Type          | Collation | Nullable |               Default             
+   
+-------------+-----------------------+-----------+----------+-----------------------------------
+---
+ id          | integer               |           | not null | nextval('articles_id_seq'::regclas
+s)
+ previewurl  | character varying(45) |           |          | 
+ title       | text                  |           |          | 
+ text        | text                  |           |          | 
+ datetime    | character varying(45) |           |          | 
+ category    | character varying(45) |           |          | 
+ authorname  | character varying(45) |           |          | 
+ commentsurl | character varying(45) |           |          | 
+ comments    | integer               |           |          | 
+ likes       | integer               |           |          | 
+Indexes:
+    "articles_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "articles_authorname_fkey" FOREIGN KEY (authorname) REFERENCES author(login) ON DELETE CASCADE
+    "articles_category_fkey" FOREIGN KEY (category) REFERENCES categories(cat) ON DELETE CASCADE
+Referenced by:
+    TABLE "article_likes" CONSTRAINT "article_likes_articleid_fkey" FOREIGN KEY (articleid) REFERENCES articles(id) ON DELETE CASCADE
+    TABLE "comments" CONSTRAINT "comments_articleid_fkey" FOREIGN KEY (articleid) REFERENCES articles(id) ON DELETE CASCADE
+    TABLE "tags_articles" CONSTRAINT "tags_articles_articles_id_fkey" FOREIGN KEY (articles_id) REFERENCES articles(id) ON DELETE CASCADE
+
+
+
+
+
+
+
+                                      Table "public.author"
+   Column    |         Type          | Collation | Nullable |              Default               
+-------------+-----------------------+-----------+----------+------------------------------------
+ id          | integer               |           | not null | nextval('author_id_seq'::regclass)
+ login       | character varying(45) |           | not null | 
+ avatarurl   | character varying(75) |           |          | 
+ description | text                  |           | not null | 
+ name        | character varying(45) |           |          | 
+ surname     | character varying(45) |           |          | 
+ email       | character varying(45) |           |          | 
+ password    | character varying(45) |           |          | 
+ score       | character varying(45) |           |          | 
+Indexes:
+    "author_pkey" PRIMARY KEY, btree (id)
+    "author_login_key" UNIQUE CONSTRAINT, btree (login)
+Referenced by:
+    TABLE "article_likes" CONSTRAINT "article_likes_login_fkey" FOREIGN KEY (login) REFERENCES author(login) ON DELETE CASCADE
+    TABLE "articles" CONSTRAINT "articles_authorname_fkey" FOREIGN KEY (authorname) REFERENCES author(login) ON DELETE CASCADE
+    TABLE "comments" CONSTRAINT "comments_authorlogin_fkey" FOREIGN KEY (authorlogin) REFERENCES author(login)
+    TABLE "comments_likes" CONSTRAINT "comments_likes_login_fkey" FOREIGN KEY (login) REFERENCES author(login) ON DELETE CASCADE
+
+
+
+
+                    Table "public.categories"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ cat    | character varying(45) |           |          | 
+Indexes:
+    "categories_cat_key" UNIQUE CONSTRAINT, btree (cat)
+Referenced by:
+    TABLE "articles" CONSTRAINT "articles_category_fkey" FOREIGN KEY (category) REFERENCES categories(cat) ON DELETE CASCADE
+
+
+
+
+
+
+
+
+
+                                      Table "public.comments"
+   Column    |         Type          | Collation | Nullable |               Default                
+-------------+-----------------------+-----------+----------+--------------------------------------
+ id          | integer               |           | not null | nextval('comments_id_seq'::regclass)
+ authorlogin | character varying(45) |           |          | 
+ articleid   | integer               |           | not null | 
+ parentid    | integer               |           |          | 
+ text        | text                  |           |          | 
+ isedited    | boolean               |           |          | 
+ likes       | integer               |           |          | 
+ datetime    | character varying(45) |           |          | 
+Indexes:
+    "comments_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "comments_articleid_fkey" FOREIGN KEY (articleid) REFERENCES articles(id) ON DELETE CASCADE
+    "comments_authorlogin_fkey" FOREIGN KEY (authorlogin) REFERENCES author(login)
+    "comments_parentid_fkey" FOREIGN KEY (parentid) REFERENCES comments(id) ON DELETE CASCADE
+Referenced by:
+    TABLE "comments_likes" CONSTRAINT "comments_likes_commentid_fkey" FOREIGN KEY (commentid) REFERENCES comments(id) ON DELETE CASCADE
+    TABLE "comments" CONSTRAINT "comments_parentid_fkey" FOREIGN KEY (parentid) REFERENCES comments(id) ON DELETE CASCADE
+
+
+
+
+
+
+
+                                     Table "public.comments_likes"
+  Column   |         Type          | Collation | Nullable |                  Default                   
+-----------+-----------------------+-----------+----------+--------------------------------------------
+ id        | integer               |           | not null | nextval('comments_likes_id_seq'::regclass)
+ login     | character varying(45) |           |          | 
+ commentid | integer               |           |          | 
+ signum    | integer               |           |          | 
+Indexes:
+    "comments_likes_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "comments_likes_commentid_fkey" FOREIGN KEY (commentid) REFERENCES comments(id) ON DELETE CASCADE
+    "comments_likes_login_fkey" FOREIGN KEY (login) REFERENCES author(login) ON DELETE CASCADE
+
+
+
+
+
+                                   Table "public.tags"
+ Column |         Type          | Collation | Nullable |             Default              
+--------+-----------------------+-----------+----------+----------------------------------
+ id     | integer               |           | not null | nextval('tags_id_seq'::regclass)
+ tag    | character varying(45) |           |          | 
+Indexes:
+    "tags_pkey" PRIMARY KEY, btree (id)
+    "tags_tag_key" UNIQUE CONSTRAINT, btree (tag)
+Referenced by:
+    TABLE "tags_articles" CONSTRAINT "tags_articles_tags_id_fkey" FOREIGN KEY (tags_id) REFERENCES tags(id)
+
+
+
+
+              Table "public.tags_articles"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ articles_id | integer |           | not null | 
+ tags_id     | integer |           | not null | 
+Indexes:
+    "id" PRIMARY KEY, btree (articles_id, tags_id)
+Foreign-key constraints:
+    "tags_articles_articles_id_fkey" FOREIGN KEY (articles_id) REFERENCES articles(id) ON DELETE CASCADE
+    "tags_articles_tags_id_fkey" FOREIGN KEY (tags_id) REFERENCES tags(id)
+
+
+
+
+
+
+
+
+
+

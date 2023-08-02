@@ -1,0 +1,54 @@
+# Этот докерфайл использует образ сервера из закрытого докер-репозитория mollenar.
+# Без прав его не запустить.
+# Используйте docker-compose.yml, который лежит рядом
+version: '3.8'
+services:
+  tarantool:
+    image: syber_test:latest
+    expose:
+      - 3302
+    ports:
+      - 3302:3302
+    container_name: tarantool_syber
+
+  main:
+    image: mollenar/sb_main:latest
+    restart: always
+    network_mode: "host"
+    volumes:
+      - /etc/ssl/:/etc/ssl/
+    expose:
+      - 8081
+    depends_on:
+      - tarantool
+    container_name: syber_main_server
+
+  comments:
+    image: mollenar/sb_comm:latest
+    restart: always
+    network_mode: "host"
+    expose:
+      - 8077
+    depends_on:
+      - tarantool
+    container_name: syber_comments_server
+
+  articles:
+    image: mollenar/sb_art:latest
+    restart: always
+    network_mode: "host"
+    expose:
+      - 8079
+    depends_on:
+      - tarantool
+    container_name: syber_articles_server
+
+  auth:
+    image: mollenar/sb_auth:latest
+    restart: always
+    network_mode: "host"
+    expose:
+      - 8078
+    depends_on:
+      - tarantool
+    container_name: syber_auth_server

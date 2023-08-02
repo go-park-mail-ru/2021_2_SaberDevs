@@ -1,0 +1,32 @@
+package models
+
+import "context"
+
+//easyjson:json
+type LikeData struct {
+	Ltype int `json:"type"`
+	Sign  int `json:"sign"`
+	Id    int `json:"id"`
+}
+
+type LikeDb struct {
+	Login     string `json:"login"`
+	ArticleId int    `json:"articleid"`
+	Signum    int    `json:"sign"`
+}
+
+//easyjson:json
+type GenericResponse struct {
+	Status uint   `json:"status"`
+	Data   string `json:"data"`
+}
+
+type LikesUsecase interface {
+	Rating(ctx context.Context, a *LikeData, cValue string) (int, error)
+}
+
+type LikesRepository interface {
+	Like(ctx context.Context, a *LikeDb) (int, error)
+	Dislike(ctx context.Context, a *LikeDb) (int, error)
+	Cancel(ctx context.Context, a *LikeDb) (int, error)
+}

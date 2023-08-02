@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  tarantool:
+    build:
+      context: ../build/tarantool/
+    expose:
+      - 3302
+    ports:
+      - 3302:3302
+    container_name: tarantool_syber
+
+  main:
+    build:
+      context: ..
+      dockerfile: build/docker/main.Dockerfile
+    restart: always
+    network_mode: "host"
+    volumes:
+      - /etc/ssl/:/etc/ssl/
+    expose:
+      - 8081
+    depends_on:
+      - tarantool
+    container_name: syber_main_server
+
+  comments:
+    build:
+      context: ..
+      dockerfile: build/docker/comments.Dockerfile
+    restart: always
+    network_mode: "host"
+    expose:
+      - 8077
+    depends_on:
+      - tarantool
+    container_name: syber_comments_server
+
+  articles:
+    build:
+      context: ..
+      dockerfile: build/docker/articles.Dockerfile
+    restart: always
+    network_mode: "host"
+    expose:
+      - 8079
+    depends_on:
+      - tarantool
+    container_name: syber_articles_server
+
+  auth:
+    build:
+      context: ..
+      dockerfile: build/docker/auth.Dockerfile
+    restart: always
+    network_mode: "host"
+    expose:
+      - 8078
+    depends_on:
+      - tarantool
+    container_name: syber_auth_server
